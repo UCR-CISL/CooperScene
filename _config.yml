@@ -1,0 +1,13 @@
+# Dependencies
+markdown:         kramdown
+highlighter:      Rouge
+# Permalinks
+permalink:        pretty
+
+# Setup
+title:            CooperScene
+description:      Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
+url:              https://UCR-CISL.github.io/CooperScene
+baseurl:
+
+paginate:         5

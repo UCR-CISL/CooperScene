@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X</title>
+  <meta name="description"
+    content="CooperScene is the first real-world, multi-agent, multi-modal cooperative autonomy dataset with C-V2X communication characterization.">
+
+  <!-- Bulma CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Academicons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.4/css/academicons.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="static/css/index.css">
+</head>
+
+<body>
+
+  <!-- ===== Navbar ===== -->
+  <nav class="navbar is-fixed-top" role="navigation" aria-label="main navigation">
+    <div class="container">
+      <div class="navbar-brand">
+        <a class="navbar-item" href="#">
+          <strong>CooperScene</strong>
+        </a>
+        <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="mainNav">
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+          <span aria-hidden="true"></span>
+        </a>
+      </div>
+      <div id="mainNav" class="navbar-menu">
+        <div class="navbar-end">
+          <a class="navbar-item" href="#overview">Overview</a>
+          <a class="navbar-item" href="#visualizer">Visualizer</a>
+          <a class="navbar-item" href="#format">Dataset Format</a>
+          <a class="navbar-item" href="#benchmark">Benchmark</a>
+          <a class="navbar-item" href="#model">Our Model</a>
+          <a class="navbar-item" href="#paper">Paper</a>
+          <a class="navbar-item" href="#download">Download</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== Hero Section ===== -->
+  <section class="hero is-medium hero-section">
+    <div class="hero-body">
+      <div class="container has-text-centered">
+        <div class="publication-venue mb-3">ECCV 2026</div>
+        <h1 class="title is-1 publication-title mb-4">
+          CooperScene
+        </h1>
+        <h2 class="subtitle is-4 mb-4" style="max-width: 800px; margin: 0 auto;">
+          Multi-Modal Cooperative Autonomy Benchmark<br>with C-V2X Communication Characterization
+        </h2>
+
+        <div class="is-size-5 mb-3" style="color: rgba(255,255,255,0.9);">
+          <span class="author-block"><a href="#">Bo Wu</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Ruoshen Mo</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Justin Yue</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Yanyu Zhang</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Janice Nguyen</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Guoyuan Wu</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Amit Roy-Chowdhury</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Matthew J. Barth</a><sup>1</sup>,</span>
+          <span class="author-block"><a href="#">Hang Qiu</a><sup>1</sup></span>
+        </div>
+
+        <div class="affiliation-block mb-5">
+          <span><sup>1</sup> University of California, Riverside</span>
+        </div>
+
+        <div class="hero-buttons">
+          <a class="button is-rounded is-dark is-medium" href="#paper">
+            <span class="icon"><i class="fas fa-file-pdf"></i></span>
+            <span>Paper</span>
+          </a>
+          <a class="button is-rounded is-dark is-medium" href="#" target="_blank">
+            <span class="icon"><i class="fab fa-github"></i></span>
+            <span>Code</span>
+          </a>
+          <a class="button is-rounded is-dark is-medium" href="#download">
+            <span class="icon"><i class="fas fa-database"></i></span>
+            <span>Dataset</span>
+          </a>
+          <a class="button is-rounded is-dark is-medium" href="#visualizer">
+            <span class="icon"><i class="fas fa-eye"></i></span>
+            <span>Visualizer</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Overview ===== -->
+  <section class="section" id="overview">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Overview</h2>
+      <div class="section-divider"></div>
+
+      <div class="content has-text-justified">
+        <p>
+          <strong>CooperScene</strong> is the first real-world, multi-agent, multi-modal cooperative autonomy dataset
+          with C-V2X communication characterization. It focuses on complex urban intersection scenarios involving
+          <strong>three connected autonomous vehicles</strong> and <strong>one instrumented infrastructure roadside
+            unit</strong>, all equipped with multi-modal sensors and commercial off-the-shelf C-V2X communication
+          radios.
+        </p>
+        <p>
+          The dataset provides tightly aligned LiDAR, camera, GNSS/IMU, and C-V2X network data, enabling the community
+          to jointly evaluate perception performance and the practical constraints imposed by real-world vehicular
+          networks. CooperScene supports 3D object detection, tracking, and motion prediction benchmarks with
+          synchronized pair-wise C-V2X throughput measurements.
+        </p>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <span class="stat-number">59K</span>
+          <span class="stat-label">Synchronized LiDAR Frames</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">18K</span>
+          <span class="stat-label">Image Frames</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">344K</span>
+          <span class="stat-label">3D Bounding Box Labels</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">4</span>
+          <span class="stat-label">Cooperative Agents</span>
+        </div>
+      </div>
+
+      <!-- Feature Cards -->
+      <h3 class="title is-4 mt-6 mb-4">Key Features</h3>
+      <div class="columns is-multiline">
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-blue">
+              <i class="fas fa-car-side"></i>
+            </div>
+            <h4>Multi-Agent Cooperative Scenes</h4>
+            <p>High-quality interactive scenes from three vehicles and one infrastructure agent across diverse real-world
+              urban intersection scenarios.</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-green">
+              <i class="fas fa-broadcast-tower"></i>
+            </div>
+            <h4>C-V2X Communication Traces</h4>
+            <p>Real-world C-V2X network traces including latency, throughput, packet loss rate and jitter &mdash;
+              enabling cross-disciplinary research.</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-purple">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <h4>Multi-Modal Sensing</h4>
+            <p>LiDAR, camera, GNSS/IMU data streams per agent, well-calibrated and temporally synchronized with
+              sub-millisecond accuracy.</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-orange">
+              <i class="fas fa-crosshairs"></i>
+            </div>
+            <h4>Centimeter-Level Localization</h4>
+            <p>GNSS-RTK positioning with spatial-temporal ICP alignment achieving an average RMSE of 0.2m across all
+              agents.</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-red">
+              <i class="fas fa-clock"></i>
+            </div>
+            <h4>Precise Synchronization</h4>
+            <p>PTP-based time synchronization and hardware triggering ensure globally consistent timestamps across all
+              platforms and sensors.</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-teal">
+              <i class="fas fa-chart-bar"></i>
+            </div>
+            <h4>Unified Benchmark</h4>
+            <p>Comprehensive benchmarks for detection, tracking, and motion prediction evaluating both perception
+              accuracy and communication efficiency.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ===== Visualizer / Data Browser ===== -->
+  <section class="section section-alt" id="visualizer">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Visualizer / Data Browser</h2>
+      <div class="section-divider"></div>
+
+      <div class="content has-text-centered mb-5">
+        <p>
+          Browse and visualize CooperScene data interactively using <a href="https://foxglove.dev/" target="_blank">Foxglove Studio</a>.
+          Our dataset is provided in the MCAP format, enabling rich visualization of multi-agent LiDAR point clouds,
+          camera images, 3D bounding boxes, and vehicle trajectories.
+        </p>
+      </div>
+
+      <div class="visualizer-video">
+        <video controls autoplay muted loop playsinline style="width: 100%; border-radius: 12px;">
+          <source src="static/take_6.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <div class="columns is-multiline mt-5">
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-blue">
+              <i class="fas fa-cloud-download-alt"></i>
+            </div>
+            <h4>MCAP Format</h4>
+            <p>Industry-standard container format for multimodal robotics data, compatible with Foxglove Studio and ROS
+              2.</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-green">
+              <i class="fas fa-users"></i>
+            </div>
+            <h4>Multi-Agent View</h4>
+            <p>Visualize data from all four agents simultaneously with synchronized playback across vehicles and
+              infrastructure.</p>
+          </div>
+        </div>
+        <div class="column is-4">
+          <div class="feature-card">
+            <div class="icon-wrapper bg-purple">
+              <i class="fas fa-wifi"></i>
+            </div>
+            <h4>C-V2X Overlay</h4>
+            <p>Inspect real-time communication metrics overlaid on sensor data to understand network performance in
+              context.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Dataset Format ===== -->
+  <section class="section" id="format">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Dataset Format</h2>
+      <div class="section-divider"></div>
+
+      <div class="content has-text-justified mb-5">
+        <p>
+          CooperScene is released in two formats: our <strong>native format</strong> with global ENU labels and per-agent metadata,
+          and an <strong>OPV2V-compatible format</strong> for direct use with cooperative perception frameworks such as
+          <a href="https://github.com/DerrickXuNu/OpenCOOD" target="_blank">OpenCOOD</a>.
+        </p>
+      </div>
+
+      <!-- Format Tabs -->
+      <div class="tabs-wrapper">
+        <div class="tabs is-centered is-boxed">
+          <ul>
+            <li class="is-active"><a data-tab="tab-native">CooperScene Native Format</a></li>
+            <li><a data-tab="tab-opv2v">OPV2V Format</a></li>
+          </ul>
+        </div>
+
+        <!-- Native Format -->
+        <div class="tab-content is-active" id="tab-native">
+          <div class="format-tree">
+            <span class="folder">CooperScene/</span><br>
+            &nbsp;&nbsp;<span class="folder">{scene_id}/</span> <span class="comment"># e.g., 1, 2, ..., 14</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">{agent_id}/</span> <span class="comment"># 0, 1, 2, 3</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">sensor/</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">lidar/</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.pcd</span> <span class="comment"># LiDAR point cloud</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">bbox/</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.json</span> <span class="comment"># Per-agent 3D bounding boxes</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">labels/</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.yaml</span> <span class="comment"># Per-agent labels (lidar &amp; ENU coords)</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">metadata.json</span> <span class="comment"># Per-frame pose, GNSS, C-V2X throughput</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">pairwise_icp.json</span> <span class="comment"># Pairwise ICP alignment results</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">raw_gnss.csv</span> <span class="comment"># Raw GNSS trajectory</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">labels_global/</span> <span class="comment"># Global labels in ENU coordinates</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.yaml</span> <span class="comment"># Merged multi-agent annotations with track IDs</span><br>
+          </div>
+
+          <h3 class="title is-5 mt-5 mb-3">Key Fields</h3>
+          <div class="columns">
+            <div class="column is-6">
+              <div class="metric-card">
+                <h5><i class="fas fa-cube mr-2" style="color: var(--accent-color);"></i> Global Labels</h5>
+                <p>Each frame has globally merged 3D bounding boxes in ENU coordinates with quaternion orientation,
+                  dimensions (l, w, h), object class, track ID, speed, and ego-agent visibility list.</p>
+              </div>
+            </div>
+            <div class="column is-6">
+              <div class="metric-card">
+                <h5><i class="fas fa-satellite-dish mr-2" style="color: var(--accent-color);"></i> Agent Metadata</h5>
+                <p>Per-frame quaternion pose, GNSS (lat/lon/alt), ENU position, and pair-wise C-V2X
+                  receive bytes and throughput for each agent link.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- OPV2V Format -->
+        <div class="tab-content" id="tab-opv2v">
+          <div class="content has-text-justified mb-4">
+            <p>
+              For compatibility with <a href="https://github.com/DerrickXuNu/OpenCOOD" target="_blank">OpenCOOD</a>
+              and other cooperative perception frameworks, we also provide the dataset in OPV2V format.
+              Each timestamp directory contains per-agent YAML files with pose and label information.
+            </p>
+          </div>
+          <div class="format-tree">
+            <span class="folder">CooperScene_OPV2V/</span><br>
+            &nbsp;&nbsp;<span class="folder">train/</span> <span class="comment"># Training split</span><br>
+            &nbsp;&nbsp;<span class="folder">validate/</span><br>
+            &nbsp;&nbsp;<span class="folder">test/</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">{scene_id}/</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">{timestamp}/</span> <span class="comment"># Globally synchronized frame</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{agent_id}.pcd</span> <span class="comment"># LiDAR point cloud</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{agent_id}.yaml</span> <span class="comment"># Pose, calibration, labels</span><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{agent_id}_camera0.png</span> <span class="comment"># Camera image</span><br>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Benchmark ===== -->
+  <section class="section section-alt" id="benchmark">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Benchmark</h2>
+      <div class="section-divider"></div>
+
+      <div class="content has-text-justified mb-5">
+        <p>
+          We benchmark state-of-the-art cooperative perception methods under five cooperative settings with varying
+          numbers of agents. All models are retrained on CooperScene using the
+          <a href="https://github.com/DerrickXuNu/OpenCOOD" target="_blank">OpenCOOD</a> framework.
+        </p>
+      </div>
+
+      <!-- Agent Configurations -->
+      <h3 class="title is-5 mb-3">Agent Configurations</h3>
+      <div class="agent-configs">
+        <div class="agent-config-card">
+          <div class="config-label">V+I</div>
+          <div class="config-desc">1 vehicle + infrastructure</div>
+        </div>
+        <div class="agent-config-card">
+          <div class="config-label">V+V</div>
+          <div class="config-desc">1 vehicle + 1 peer vehicle</div>
+        </div>
+        <div class="agent-config-card">
+          <div class="config-label">V+V+I</div>
+          <div class="config-desc">1 vehicle + 1 peer + infra</div>
+        </div>
+        <div class="agent-config-card">
+          <div class="config-label">V+2V</div>
+          <div class="config-desc">1 vehicle + 2 peer vehicles</div>
+        </div>
+        <div class="agent-config-card">
+          <div class="config-label">V+2V+I</div>
+          <div class="config-desc">All 3 vehicles + infra</div>
+        </div>
+      </div>
+
+      <!-- Benchmark Tabs -->
+      <div class="tabs-wrapper mt-5">
+        <div class="tabs is-centered is-boxed">
+          <ul>
+            <li class="is-active"><a data-tab="tab-detection">3D Object Detection</a></li>
+            <li><a data-tab="tab-multimodal">Multi-Modal Evaluation</a></li>
+            <li><a data-tab="tab-motion">Motion Prediction</a></li>
+          </ul>
+        </div>
+
+        <!-- Detection Benchmark -->
+        <div class="tab-content is-active" id="tab-detection">
+          <h4 class="title is-5">Cooperative 3D Object Detection (Ideal Network vs. C-V2X Network)</h4>
+          <div class="benchmark-table-wrapper">
+            <table class="benchmark-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">Model</th>
+                  <th rowspan="2">Agents</th>
+                  <th colspan="3">mAP (Ideal Network)</th>
+                  <th colspan="3">mAP (C-V2X Network)</th>
+                  <th rowspan="2">Shared Data (MB)</th>
+                  <th rowspan="2">Latency (ms)</th>
+                </tr>
+                <tr>
+                  <th>@0.3</th>
+                  <th>@0.5</th>
+                  <th>@0.7</th>
+                  <th>@0.3</th>
+                  <th>@0.5</th>
+                  <th>@0.7</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- V2VNet -->
+                <tr>
+                  <td class="method-name" rowspan="5">V2VNet</td>
+                  <td class="agent-config">V+I</td>
+                  <td>0.45</td>
+                  <td>0.30</td>
+                  <td>0.14</td>
+                  <td>0.36</td>
+                  <td>0.22</td>
+                  <td>0.10</td>
+                  <td>10.0</td>
+                  <td>64,349</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.38</td>
+                  <td>0.28</td>
+                  <td>0.13</td>
+                  <td>0.27</td>
+                  <td>0.16</td>
+                  <td>0.06</td>
+                  <td>10.0</td>
+                  <td>64,038</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V+I</td>
+                  <td>0.48</td>
+                  <td>0.39</td>
+                  <td>0.19</td>
+                  <td>0.33</td>
+                  <td>0.20</td>
+                  <td>0.10</td>
+                  <td>20.0</td>
+                  <td>76,879</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td>0.50</td>
+                  <td>0.50</td>
+                  <td>0.26</td>
+                  <td>0.27</td>
+                  <td>0.16</td>
+                  <td>0.06</td>
+                  <td>20.0</td>
+                  <td>72,773</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V+I</td>
+                  <td>0.63</td>
+                  <td class="best">0.56</td>
+                  <td class="best">0.29</td>
+                  <td>0.33</td>
+                  <td>0.19</td>
+                  <td>0.10</td>
+                  <td>30.0</td>
+                  <td>107,432</td>
+                </tr>
+                <!-- V2X-ViT -->
+                <tr>
+                  <td class="method-name" rowspan="5">V2X-ViT</td>
+                  <td class="agent-config">V+I</td>
+                  <td>0.38</td>
+                  <td>0.24</td>
+                  <td>0.11</td>
+                  <td>0.36</td>
+                  <td>0.24</td>
+                  <td>0.11</td>
+                  <td>0.338</td>
+                  <td>2,211</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.34</td>
+                  <td>0.28</td>
+                  <td>0.12</td>
+                  <td>0.28</td>
+                  <td>0.23</td>
+                  <td>0.10</td>
+                  <td>0.338</td>
+                  <td>1,305</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V+I</td>
+                  <td>0.40</td>
+                  <td>0.33</td>
+                  <td>0.14</td>
+                  <td>0.33</td>
+                  <td>0.28</td>
+                  <td>0.11</td>
+                  <td>0.667</td>
+                  <td>9,215</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td>0.52</td>
+                  <td>0.41</td>
+                  <td>0.17</td>
+                  <td>0.39</td>
+                  <td>0.31</td>
+                  <td>0.13</td>
+                  <td>0.667</td>
+                  <td>7,022</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V+I</td>
+                  <td>0.53</td>
+                  <td>0.42</td>
+                  <td>0.16</td>
+                  <td>0.37</td>
+                  <td>0.30</td>
+                  <td>0.12</td>
+                  <td>1.014</td>
+                  <td>5,976</td>
+                </tr>
+                <!-- V2VAM -->
+                <tr>
+                  <td class="method-name" rowspan="5">V2VAM</td>
+                  <td class="agent-config">V+I</td>
+                  <td>0.40</td>
+                  <td>0.27</td>
+                  <td>0.14</td>
+                  <td>0.37</td>
+                  <td>0.24</td>
+                  <td>0.13</td>
+                  <td>0.423</td>
+                  <td>2,264</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.44</td>
+                  <td>0.37</td>
+                  <td>0.18</td>
+                  <td>0.36</td>
+                  <td>0.28</td>
+                  <td>0.13</td>
+                  <td>0.423</td>
+                  <td>2,253</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V+I</td>
+                  <td>0.46</td>
+                  <td>0.38</td>
+                  <td>0.19</td>
+                  <td>0.36</td>
+                  <td>0.28</td>
+                  <td>0.13</td>
+                  <td>0.846</td>
+                  <td>10,301</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td class="best">0.63</td>
+                  <td>0.57</td>
+                  <td>0.33</td>
+                  <td>0.43</td>
+                  <td>0.35</td>
+                  <td>0.18</td>
+                  <td>0.846</td>
+                  <td>8,117</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V+I</td>
+                  <td class="best">0.63</td>
+                  <td>0.56</td>
+                  <td>0.34</td>
+                  <td>0.42</td>
+                  <td>0.32</td>
+                  <td>0.17</td>
+                  <td>1.269</td>
+                  <td>11,302</td>
+                </tr>
+                <!-- CoBEVT -->
+                <tr>
+                  <td class="method-name" rowspan="5">CoBEVT</td>
+                  <td class="agent-config">V+I</td>
+                  <td>0.37</td>
+                  <td>0.26</td>
+                  <td>0.14</td>
+                  <td>0.33</td>
+                  <td>0.23</td>
+                  <td>0.12</td>
+                  <td>0.500</td>
+                  <td>2,707</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.40</td>
+                  <td>0.33</td>
+                  <td>0.18</td>
+                  <td>0.32</td>
+                  <td>0.24</td>
+                  <td>0.13</td>
+                  <td>0.500</td>
+                  <td>2,393</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V+I</td>
+                  <td>0.44</td>
+                  <td>0.38</td>
+                  <td>0.21</td>
+                  <td>0.34</td>
+                  <td>0.27</td>
+                  <td>0.14</td>
+                  <td>1.000</td>
+                  <td>11,059</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td>0.56</td>
+                  <td>0.51</td>
+                  <td>0.32</td>
+                  <td>0.37</td>
+                  <td>0.31</td>
+                  <td>0.17</td>
+                  <td>1.000</td>
+                  <td>8,987</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V+I</td>
+                  <td>0.57</td>
+                  <td>0.53</td>
+                  <td>0.33</td>
+                  <td>0.36</td>
+                  <td>0.30</td>
+                  <td>0.17</td>
+                  <td>1.500</td>
+                  <td>12,381</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="has-text-grey is-size-7 mt-2">
+            <strong>Bold</strong> indicates best result per column within each agent configuration.
+            C-V2X Network results reflect real communication constraints with 3GPP-compliant radios.
+          </p>
+        </div>
+
+        <!-- Multi-Modal Evaluation -->
+        <div class="tab-content" id="tab-multimodal">
+          <h4 class="title is-5">Multi-Modality Evaluation (BEVFusion Backbone)</h4>
+          <p class="mb-4">Impact of sensing modalities under different cooperative agent configurations, built on the
+            BEVFusion framework with LiDAR-only and LiDAR+Camera configurations.</p>
+          <div class="benchmark-table-wrapper">
+            <table class="benchmark-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">Agent</th>
+                  <th rowspan="2">Modality</th>
+                  <th colspan="3">mAP (BEV)</th>
+                  <th colspan="3">mAP (3D)</th>
+                </tr>
+                <tr>
+                  <th>@0.3</th>
+                  <th>@0.5</th>
+                  <th>@0.7</th>
+                  <th>@0.3</th>
+                  <th>@0.5</th>
+                  <th>@0.7</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="agent-config" rowspan="2">V</td>
+                  <td>LiDAR</td>
+                  <td>0.63</td>
+                  <td>0.46</td>
+                  <td>0.29</td>
+                  <td>0.58</td>
+                  <td>0.36</td>
+                  <td>0.17</td>
+                </tr>
+                <tr>
+                  <td>LiDAR+Camera</td>
+                  <td class="best">0.64</td>
+                  <td>0.46</td>
+                  <td class="best">0.30</td>
+                  <td>0.58</td>
+                  <td>0.36</td>
+                  <td class="best">0.18</td>
+                </tr>
+                <tr>
+                  <td class="agent-config" rowspan="2">V+V</td>
+                  <td>LiDAR</td>
+                  <td>0.68</td>
+                  <td>0.57</td>
+                  <td>0.41</td>
+                  <td>0.62</td>
+                  <td>0.50</td>
+                  <td>0.19</td>
+                </tr>
+                <tr>
+                  <td>LiDAR+Camera</td>
+                  <td class="best">0.72</td>
+                  <td class="best">0.58</td>
+                  <td class="best">0.43</td>
+                  <td class="best">0.64</td>
+                  <td class="best">0.53</td>
+                  <td class="best">0.22</td>
+                </tr>
+                <tr>
+                  <td class="agent-config" rowspan="2">V+2V</td>
+                  <td>LiDAR</td>
+                  <td>0.78</td>
+                  <td>0.69</td>
+                  <td>0.51</td>
+                  <td>0.75</td>
+                  <td>0.61</td>
+                  <td>0.20</td>
+                </tr>
+                <tr>
+                  <td>LiDAR+Camera</td>
+                  <td class="best">0.79</td>
+                  <td class="best">0.70</td>
+                  <td class="best">0.54</td>
+                  <td class="best">0.77</td>
+                  <td class="best">0.64</td>
+                  <td class="best">0.32</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="has-text-grey is-size-7 mt-2">
+            Multi-modal feature fusion (LiDAR+Camera) consistently improves performance, especially with more
+            cooperative agents.
+          </p>
+        </div>
+
+        <!-- Motion Prediction -->
+        <div class="tab-content" id="tab-motion">
+          <h4 class="title is-5">Cooperative Motion Prediction (CMP)</h4>
+          <p class="mb-4">Motion prediction performance using the perception-prediction (P&amp;P) setting with the CMP
+            framework.</p>
+          <div class="benchmark-table-wrapper">
+            <table class="benchmark-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Agent</th>
+                  <th>minADE@1s &darr;</th>
+                  <th>minADE@3s &darr;</th>
+                  <th>minADE@5s &darr;</th>
+                  <th>minFDE@1s &darr;</th>
+                  <th>minFDE@3s &darr;</th>
+                  <th>minFDE@5s &darr;</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- V2VNet -->
+                <tr>
+                  <td class="method-name" rowspan="3">V2VNet</td>
+                  <td class="agent-config">V</td>
+                  <td>0.4895</td>
+                  <td>2.1648</td>
+                  <td>4.4538</td>
+                  <td class="best">0.9307</td>
+                  <td>5.7344</td>
+                  <td>10.6390</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.5424</td>
+                  <td>1.5611</td>
+                  <td>3.5591</td>
+                  <td>0.7528</td>
+                  <td>4.4820</td>
+                  <td>9.1667</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td>0.7610</td>
+                  <td>1.3796</td>
+                  <td>2.9096</td>
+                  <td>1.0079</td>
+                  <td>3.4762</td>
+                  <td>7.3660</td>
+                </tr>
+                <!-- CMP -->
+                <tr>
+                  <td class="method-name" rowspan="3">CMP</td>
+                  <td class="agent-config">V</td>
+                  <td>0.3851</td>
+                  <td>0.8421</td>
+                  <td>1.4022</td>
+                  <td>0.5786</td>
+                  <td>1.6125</td>
+                  <td>3.0712</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.4076</td>
+                  <td>0.9330</td>
+                  <td>1.6416</td>
+                  <td>0.6143</td>
+                  <td>1.8492</td>
+                  <td>3.7389</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td class="best">0.3214</td>
+                  <td class="best">0.7252</td>
+                  <td class="best">1.2893</td>
+                  <td>0.4723</td>
+                  <td class="best">1.4551</td>
+                  <td class="best">2.9716</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="has-text-grey is-size-7 mt-2">
+            Short-term predictions (1s) achieve strong accuracy, while long-horizon reasoning (5s) remains an open
+            research challenge.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Our Model ===== -->
+  <section class="section section-alt" id="model">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Our Model</h2>
+      <div class="section-divider"></div>
+
+      <div class="content has-text-centered">
+        <p class="is-size-5" style="color: #888;">TBD</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Paper & Github ===== -->
+  <section class="section" id="paper">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Paper &amp; Code</h2>
+      <div class="section-divider"></div>
+
+      <div class="columns is-centered">
+        <div class="column is-5">
+          <div class="download-card">
+            <div class="download-icon" style="color: var(--accent-color);">
+              <i class="fas fa-file-pdf"></i>
+            </div>
+            <h4>Paper</h4>
+            <p>CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization</p>
+            <a class="button is-link is-rounded" href="#" target="_blank">
+              <span class="icon"><i class="ai ai-arxiv"></i></span>
+              <span>arXiv (coming soon)</span>
+            </a>
+          </div>
+        </div>
+        <div class="column is-5">
+          <div class="download-card">
+            <div class="download-icon" style="color: var(--primary-color);">
+              <i class="fab fa-github"></i>
+            </div>
+            <h4>Development Kit</h4>
+            <p>Data loading, evaluation scripts, visualization tools, and baseline model configurations for
+              CooperScene.</p>
+            <a class="button is-dark is-rounded" href="#" target="_blank">
+              <span class="icon"><i class="fab fa-github"></i></span>
+              <span>GitHub (coming soon)</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- BibTeX -->
+      <h3 class="title is-5 mt-6 has-text-centered">BibTeX</h3>
+      <div class="bibtex-block">
+        <pre><code>TBD</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Download ===== -->
+  <section class="section section-alt" id="download">
+    <div class="container is-max-desktop">
+      <h2 class="title is-3 has-text-centered">Download</h2>
+      <div class="section-divider"></div>
+
+      <div class="content has-text-centered mb-5">
+        <p>
+          CooperScene is hosted on <strong>data.ucr.edu</strong>. We provide sample sequences for quick exploration and
+          the full dataset in manageable chunks.
+        </p>
+      </div>
+
+      <div class="columns is-centered">
+        <!-- Samples -->
+        <div class="column is-4">
+          <div class="download-card">
+            <div class="download-icon" style="color: #2ecc71;">
+              <i class="fas fa-flask"></i>
+            </div>
+            <h4>Samples</h4>
+            <p>A curated set of sample scenes for quick exploration. Includes multi-agent LiDAR, camera, annotations,
+              and C-V2X traces.</p>
+            <a class="button is-success is-rounded" href="https://data.ucr.edu" target="_blank">
+              <span class="icon"><i class="fas fa-download"></i></span>
+              <span>Download Samples</span>
+            </a>
+            <p class="is-size-7 has-text-grey mt-2">~2 GB</p>
+          </div>
+        </div>
+        <!-- Full Dataset -->
+        <div class="column is-4">
+          <div class="download-card">
+            <div class="download-icon" style="color: var(--accent-color);">
+              <i class="fas fa-database"></i>
+            </div>
+            <h4>Full Dataset</h4>
+            <p>Complete CooperScene dataset split into downloadable chunks. Includes train/val/test splits with all
+              modalities.</p>
+            <a class="button is-link is-rounded" href="https://data.ucr.edu" target="_blank">
+              <span class="icon"><i class="fas fa-download"></i></span>
+              <span>Download Full Dataset</span>
+            </a>
+            <p class="is-size-7 has-text-grey mt-2">~XX GB (in chunks)</p>
+          </div>
+        </div>
+        <!-- MCAP Files -->
+        <div class="column is-4">
+          <div class="download-card">
+            <div class="download-icon" style="color: #9b59b6;">
+              <i class="fas fa-play-circle"></i>
+            </div>
+            <h4>MCAP Visualizations</h4>
+            <p>Pre-packaged MCAP files for Foxglove Studio. Browse data interactively without processing raw files.</p>
+            <a class="button is-rounded" style="background-color: #9b59b6; color: #fff;" href="https://data.ucr.edu"
+              target="_blank">
+              <span class="icon"><i class="fas fa-download"></i></span>
+              <span>Download MCAP Files</span>
+            </a>
+            <p class="is-size-7 has-text-grey mt-2">~XX GB</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="notification is-info is-light mt-5">
+        <p>
+          <strong><i class="fas fa-info-circle mr-1"></i> Data Access:</strong>
+          The dataset is hosted on <a href="https://data.ucr.edu" target="_blank">data.ucr.edu</a>.
+          For access requests or questions, please contact
+          <a href="mailto:victor@ucr.edu">Victor</a> or reach out through the registered data website.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Footer ===== -->
+  <footer class="footer">
+    <div class="container has-text-centered">
+      <p>
+        &copy; 2026 CooperScene &mdash;
+        <a href="#">University of California, Riverside</a>
+      </p>
+      <p class="is-size-7 mt-2" style="color: rgba(255,255,255,0.5);">
+        Website template inspired by
+        <a href="https://nerfies.github.io" style="color: rgba(255,255,255,0.6);">Nerfies</a>.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="static/js/main.js"></script>
+
+</body>
+
+</html>
