@@ -92,6 +92,18 @@ body {
   color: rgba(255, 255, 255, 0.85);
 }
 
+.hero-video-section {
+  background: #000;
+  padding: 0;
+  line-height: 0;
+}
+
+.hero-video-section video {
+  max-height: 70vh;
+  object-fit: contain;
+  margin: 0 auto;
+}
+
 .publication-venue {
   display: inline-block;
   background: rgba(255, 255, 255, 0.15);

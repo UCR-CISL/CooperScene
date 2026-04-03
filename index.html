@@ -40,7 +40,6 @@
       <div id="mainNav" class="navbar-menu">
         <div class="navbar-end">
           <a class="navbar-item" href="#overview">Overview</a>
-          <a class="navbar-item" href="#visualizer">Visualizer</a>
           <a class="navbar-item" href="#format">Dataset Format</a>
           <a class="navbar-item" href="#benchmark">Benchmark</a>
           <a class="navbar-item" href="#model">Our Model</a>
@@ -52,18 +51,18 @@
   </nav>
 
   <!-- ===== Hero Section ===== -->
-  <section class="hero is-medium hero-section">
-    <div class="hero-body">
+  <section class="hero hero-section">
+    <div class="hero-body" style="padding-top: 1.5rem; padding-bottom: 1rem;">
       <div class="container has-text-centered">
-        <div class="publication-venue mb-3">ECCV 2026</div>
-        <h1 class="title is-1 publication-title mb-4">
+        <div class="publication-venue mb-2">ECCV 2026</div>
+        <h1 class="title is-2 publication-title mb-2">
           CooperScene
         </h1>
-        <h2 class="subtitle is-4 mb-4" style="max-width: 800px; margin: 0 auto;">
-          Multi-Modal Cooperative Autonomy Benchmark<br>with C-V2X Communication Characterization
+        <h2 class="subtitle is-5 mb-3" style="max-width: 800px; margin: 0 auto;">
+          Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
         </h2>
 
-        <div class="is-size-5 mb-3" style="color: rgba(255,255,255,0.9);">
+        <div class="is-size-6 mb-2" style="color: rgba(255,255,255,0.9);">
           <span class="author-block"><a href="#">Bo Wu</a><sup>1</sup>,</span>
           <span class="author-block"><a href="#">Ruoshen Mo</a><sup>1</sup>,</span>
           <span class="author-block"><a href="#">Justin Yue</a><sup>1</sup>,</span>
@@ -75,29 +74,39 @@
           <span class="author-block"><a href="#">Hang Qiu</a><sup>1</sup></span>
         </div>
 
-        <div class="affiliation-block mb-5">
+        <div class="affiliation-block mb-3">
           <span><sup>1</sup> University of California, Riverside</span>
         </div>
 
         <div class="hero-buttons">
-          <a class="button is-rounded is-dark is-medium" href="#paper">
+          <a class="button is-rounded is-dark" href="#paper">
             <span class="icon"><i class="fas fa-file-pdf"></i></span>
             <span>Paper</span>
           </a>
-          <a class="button is-rounded is-dark is-medium" href="#" target="_blank">
+          <a class="button is-rounded is-dark" href="#" target="_blank">
             <span class="icon"><i class="fab fa-github"></i></span>
             <span>Code</span>
           </a>
-          <a class="button is-rounded is-dark is-medium" href="#download">
+          <a class="button is-rounded is-dark" href="#download">
             <span class="icon"><i class="fas fa-database"></i></span>
             <span>Dataset</span>
           </a>
-          <a class="button is-rounded is-dark is-medium" href="#visualizer">
+          <a class="button is-rounded is-dark" href="#visualizer">
             <span class="icon"><i class="fas fa-eye"></i></span>
             <span>Visualizer</span>
           </a>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ===== Video Visualizer (hero banner) ===== -->
+  <section class="hero-video-section" id="visualizer">
+    <div class="container" style="max-width: 1200px;">
+      <video controls autoplay muted loop playsinline style="width: 100%; display: block;">
+        <source src="static/take_6.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+      </video>
     </div>
   </section>
 
@@ -211,61 +220,6 @@
     </div>
   </section>
 
-  <!-- ===== Visualizer / Data Browser ===== -->
-  <section class="section section-alt" id="visualizer">
-    <div class="container is-max-desktop">
-      <h2 class="title is-3 has-text-centered">Visualizer / Data Browser</h2>
-      <div class="section-divider"></div>
-
-      <div class="content has-text-centered mb-5">
-        <p>
-          Browse and visualize CooperScene data interactively using <a href="https://foxglove.dev/" target="_blank">Foxglove Studio</a>.
-          Our dataset is provided in the MCAP format, enabling rich visualization of multi-agent LiDAR point clouds,
-          camera images, 3D bounding boxes, and vehicle trajectories.
-        </p>
-      </div>
-
-      <div class="visualizer-video">
-        <video controls autoplay muted loop playsinline style="width: 100%; border-radius: 12px;">
-          <source src="static/take_6.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
-      </div>
-
-      <div class="columns is-multiline mt-5">
-        <div class="column is-4">
-          <div class="feature-card">
-            <div class="icon-wrapper bg-blue">
-              <i class="fas fa-cloud-download-alt"></i>
-            </div>
-            <h4>MCAP Format</h4>
-            <p>Industry-standard container format for multimodal robotics data, compatible with Foxglove Studio and ROS
-              2.</p>
-          </div>
-        </div>
-        <div class="column is-4">
-          <div class="feature-card">
-            <div class="icon-wrapper bg-green">
-              <i class="fas fa-users"></i>
-            </div>
-            <h4>Multi-Agent View</h4>
-            <p>Visualize data from all four agents simultaneously with synchronized playback across vehicles and
-              infrastructure.</p>
-          </div>
-        </div>
-        <div class="column is-4">
-          <div class="feature-card">
-            <div class="icon-wrapper bg-purple">
-              <i class="fas fa-wifi"></i>
-            </div>
-            <h4>C-V2X Overlay</h4>
-            <p>Inspect real-time communication metrics overlaid on sensor data to understand network performance in
-              context.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- ===== Dataset Format ===== -->
   <section class="section" id="format">
