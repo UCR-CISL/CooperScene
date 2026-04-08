@@ -1,6 +1,0 @@
-[submodule "OpenCOOD-modified"]
-	path = OpenCOOD-modified
-	url = https://github.com/UCR-CISL/OpenCOOD-modified.git
-[submodule "mmdetection3d"]
-	path = mmdetection3d
-	url = https://github.com/UCR-CISL/mmdetection3d-opv2v.git
