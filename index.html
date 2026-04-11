@@ -110,6 +110,47 @@
     </div>
   </section>
 
+  <!-- ===== Foxglove Viewer ===== -->
+  <section class="viz-section" id="visualizer">
+    <div class="container" style="max-width: 1200px;">
+      <h2 class="title is-3 has-text-centered">Visualizer</h2>
+      <div class="section-divider"></div>
+
+      <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+        <label style="font-weight: 600;">Change Scene:</label>
+        <div class="select">
+          <select id="scene-select">
+            <option value="https://data.ucr.edu/datasets/mcap-test-data-xwdf9e3mna/scene_6.mcap">scene_6.mcap</option>
+            <option value="https://data.ucr.edu/datasets/mcap-test-data-xwdf9e3mna/scene_7.mcap">scene_7.mcap</option>
+            <option value="https://data.ucr.edu/datasets/mcap-test-data-xwdf9e3mna/scene_8.mcap" selected>scene_8.mcap</option>
+            <option value="https://data.ucr.edu/datasets/mcap-test-data-xwdf9e3mna/scene_10.mcap">scene_10.mcap</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="foxglove-viewer" style="width: 100%; height: 80vh; border-radius: 8px; overflow: hidden;"></div>
+    </div>
+  </section>
+
+  <script type="module">
+    import { FoxgloveViewer } from 'https://cdn.jsdelivr.net/npm/@foxglove/embed/+esm';
+
+    const viewer = new FoxgloveViewer({
+      parent: document.getElementById('foxglove-viewer'),
+      orgSlug: undefined,
+      colorScheme: 'dark',
+    });
+   
+    const select = document.getElementById('scene-select');
+    viewer.setDataSource({ type: 'remote-file', urls: [select.value] });
+
+    document.getElementById('scene-select').addEventListener('change', function () {
+      const url = this.value;
+      if (!url) return;
+      viewer.setDataSource({ type: 'remote-file', urls: [url] });
+    });
+  </script>
+
   <!-- ===== Overview ===== -->
   <section class="section" id="overview">
     <div class="container is-max-desktop">
