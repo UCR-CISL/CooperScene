@@ -115,6 +115,7 @@
     <div class="container" style="max-width: 1200px;">
       <h2 class="title is-3 has-text-centered">Visualizer</h2>
       <div class="section-divider"></div>
+      <label style="font-weight: 450; text-align: center; display: block;">(Sign in with a .edu account)</label>
 
       <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
         <label style="font-weight: 600;">Change Scene:</label>
@@ -135,16 +136,31 @@
   <script type="module">
     import { FoxgloveViewer } from 'https://cdn.jsdelivr.net/npm/@foxglove/embed/+esm';
 
+    let LAYOUT;
+    try {
+      const response = await fetch('./Cooperscene.json');
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.url}`);
+      LAYOUT = await response.json();
+    } catch (err) {
+    }
+
     const viewer = new FoxgloveViewer({
       parent: document.getElementById('foxglove-viewer'),
       orgSlug: undefined,
       colorScheme: 'dark',
     });
-   
+
+    if (LAYOUT) {
+      try {
+        viewer.setLayoutData(LAYOUT);
+      } catch (err) {
+      }
+    }
+
     const select = document.getElementById('scene-select');
     viewer.setDataSource({ type: 'remote-file', urls: [select.value] });
 
-    document.getElementById('scene-select').addEventListener('change', function () {
+    select.addEventListener('change', function () {
       const url = this.value;
       if (!url) return;
       viewer.setDataSource({ type: 'remote-file', urls: [url] });
