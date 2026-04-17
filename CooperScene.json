@@ -3,13 +3,13 @@
     "3D!11iuw52": {
       "cameraState": {
         "perspective": true,
-        "distance": 391.7968039126611,
-        "phi": 30.769981162548056,
-        "thetaOffset": -127.28606027987242,
+        "distance": 79.89004262267402,
+        "phi": 0.00005731104651187513,
+        "thetaOffset": -80.37857831083035,
         "targetOffset": [
-          16.19361339840138,
-          -17.40813952905178,
-          -2.755797882917407e-15
+          8.79286618447008,
+          -0.7619484133340606,
+          11.865498925050158
         ],
         "target": [
           0,
@@ -91,6 +91,45 @@
             "#051af8ff",
             "#ffffffff"
           ]
+        },
+        "/bbox_global": {
+          "visible": true
+        },
+        "/1_Bbox": {
+          "visible": false
+        },
+        "/3_Bbox_track": {
+          "visible": false
+        },
+        "/2_Bbox_track": {
+          "visible": false
+        },
+        "/1_Bbox_track": {
+          "visible": false
+        },
+        "/0_Bbox": {
+          "visible": false
+        },
+        "/0_Bbox_track": {
+          "visible": false
+        },
+        "/3_Bbox_test": {
+          "visible": false
+        },
+        "/1_Bbox_test": {
+          "visible": false
+        },
+        "/2_Bbox_test": {
+          "visible": false
+        },
+        "/2_Bbox": {
+          "visible": false
+        },
+        "/3_Bbox": {
+          "visible": false
+        },
+        "/0_Bbox_test": {
+          "visible": false
         }
       },
       "layers": {
@@ -125,7 +164,8 @@
         "poseEstimateYDeviation": 0.5,
         "poseEstimateThetaDeviation": 0.26179939
       },
-      "imageMode": {}
+      "imageMode": {},
+      "foxglovePanelTitle": "Overlay_LiDAR"
     },
     "SourceInfo!445zpxe": {},
     "Image!9bu8rv": {
@@ -170,7 +210,8 @@
       },
       "imageMode": {
         "imageTopic": "/1_Camera"
-      }
+      },
+      "foxglovePanelTitle": "A_Camera"
     },
     "Image!nfgktv": {
       "cameraState": {
@@ -214,7 +255,8 @@
       },
       "imageMode": {
         "imageTopic": "/2_Camera"
-      }
+      },
+      "foxglovePanelTitle": "B_Camera"
     },
     "Image!4auoaz9": {
       "cameraState": {
@@ -258,18 +300,19 @@
       },
       "imageMode": {
         "imageTopic": "/3_Camera"
-      }
+      },
+      "foxglovePanelTitle": "C_Camera"
     },
     "3D!vl57sk": {
       "cameraState": {
         "perspective": true,
-        "distance": 72.10076346746803,
-        "phi": 59.99999999999978,
-        "thetaOffset": 44.99999999999997,
+        "distance": 72.10076346746794,
+        "phi": 59.999999999999794,
+        "thetaOffset": 45.00000000000001,
         "targetOffset": [
-          0.02428502832587008,
-          0.024285028325870095,
-          0
+          0.5414562452457249,
+          -0.14810537731408166,
+          -2.7066887584472493e-17
         ],
         "target": [
           0,
@@ -353,7 +396,8 @@
         "poseEstimateYDeviation": 0.5,
         "poseEstimateThetaDeviation": 0.26179939
       },
-      "imageMode": {}
+      "imageMode": {},
+      "foxglovePanelTitle": "I_LiDAR"
     },
     "3D!3d83o87": {
       "cameraState": {
@@ -449,7 +493,8 @@
         "poseEstimateYDeviation": 0.5,
         "poseEstimateThetaDeviation": 0.26179939
       },
-      "imageMode": {}
+      "imageMode": {},
+      "foxglovePanelTitle": "A_LIDAR"
     },
     "3D!335p7mx": {
       "cameraState": {
@@ -544,17 +589,18 @@
         "poseEstimateYDeviation": 0.5,
         "poseEstimateThetaDeviation": 0.26179939
       },
-      "imageMode": {}
+      "imageMode": {},
+      "foxglovePanelTitle": "B_LIDAR"
     },
     "3D!4a9inbn": {
       "cameraState": {
         "perspective": true,
-        "distance": 55.79019635031875,
+        "distance": 55.79019635031871,
         "phi": 59.9999999999995,
-        "thetaOffset": 44.999999999999915,
+        "thetaOffset": 44.99999999999994,
         "targetOffset": [
-          0.05787661879782527,
-          0.08349138800320884,
+          0.23943850976759634,
+          -0.09807050296656189,
           0
         ],
         "target": [
@@ -646,7 +692,178 @@
         "poseEstimateYDeviation": 0.5,
         "poseEstimateThetaDeviation": 0.26179939
       },
-      "imageMode": {}
+      "imageMode": {},
+      "foxglovePanelTitle": "C_LIDAR"
+    },
+    "Plot!2ztg7le": {
+      "paths": [
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/0_Throughput_from_agent_1.x",
+          "enabled": true,
+          "color": "#f23c00",
+          "lineSize": 2,
+          "label": "A->I",
+          "showLine": true
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/0_Throughput_from_agent_2.x",
+          "enabled": true,
+          "color": "#36b145",
+          "lineSize": 2,
+          "label": "B->I"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/0_Throughput_from_agent_3.x",
+          "enabled": true,
+          "color": "#0048ff",
+          "lineSize": 2,
+          "label": "C->I"
+        }
+      ],
+      "minYValue": 0,
+      "maxYValue": 3,
+      "showXAxisLabels": false,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "foxglovePanelTitle": "I_Throughput",
+      "timeWindowMode": "sliding",
+      "followingViewWidth": 1,
+      "playbackBarPosition": "center"
+    },
+    "Plot!4f7kka": {
+      "paths": [
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/1_Throughput_from_agent_0.x",
+          "enabled": true,
+          "color": "#fa00e1",
+          "label": "I->A",
+          "lineSize": 2
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/1_Throughput_from_agent_2.x",
+          "enabled": true,
+          "color": "#36b145",
+          "label": "B->A",
+          "lineSize": 2
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/1_Throughput_from_agent_3.x",
+          "enabled": true,
+          "color": "#0048ff",
+          "label": "C->A",
+          "lineSize": 2
+        }
+      ],
+      "minYValue": 0,
+      "maxYValue": 3,
+      "showXAxisLabels": false,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "timeWindowMode": "sliding",
+      "followingViewWidth": 1,
+      "playbackBarPosition": "center",
+      "foxglovePanelTitle": "A_Throughput"
+    },
+    "Plot!3kw4j6v": {
+      "paths": [
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/1_Throughput_from_agent_0.x",
+          "enabled": true,
+          "color": "#fa00e1",
+          "label": "I->B",
+          "lineSize": 2,
+          "showLine": true
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/2_Throughput_from_agent_1.x",
+          "enabled": true,
+          "color": "#f23c00",
+          "lineSize": 2,
+          "label": "A->B"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/2_Throughput_from_agent_3.x",
+          "enabled": true,
+          "color": "#0048ff",
+          "lineSize": 0,
+          "label": "C->B"
+        }
+      ],
+      "minYValue": 0,
+      "maxYValue": 3,
+      "showXAxisLabels": false,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "timeWindowMode": "sliding",
+      "followingViewWidth": 1,
+      "playbackBarPosition": "center",
+      "foxglovePanelTitle": "B_Throughput"
+    },
+    "Plot!2shmbeo": {
+      "paths": [
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/3_Throughput_from_agent_0.x",
+          "enabled": true,
+          "color": "#fa00e1",
+          "label": "I->C",
+          "lineSize": 2
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/3_Throughput_from_agent_1.x",
+          "enabled": true,
+          "color": "#f23c00",
+          "label": "A->C",
+          "lineSize": 2
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/3_Throughput_from_agent_2.x",
+          "enabled": true,
+          "color": "#36b145",
+          "label": "B->C",
+          "lineSize": 2
+        }
+      ],
+      "minYValue": 0,
+      "maxYValue": 3,
+      "showXAxisLabels": false,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "timeWindowMode": "sliding",
+      "followingViewWidth": 1,
+      "playbackBarPosition": "center",
+      "foxglovePanelTitle": "C_Throughput"
     }
   },
   "globalVariables": {},
@@ -656,43 +873,62 @@
   },
   "layout": {
     "first": {
-      "first": "3D!11iuw52",
+      "first": {
+        "first": "3D!11iuw52",
+        "second": {
+          "first": {
+            "first": "SourceInfo!445zpxe",
+            "second": "Image!9bu8rv",
+            "direction": "column",
+            "splitPercentage": 56.07843137254902
+          },
+          "second": {
+            "first": "Image!nfgktv",
+            "second": "Image!4auoaz9",
+            "direction": "column"
+          },
+          "direction": "column",
+          "splitPercentage": 53.276047261009666
+        },
+        "direction": "row",
+        "splitPercentage": 73.76801725422712
+      },
       "second": {
         "first": {
-          "first": "SourceInfo!445zpxe",
-          "second": "Image!9bu8rv",
+          "first": "3D!vl57sk",
+          "second": "3D!3d83o87",
           "direction": "column",
-          "splitPercentage": 56.07843137254902
+          "splitPercentage": 55.77299412915851
         },
         "second": {
-          "first": "Image!nfgktv",
-          "second": "Image!4auoaz9",
+          "first": "3D!335p7mx",
+          "second": "3D!4a9inbn",
           "direction": "column",
-          "splitPercentage": 49.88864142538974
+          "splitPercentage": 49.5535714285714
         },
         "direction": "column",
-        "splitPercentage": 53.18039624608968
+        "splitPercentage": 53.284671532846716
       },
       "direction": "row",
-      "splitPercentage": 73.76801725422712
+      "splitPercentage": 75.4050925925926
     },
     "second": {
       "first": {
-        "first": "3D!vl57sk",
-        "second": "3D!3d83o87",
+        "first": "Plot!2ztg7le",
+        "second": "Plot!4f7kka",
         "direction": "column",
-        "splitPercentage": 55.77299412915851
+        "splitPercentage": 59.72073039742213
       },
       "second": {
-        "first": "3D!335p7mx",
-        "second": "3D!4a9inbn",
+        "first": "Plot!3kw4j6v",
+        "second": "Plot!2shmbeo",
         "direction": "column",
-        "splitPercentage": 49.5535714285714
+        "splitPercentage": 49.77064220183486
       },
       "direction": "column",
-      "splitPercentage": 53.284671532846716
+      "splitPercentage": 53.16863587540279
     },
     "direction": "row",
-    "splitPercentage": 75.4050925925926
+    "splitPercentage": 79.64362850971922
   }
 }
