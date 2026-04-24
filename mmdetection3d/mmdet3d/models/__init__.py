@@ -14,3 +14,4 @@ from .segmentors import *  # noqa: F401,F403
 from .test_time_augs import *  # noqa: F401,F403
 from .utils import *  # noqa: F401,F403
 from .voxel_encoders import *  # noqa: F401,F403
+from .cooperative_modules import *  # noqa: F401,F403

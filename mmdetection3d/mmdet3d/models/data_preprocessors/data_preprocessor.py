@@ -178,6 +178,25 @@ class Det3DDataPreprocessor(DetDataPreprocessor):
                 voxel_dict = self.voxelize(inputs['points'], data_samples)
                 batch_inputs['voxels'] = voxel_dict
 
+        # Pass through cooperative perception fields
+        for key in ('record_len', 'pairwise_t_matrix', 'coop_mask',
+                     'prior_encoding'):
+            if key in inputs:
+                val = inputs[key]
+                if isinstance(val, (list, tuple)):
+                    batch_inputs[key] = torch.stack(val)
+                else:
+                    batch_inputs[key] = val
+
+        # Intermediate fusion: voxelize per-CAV point clouds separately
+        # so each CAV gets its own "batch index" in the voxel coords.
+        # This makes the backbone produce (sum(record_len), C, H, W)
+        # instead of (B, C, H, W).
+        if 'points_per_cav' in inputs and self.voxel:
+            all_cav_points = inputs['points_per_cav']  # list of lists
+            cav_voxel_dict = self._voxelize_per_cav(all_cav_points)
+            batch_inputs['voxels'] = cav_voxel_dict
+
         if 'imgs' in inputs:
             imgs = inputs['imgs']
 
@@ -465,6 +484,56 @@ class Det3DDataPreprocessor(DetDataPreprocessor):
         voxel_dict['voxels'] = voxels
         voxel_dict['coors'] = coors
 
+        return voxel_dict
+
+    def _voxelize_per_cav(self, all_cav_points) -> Dict[str, Tensor]:
+        """Voxelize per-CAV point clouds for intermediate fusion.
+
+        Each CAV's point cloud is voxelized separately and assigned a
+        unique batch index. This way the backbone produces
+        (sum(record_len), C, H, W) feature maps.
+
+        Args:
+            all_cav_points: List (batch) of lists (per-CAV) of Tensors.
+                all_cav_points[b] = [cav0_pts, cav1_pts, ...]
+
+        Returns:
+            Dict with 'voxels', 'coors', 'num_points', 'voxel_centers'.
+        """
+        voxels, coors, num_points, voxel_centers = [], [], [], []
+        cav_idx = 0  # global CAV index across the batch
+
+        for batch_cav_list in all_cav_points:
+            # batch_cav_list is a list of tensors, one per CAV
+            for cav_pts in batch_cav_list:
+                if not isinstance(cav_pts, Tensor):
+                    cav_pts = torch.from_numpy(cav_pts).float()
+                cav_pts = cav_pts.to(self.device)
+                if cav_pts.shape[0] == 0:
+                    cav_idx += 1
+                    continue
+                res_voxels, res_coors, res_num_points = \
+                    self.voxel_layer(cav_pts)
+                res_voxel_centers = (
+                    res_coors[:, [2, 1, 0]] + 0.5
+                ) * res_voxels.new_tensor(
+                    self.voxel_layer.voxel_size
+                ) + res_voxels.new_tensor(
+                    self.voxel_layer.point_cloud_range[0:3])
+                # batch index = cav_idx (not sample index!)
+                res_coors = F.pad(
+                    res_coors, (1, 0), mode='constant', value=cav_idx)
+                voxels.append(res_voxels)
+                coors.append(res_coors)
+                num_points.append(res_num_points)
+                voxel_centers.append(res_voxel_centers)
+                cav_idx += 1
+
+        voxel_dict = dict()
+        voxel_dict['voxels'] = torch.cat(voxels, dim=0)
+        voxel_dict['coors'] = torch.cat(coors, dim=0)
+        voxel_dict['num_points'] = torch.cat(num_points, dim=0)
+        voxel_dict['voxel_centers'] = torch.cat(voxel_centers, dim=0)
         return voxel_dict
 
     def get_voxel_seg(self, res_coors: Tensor,

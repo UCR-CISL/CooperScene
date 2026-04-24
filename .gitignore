@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.so
+
+work_dirs/
+**/work_dirs/
+
+.vscode/
+.idea/
+.DS_Store

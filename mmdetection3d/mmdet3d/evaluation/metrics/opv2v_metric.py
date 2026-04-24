@@ -290,7 +290,7 @@ class OPV2VMetric(BaseMetric):
             result['pred_labels'] = pred_labels
             result['sample_idx'] = data_sample['sample_idx']
 
-            if 'eval_ann_info' in data_sample:
+            if 'eval_ann_info' in data_sample and data_sample['eval_ann_info'] is not None:
                 gt_bboxes_raw = data_sample['eval_ann_info']['gt_bboxes_3d']
                 gt_labels_raw = data_sample['eval_ann_info']['gt_labels_3d']
             elif 'gt_instances_3d' in data_sample:
