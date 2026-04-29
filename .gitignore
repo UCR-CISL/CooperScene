@@ -5,6 +5,9 @@ __pycache__/
 
 work_dirs/
 **/work_dirs/
+nohup.out
+*.log
+ckpts/
 
 .vscode/
 .idea/
