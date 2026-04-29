@@ -174,7 +174,7 @@ class Det3DDataPreprocessor(DetDataPreprocessor):
         if 'points' in inputs:
             batch_inputs['points'] = inputs['points']
 
-            if self.voxel:
+            if self.voxel and 'points_per_cav' not in inputs:
                 voxel_dict = self.voxelize(inputs['points'], data_samples)
                 batch_inputs['voxels'] = voxel_dict
 

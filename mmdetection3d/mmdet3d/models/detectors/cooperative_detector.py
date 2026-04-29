@@ -144,13 +144,13 @@ class CooperativeDetector(Base3DDetector):
             x = x[-1] if len(x) == 1 else torch.cat(
                 [xi for xi in x], dim=1)
 
+        if self.shrink_conv is not None:
+            x = self.shrink_conv(x)
+
         if (self.fusion_type == 'early' or record_len is None or
                 (record_len.max().item() <= 1 if torch.is_tensor(record_len)
                  else max(record_len) <= 1)):
             return x
-
-        if self.shrink_conv is not None:
-            x = self.shrink_conv(x)
 
         if self.compressor is not None:
             x = self.compressor(x)

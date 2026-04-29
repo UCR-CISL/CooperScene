@@ -18,9 +18,45 @@ from typing import List, Optional, Union
 import numpy as np
 import torch
 from mmcv import BaseTransform
+from mmengine.registry import FUNCTIONS
 
 from mmdet3d.registry import TRANSFORMS
 from mmdet3d.structures.points import BasePoints, get_points_type
+
+
+@FUNCTIONS.register_module()
+def cooperative_collate(data_batch):
+    """Collate for cooperative perception.
+
+    Variable-size per-sample fields (``points``, ``points_per_cav``) are
+    kept as a Python list across the batch. Fixed-shape fields
+    (``record_len``, ``pairwise_t_matrix``, ``coop_mask``) are stacked
+    into a batched tensor. ``data_samples`` is collected as a list. Any
+    other field falls back to a simple stack, else list.
+    """
+    inputs_list = [item['inputs'] for item in data_batch]
+    samples_list = [item['data_samples'] for item in data_batch]
+
+    keys = set()
+    for inp in inputs_list:
+        keys.update(inp.keys())
+
+    batched_inputs = {}
+    for k in keys:
+        vals = [inp.get(k) for inp in inputs_list]
+        if k in ('points', 'points_per_cav'):
+            batched_inputs[k] = vals
+        elif k in ('record_len', 'pairwise_t_matrix', 'coop_mask'):
+            tensors = [v if torch.is_tensor(v) else torch.as_tensor(v)
+                       for v in vals]
+            batched_inputs[k] = torch.stack(tensors)
+        else:
+            try:
+                batched_inputs[k] = torch.stack(vals)
+            except (RuntimeError, TypeError):
+                batched_inputs[k] = vals
+
+    return dict(inputs=batched_inputs, data_samples=samples_list)
 
 
 @TRANSFORMS.register_module()

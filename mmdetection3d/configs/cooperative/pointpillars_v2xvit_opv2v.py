@@ -140,6 +140,7 @@ test_pipeline = [
 
 train_dataloader = dict(
     batch_size=4,
+    collate_fn=dict(type='cooperative_collate'),
     num_workers=4,
     sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
@@ -153,6 +154,7 @@ train_dataloader = dict(
 
 val_dataloader = dict(
     batch_size=4,
+    collate_fn=dict(type='cooperative_collate'),
     num_workers=4,
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
