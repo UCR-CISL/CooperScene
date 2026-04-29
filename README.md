@@ -18,36 +18,9 @@ including intersections, highway ramps, and parking areas.
 
 ---
 
-## Repository Structure
-
-```
-CooperScene/
-├── projects/
-│   ├── coop/                          # Cooperative 3D detection (CoBEVT, V2VAM, V2VNet, V2X-ViT)
-│   │   ├── configs/opv2v/             # Training configs
-│   │   └── mmdet3d_plugin/            # Datasets, models, metric, preprocessor
-│   └── BEVFusion/                     # Multi-modal cooperative perception (LiDAR / LiDAR+Camera)
-│       ├── configs/                   # BEVFusion configs (single-agent, coop, CooperScene)
-│       └── bevfusion/                 # Plugin code + CUDA ops
-├── tools/
-│   ├── train.py / test.py             # Entry points (mmengine runner)
-│   └── dataset_converters/            # OPV2V → mmdet3d-pkl converters
-├── OpenCOOD-modified/                 # Original OpenCOOD pipeline (separate baseline)
-├── docs/                              # Long-form documentation
-│   ├── data_preparation.md
-│   └── training.md
-├── requirements.txt
-└── README.md
-```
-
-`projects/` follows the **mmdet3d plugin** convention (à la UniAD / FusionAD):
-no fork of `mmdet3d`, custom code is loaded by each config's `custom_imports`.
-
----
-
 ## Quick Start
 
-### Docker (recommended)
+### Docker
 
 A pre-built image with all Python + CUDA dependencies (PyTorch 2.1.1, mmdet3d 1.4,
 mmcv 2.1, spconv 2.x, etc.):
