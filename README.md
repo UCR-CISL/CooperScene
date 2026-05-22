@@ -1,8 +1,8 @@
 # CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
 
-[**arXiv**](TBD) &nbsp;|&nbsp; [**Project Website**](TBD) &nbsp;|&nbsp; [**Demo video**](assets/take_10.mp4)
+[**arXiv**](TBD) &nbsp;|&nbsp; [**Project Website**](TBD) &nbsp;|&nbsp; [**Full demo video (mp4)**](assets/take_10.mp4)
 
-<video src="assets/take_10.mp4" controls muted width="100%"></video>
+![Demo](assets/take_10.gif)
 
 CooperScene is the first real-world, multi-agent, multi-modal cooperative autonomy
 dataset with C-V2X communication characterization. It features three connected
