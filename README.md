@@ -1,5 +1,9 @@
 # CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
 
+[**arXiv**](TBD) &nbsp;|&nbsp; [**Project Website**](TBD) &nbsp;|&nbsp; [**Demo video**](assets/take_10.mp4)
+
+<video src="assets/take_10.mp4" controls muted width="100%"></video>
+
 CooperScene is the first real-world, multi-agent, multi-modal cooperative autonomy
 dataset with C-V2X communication characterization. It features three connected
 autonomous vehicles (CAVs) and one instrumented infrastructure roadside unit (RSU),
@@ -40,45 +44,112 @@ docker run --gpus all -it --rm \
 ### Build BEVFusion CUDA ops (one-time)
 
 ```bash
-cd projects/BEVFusion && python setup.py develop && cd ../..
+cd models/bevfusion && python setup.py develop && cd ../..
 ```
 
-This compiles `bev_pool_ext` and the voxel ops needed by the BEVFusion configs.
-Cooperative configs under `projects/coop/` do **not** require this step.
+This compiles `bev_pool_ext` and the voxel ops needed by the BEVFusion configs
+under `configs/bevfusion/`. The other cooperative configs (`configs/cobevt/`,
+`configs/v2vam/`, `configs/v2vnet/`, `configs/v2xvit/`) do **not** require
+this step.
 
 ---
 
-## Data Downloading
+## Data Download & Preparation
 
-*TBD* — public release link will be posted here. The benchmark currently consumes
-OPV2V-format raw scenes (`.pcd` LiDAR + `.png` images + per-frame `.yaml` poses);
-CooperScene shares the same format.
+### Download
 
----
+*TBD* — public release link will be posted at
+<https://data.ucr.edu/datasets/cooperscene/>.
 
-## Data Preparation
+The benchmark ships in **OPV2V format**:
+`<split>/<take>/<agent>/<frame>.{pcd,yaml}` plus `<frame>_camera0.png` on
+camera-equipped agents. Each take has **4 agents**: agent `0` is LiDAR-only;
+agents `1–3` also carry a front camera.
+
+```
+cooperscene/
+├── train/
+│   ├── 1/                    # take id
+│   │   ├── 0/                # agent 0 — LiDAR only
+│   │   │   ├── 481260.pcd
+│   │   │   ├── 481260.yaml   # pose + GT bboxes
+│   │   │   └── ...
+│   │   ├── 1/                # agent 1 — LiDAR + front camera
+│   │   │   ├── 481260.pcd
+│   │   │   ├── 481260.yaml
+│   │   │   └── 481260_camera0.png
+│   │   ├── 2/  3/            # other agents — same layout as agent 1
+│   ├── 2/  3/  ...           # other takes — same 4-agent layout
+├── validate/
+└── test/
+```
+
+A **mini set** of 180 contiguous frames (120 train / 30 validate / 30 test,
+all from one take, 4 agents aligned) is shipped alongside the full release for
+pipeline smoke tests — same `<split>/<take>/<agent>/<frame>` layout, rooted at
+`cooperscene_mini/`.
+
+### Generate `.pkl` index files (and `.bin` point clouds)
 
 mmdet3d-style `.pkl` info files are generated from raw OPV2V/CooperScene scenes
 by the converters under `tools/dataset_converters/`.
 
-See **[docs/data_preparation.md](docs/data_preparation.md)** for the full
-walkthrough (expected directory layout, single-agent vs. cooperative info,
-flag reference, output schema).
+**Cooperative models** (CoBEVT / V2VAM / V2VNet / V2X-ViT / coop BEVFusion):
+
+```bash
+python tools/dataset_converters/opv2v_cooper_converter.py \
+    --data-root /workspace/cooperscene_mini \
+    --out-dir   /workspace/cooperscene_mini \
+    --convert-pcd
+```
+
+**Single-agent BEVFusion** (lidar / lidar-cam):
+
+```bash
+python tools/dataset_converters/opv2v_converter.py \
+    --data-root /workspace/cooperscene_mini \
+    --out-dir   /workspace/cooperscene_mini \
+    --convert-pcd
+```
+
+`--data-root` must contain `train/`, `validate/`, `test/`. Set `--out-dir`
+equal to `--data-root` so configs find the `.pkl` files. Pass `--convert-pcd`
+on the first run (writes `.bin` next to each `.pcd`); drop it on later runs.
 
 ---
 
-## Train Your Model
+## Training & Inference
 
-Cooperative 3D detection (CoBEVT / V2VAM / V2VNet / V2X-ViT) and BEVFusion
-multi-modal training/testing instructions live in
-**[docs/training.md](docs/training.md)**.
+### Configs
 
-The doc covers:
-- Training each of the four cooperative models on OPV2V
-- BEVFusion training pipeline (single-agent → coop, LiDAR → LiDAR+Camera, OPV2V → CooperScene transfer)
-- Single-GPU / multi-GPU launches
-- Testing & metric reporting (`AP_BEV@{0.3,0.5,0.7}`, `AP_3D@{0.3,0.5,0.7}`)
-- Common overrides: AMP, batch size, resume
+All configs live under `configs/`:
+
+```
+configs/
+├── bevfusion/   # BEVFusion (single-agent + cooperative)
+├── cobevt/      # PointPillars + CoBEVT
+├── v2vam/       # PointPillars + V2VAM
+├── v2vnet/      # PointPillars + V2VNet
+└── v2xvit/      # PointPillars + V2X-ViT
+```
+
+Each method's `_base_` (runtime defaults) is `configs/_base_/default_runtime.py`.
+
+### Train
+
+```bash
+python tools/train.py configs/cobevt/pointpillars_cobevt.py
+```
+
+Swap in any other config under `configs/`. Checkpoints and logs land under
+`work_dirs/<config_stem>/`.
+
+### Inference
+
+```bash
+python tools/test.py configs/cobevt/pointpillars_cobevt.py \
+    work_dirs/pointpillars_cobevt/epoch_90.pth
+```
 
 ---
 
