@@ -120,7 +120,9 @@ body {
 
 .viz-section #viz-video-state,
 .viz-section #viz-foxglove-state {
-  margin-top: -2rem;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
 }
 
 .viz-section #viz-video {
