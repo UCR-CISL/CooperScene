@@ -104,6 +104,30 @@ body {
   margin: 0 auto;
 }
 
+.viz-section {
+  background: #fff;
+  padding: 1.5rem 0 2rem;
+  color: var(--text-color);
+}
+
+.viz-section .title {
+  color: var(--primary-color);
+}
+
+.viz-section .section-divider {
+  margin-bottom: 0;
+}
+
+.viz-section #viz-video-state,
+.viz-section #viz-foxglove-state {
+  margin-top: -2rem;
+}
+
+.viz-section #viz-video {
+  max-height: 70vh;
+  object-fit: contain;
+}
+
 .publication-venue {
   display: inline-block;
   background: rgba(255, 255, 255, 0.15);

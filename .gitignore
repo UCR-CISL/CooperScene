@@ -3,3 +3,10 @@ _site/
 .jekyll-cache/
 .jekyll-metadata
 vendor/
+
+# Leftovers from plugin-refactor branch runs — should never appear on web.
+models/
+work_dirs/
+__pycache__/
+*.pyc
+*.log

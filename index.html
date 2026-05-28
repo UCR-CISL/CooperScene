@@ -100,75 +100,94 @@
     </div>
   </section>
 
-  <!-- ===== Video Visualizer (hero banner) ===== -->
-  <section class="hero-video-section" id="visualizer">
-    <div class="container" style="max-width: 1200px;">
-      <video controls autoplay muted loop playsinline style="width: 100%; display: block;">
-        <source src="static/take_6.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-    </div>
-  </section>
-
-  <!-- ===== Foxglove Viewer ===== -->
+  <!-- ===== Visualizer (mp4 by default, swaps to Foxglove on demand) ===== -->
   <section class="viz-section" id="visualizer">
     <div class="container" style="max-width: 1200px;">
-      <h2 class="title is-3 has-text-centered">Visualizer</h2>
+      <h2 id="viz-title" class="title is-3 has-text-centered">Dataset Preview</h2>
       <div class="section-divider"></div>
-      <label style="font-weight: 450; text-align: center; display: block;">(Sign in with a .edu account)</label>
 
-      <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
-        <label style="font-weight: 600;">Change Scene:</label>
-        <div class="select">
-          <select id="scene-select">
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_1.mcap">scene_1.mcap</option>
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_3.mcap">scene_3.mcap</option>
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_5.mcap">scene_5.mcap</option>
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_6.mcap">scene_6.mcap</option>
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_7.mcap">scene_7.mcap</option>
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_8.mcap">scene_8.mcap</option>
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_9.mcap" selected>scene_9.mcap</option>
-            <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_10.mcap">scene_10.mcap</option>
-          </select>
+      <!-- Default state: mp4 preview + Visualize More button -->
+      <div id="viz-video-state">
+        <video id="viz-video" controls autoplay muted loop playsinline
+               style="width: 80vw; max-width: 1500px; height: 55vh;
+                      margin-left: calc(50% - 40vw); margin-right: calc(50% - 40vw);
+                      display: block; border-radius: 8px; object-fit: contain;">
+          <source src="static/take_6.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+        <div style="text-align: center; margin-top: 1rem;">
+          <button id="viz-more-btn" class="button is-rounded is-dark">
+            <span class="icon"><i class="fas fa-eye"></i></span>
+            <span>Visualize More</span>
+          </button>
         </div>
       </div>
 
-      <div id="foxglove-viewer" style="width: 100%; height: 80vh; border-radius: 8px; overflow: hidden;"></div>
+      <!-- On-demand state: Foxglove viewer -->
+      <div id="viz-foxglove-state" style="display: none;">
+        <label style="font-weight: 450; text-align: center; display: block;">(Sign in with a .edu account)</label>
+
+        <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+          <label style="font-weight: 600;">Change Scene:</label>
+          <div class="select">
+            <select id="scene-select">
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_1.mcap">scene_1.mcap</option>
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_3.mcap">scene_3.mcap</option>
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_5.mcap">scene_5.mcap</option>
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_6.mcap">scene_6.mcap</option>
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_7.mcap">scene_7.mcap</option>
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_8.mcap">scene_8.mcap</option>
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_9.mcap" selected>scene_9.mcap</option>
+              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_10.mcap">scene_10.mcap</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="foxglove-viewer"
+             style="width: 80vw; max-width: 1500px; height: 55vh; margin-left: calc(50% - 40vw); margin-right: calc(50% - 40vw); border-radius: 8px; overflow: hidden;"></div>
+      </div>
     </div>
   </section>
 
   <script type="module">
-    import { FoxgloveViewer } from 'https://cdn.jsdelivr.net/npm/@foxglove/embed/+esm';
+    // Lazy-load Foxglove only when the user actually wants the interactive viewer.
+    const moreBtn = document.getElementById('viz-more-btn');
+    moreBtn.addEventListener('click', async () => {
+      const videoState = document.getElementById('viz-video-state');
+      const foxState = document.getElementById('viz-foxglove-state');
+      const video = document.getElementById('viz-video');
 
-    let LAYOUT;
-    try {
-      const response = await fetch('./Cooperscene.json');
-      if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.url}`);
-      LAYOUT = await response.json();
-    } catch (err) {
-    }
+      videoState.style.display = 'none';
+      foxState.style.display = 'block';
+      if (video) video.pause();
 
-    const viewer = new FoxgloveViewer({
-      parent: document.getElementById('foxglove-viewer'),
-      orgSlug: undefined,
-      colorScheme: 'dark',
-    });
+      const title = document.getElementById('viz-title');
+      if (title) title.textContent = 'Visualizer';
 
-    if (LAYOUT) {
+      const { FoxgloveViewer } = await import('https://cdn.jsdelivr.net/npm/@foxglove/embed/+esm');
+
+      let LAYOUT;
       try {
-        viewer.setLayoutData(LAYOUT);
-      } catch (err) {
+        const response = await fetch('./CooperScene.json');
+        if (response.ok) LAYOUT = await response.json();
+      } catch (err) {}
+
+      const viewer = new FoxgloveViewer({
+        parent: document.getElementById('foxglove-viewer'),
+        orgSlug: undefined,
+        colorScheme: 'dark',
+      });
+
+      if (LAYOUT) {
+        try { viewer.setLayoutData(LAYOUT); } catch (err) {}
       }
-    }
 
-    const select = document.getElementById('scene-select');
-    viewer.setDataSource({ type: 'remote-file', urls: [select.value] });
-
-    select.addEventListener('change', function () {
-      const url = this.value;
-      if (!url) return;
-      viewer.setDataSource({ type: 'remote-file', urls: [url] });
-    });
+      const select = document.getElementById('scene-select');
+      viewer.setDataSource({ type: 'remote-file', urls: [select.value] });
+      select.addEventListener('change', function () {
+        if (this.value) viewer.setDataSource({ type: 'remote-file', urls: [this.value] });
+      });
+    }, { once: true });
   </script>
 
   <!-- ===== Overview ===== -->
