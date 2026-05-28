@@ -39,11 +39,9 @@
       </div>
       <div id="mainNav" class="navbar-menu">
         <div class="navbar-end">
+          <a class="navbar-item" href="#visualizer">Visualizer</a>
           <a class="navbar-item" href="#overview">Overview</a>
-          <a class="navbar-item" href="#format">Dataset Format</a>
           <a class="navbar-item" href="#benchmark">Benchmark</a>
-          <a class="navbar-item" href="#model">Our Model</a>
-          <a class="navbar-item" href="#paper">Paper</a>
           <a class="navbar-item" href="#download">Download</a>
         </div>
       </div>
@@ -79,21 +77,14 @@
         </div>
 
         <div class="hero-buttons">
-          <a class="button is-rounded is-dark" href="#paper">
+          <a class="button is-rounded is-dark" href="#" target="_blank">
             <span class="icon"><i class="fas fa-file-pdf"></i></span>
             <span>Paper</span>
           </a>
-          <a class="button is-rounded is-dark" href="#" target="_blank">
+          <a class="button is-rounded is-dark"
+             href="https://github.com/UCR-CISL/CooperScene/tree/plugin-refactor" target="_blank">
             <span class="icon"><i class="fab fa-github"></i></span>
             <span>Code</span>
-          </a>
-          <a class="button is-rounded is-dark" href="#download">
-            <span class="icon"><i class="fas fa-database"></i></span>
-            <span>Dataset</span>
-          </a>
-          <a class="button is-rounded is-dark" href="#visualizer">
-            <span class="icon"><i class="fas fa-eye"></i></span>
-            <span>Visualizer</span>
           </a>
         </div>
       </div>
@@ -125,26 +116,29 @@
 
       <!-- On-demand state: Foxglove viewer -->
       <div id="viz-foxglove-state" style="display: none;">
-        <label style="font-weight: 450; text-align: center; display: block;">(Sign in with a .edu account)</label>
+        <!-- Inner column matched to foxglove-viewer width so controls align with it. -->
+        <div style="width: 80vw; max-width: 1500px; margin: 0 auto;">
+          <label style="font-weight: 450; text-align: center; display: block;">(Sign in with a .edu account)</label>
 
-        <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
-          <label style="font-weight: 600;">Change Scene:</label>
-          <div class="select">
-            <select id="scene-select">
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_1.mcap">scene_1.mcap</option>
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_3.mcap">scene_3.mcap</option>
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_5.mcap">scene_5.mcap</option>
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_6.mcap">scene_6.mcap</option>
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_7.mcap">scene_7.mcap</option>
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_8.mcap">scene_8.mcap</option>
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_9.mcap" selected>scene_9.mcap</option>
-              <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_10.mcap">scene_10.mcap</option>
-            </select>
+          <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+            <label style="font-weight: 600;">Change Scene:</label>
+            <div class="select">
+              <select id="scene-select">
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_1.mcap">scene_1.mcap</option>
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_3.mcap">scene_3.mcap</option>
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_5.mcap">scene_5.mcap</option>
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_6.mcap">scene_6.mcap</option>
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_7.mcap">scene_7.mcap</option>
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_8.mcap">scene_8.mcap</option>
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_9.mcap" selected>scene_9.mcap</option>
+                <option value="https://data.ucr.edu/datasets/cooperscene/250928_mcap/scene_10.mcap">scene_10.mcap</option>
+              </select>
+            </div>
           </div>
-        </div>
 
-        <div id="foxglove-viewer"
-             style="width: 80vw; max-width: 1500px; height: 55vh; margin: 0 auto; border-radius: 8px; overflow: hidden;"></div>
+          <div id="foxglove-viewer"
+               style="width: 100%; height: 55vh; border-radius: 8px; overflow: hidden;"></div>
+        </div>
       </div>
     </div>
   </section>
@@ -301,93 +295,6 @@
   </section>
 
 
-  <!-- ===== Dataset Format ===== -->
-  <section class="section" id="format">
-    <div class="container is-max-desktop">
-      <h2 class="title is-3 has-text-centered">Dataset Format</h2>
-      <div class="section-divider"></div>
-
-      <div class="content has-text-justified mb-5">
-        <p>
-          CooperScene is released in two formats: our <strong>native format</strong> with global ENU labels and per-agent metadata,
-          and an <strong>OPV2V-compatible format</strong> for direct use with cooperative perception frameworks such as
-          <a href="https://github.com/DerrickXuNu/OpenCOOD" target="_blank">OpenCOOD</a>.
-        </p>
-      </div>
-
-      <!-- Format Tabs -->
-      <div class="tabs-wrapper">
-        <div class="tabs is-centered is-boxed">
-          <ul>
-            <li class="is-active"><a data-tab="tab-native">CooperScene Native Format</a></li>
-            <li><a data-tab="tab-opv2v">OPV2V Format</a></li>
-          </ul>
-        </div>
-
-        <!-- Native Format -->
-        <div class="tab-content is-active" id="tab-native">
-          <div class="format-tree">
-            <span class="folder">CooperScene/</span><br>
-            &nbsp;&nbsp;<span class="folder">{scene_id}/</span> <span class="comment"># e.g., 1, 2, ..., 14</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">{agent_id}/</span> <span class="comment"># 0, 1, 2, 3</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">sensor/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">lidar/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.pcd</span> <span class="comment"># LiDAR point cloud</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">bbox/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.json</span> <span class="comment"># Per-agent 3D bounding boxes</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">labels/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.yaml</span> <span class="comment"># Per-agent labels (lidar &amp; ENU coords)</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">metadata.json</span> <span class="comment"># Per-frame pose, GNSS, C-V2X throughput</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">pairwise_icp.json</span> <span class="comment"># Pairwise ICP alignment results</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">raw_gnss.csv</span> <span class="comment"># Raw GNSS trajectory</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">labels_global/</span> <span class="comment"># Global labels in ENU coordinates</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{frame_id}.yaml</span> <span class="comment"># Merged multi-agent annotations with track IDs</span><br>
-          </div>
-
-          <h3 class="title is-5 mt-5 mb-3">Key Fields</h3>
-          <div class="columns">
-            <div class="column is-6">
-              <div class="metric-card">
-                <h5><i class="fas fa-cube mr-2" style="color: var(--accent-color);"></i> Global Labels</h5>
-                <p>Each frame has globally merged 3D bounding boxes in ENU coordinates with quaternion orientation,
-                  dimensions (l, w, h), object class, track ID, speed, and ego-agent visibility list.</p>
-              </div>
-            </div>
-            <div class="column is-6">
-              <div class="metric-card">
-                <h5><i class="fas fa-satellite-dish mr-2" style="color: var(--accent-color);"></i> Agent Metadata</h5>
-                <p>Per-frame quaternion pose, GNSS (lat/lon/alt), ENU position, and pair-wise C-V2X
-                  receive bytes and throughput for each agent link.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- OPV2V Format -->
-        <div class="tab-content" id="tab-opv2v">
-          <div class="content has-text-justified mb-4">
-            <p>
-              For compatibility with <a href="https://github.com/DerrickXuNu/OpenCOOD" target="_blank">OpenCOOD</a>
-              and other cooperative perception frameworks, we also provide the dataset in OPV2V format.
-              Each timestamp directory contains per-agent YAML files with pose and label information.
-            </p>
-          </div>
-          <div class="format-tree">
-            <span class="folder">CooperScene_OPV2V/</span><br>
-            &nbsp;&nbsp;<span class="folder">train/</span> <span class="comment"># Training split</span><br>
-            &nbsp;&nbsp;<span class="folder">validate/</span><br>
-            &nbsp;&nbsp;<span class="folder">test/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">{scene_id}/</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="folder">{timestamp}/</span> <span class="comment"># Globally synchronized frame</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{agent_id}.pcd</span> <span class="comment"># LiDAR point cloud</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{agent_id}.yaml</span> <span class="comment"># Pose, calibration, labels</span><br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="file">{agent_id}_camera0.png</span> <span class="comment"># Camera image</span><br>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
   <!-- ===== Benchmark ===== -->
   <section class="section section-alt" id="benchmark">
     <div class="container is-max-desktop">
@@ -439,25 +346,31 @@
 
         <!-- Detection Benchmark -->
         <div class="tab-content is-active" id="tab-detection">
-          <h4 class="title is-5">Cooperative 3D Object Detection (Ideal Network vs. C-V2X Network)</h4>
+          <h4 class="title is-5">Cooperative 3D Object Detection</h4>
+          <p class="mb-4">
+            Benchmark of cooperative perception under C-V2X and <span class="unlimited-tag">unlimited</span>
+            (infeasible) network, with increasing number of agents, in terms of accuracy (mAP), total data
+            sharing size per frame, and the latency if all data were to be transmitted over C-V2X.
+            <strong>Bold</strong> marks the best result per column within each method.
+          </p>
           <div class="benchmark-table-wrapper">
             <table class="benchmark-table">
               <thead>
                 <tr>
                   <th rowspan="2">Model</th>
                   <th rowspan="2">Agents</th>
-                  <th colspan="3">mAP (Ideal Network)</th>
-                  <th colspan="3">mAP (C-V2X Network)</th>
-                  <th rowspan="2">Shared Data (MB)</th>
-                  <th rowspan="2">Latency (ms)</th>
+                  <th colspan="3">mAP (C-V2X)</th>
+                  <th colspan="3" class="col-unlimited">mAP (Unlimited)</th>
+                  <th rowspan="2">Sharing<br>Size (MB)</th>
+                  <th rowspan="2">Latency (ms)<br>under C-V2X</th>
                 </tr>
                 <tr>
                   <th>@0.3</th>
                   <th>@0.5</th>
                   <th>@0.7</th>
-                  <th>@0.3</th>
-                  <th>@0.5</th>
-                  <th>@0.7</th>
+                  <th class="col-unlimited">@0.3</th>
+                  <th class="col-unlimited">@0.5</th>
+                  <th class="col-unlimited">@0.7</th>
                 </tr>
               </thead>
               <tbody>
@@ -465,56 +378,56 @@
                 <tr>
                   <td class="method-name" rowspan="5">V2VNet</td>
                   <td class="agent-config">V+I</td>
-                  <td>0.45</td>
-                  <td>0.30</td>
-                  <td>0.14</td>
-                  <td>0.36</td>
-                  <td>0.22</td>
-                  <td>0.10</td>
+                  <td class="best">0.36</td>
+                  <td class="best">0.22</td>
+                  <td class="best">0.10</td>
+                  <td class="col-unlimited">0.45</td>
+                  <td class="col-unlimited">0.30</td>
+                  <td class="col-unlimited">0.14</td>
                   <td>10.0</td>
                   <td>64,349</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.38</td>
-                  <td>0.28</td>
-                  <td>0.13</td>
                   <td>0.27</td>
                   <td>0.16</td>
                   <td>0.06</td>
+                  <td class="col-unlimited">0.38</td>
+                  <td class="col-unlimited">0.28</td>
+                  <td class="col-unlimited">0.13</td>
                   <td>10.0</td>
                   <td>64,038</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.48</td>
-                  <td>0.39</td>
-                  <td>0.19</td>
                   <td>0.33</td>
                   <td>0.20</td>
-                  <td>0.10</td>
+                  <td class="best">0.10</td>
+                  <td class="col-unlimited">0.48</td>
+                  <td class="col-unlimited">0.39</td>
+                  <td class="col-unlimited">0.19</td>
                   <td>20.0</td>
                   <td>76,879</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td>0.50</td>
-                  <td>0.50</td>
-                  <td>0.26</td>
                   <td>0.27</td>
                   <td>0.16</td>
                   <td>0.06</td>
+                  <td class="col-unlimited">0.50</td>
+                  <td class="col-unlimited">0.50</td>
+                  <td class="col-unlimited">0.26</td>
                   <td>20.0</td>
                   <td>72,773</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td>0.63</td>
-                  <td class="best">0.56</td>
-                  <td class="best">0.29</td>
                   <td>0.33</td>
                   <td>0.19</td>
-                  <td>0.10</td>
+                  <td class="best">0.10</td>
+                  <td class="col-unlimited best-unlimited">0.63</td>
+                  <td class="col-unlimited best-unlimited">0.56</td>
+                  <td class="col-unlimited best-unlimited">0.29</td>
                   <td>30.0</td>
                   <td>107,432</td>
                 </tr>
@@ -522,56 +435,56 @@
                 <tr>
                   <td class="method-name" rowspan="5">V2X-ViT</td>
                   <td class="agent-config">V+I</td>
-                  <td>0.38</td>
-                  <td>0.24</td>
-                  <td>0.11</td>
                   <td>0.36</td>
                   <td>0.24</td>
                   <td>0.11</td>
+                  <td class="col-unlimited">0.38</td>
+                  <td class="col-unlimited">0.24</td>
+                  <td class="col-unlimited">0.11</td>
                   <td>0.338</td>
                   <td>2,211</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.34</td>
-                  <td>0.28</td>
-                  <td>0.12</td>
                   <td>0.28</td>
                   <td>0.23</td>
                   <td>0.10</td>
+                  <td class="col-unlimited">0.34</td>
+                  <td class="col-unlimited">0.28</td>
+                  <td class="col-unlimited">0.12</td>
                   <td>0.338</td>
                   <td>1,305</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.40</td>
-                  <td>0.33</td>
-                  <td>0.14</td>
                   <td>0.33</td>
                   <td>0.28</td>
                   <td>0.11</td>
+                  <td class="col-unlimited">0.40</td>
+                  <td class="col-unlimited">0.33</td>
+                  <td class="col-unlimited">0.14</td>
                   <td>0.667</td>
                   <td>9,215</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td>0.52</td>
-                  <td>0.41</td>
-                  <td>0.17</td>
-                  <td>0.39</td>
-                  <td>0.31</td>
-                  <td>0.13</td>
+                  <td class="best">0.39</td>
+                  <td class="best">0.31</td>
+                  <td class="best">0.13</td>
+                  <td class="col-unlimited">0.52</td>
+                  <td class="col-unlimited">0.41</td>
+                  <td class="col-unlimited best-unlimited">0.17</td>
                   <td>0.667</td>
                   <td>7,022</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td>0.53</td>
-                  <td>0.42</td>
-                  <td>0.16</td>
                   <td>0.37</td>
                   <td>0.30</td>
                   <td>0.12</td>
+                  <td class="col-unlimited best-unlimited">0.53</td>
+                  <td class="col-unlimited best-unlimited">0.42</td>
+                  <td class="col-unlimited">0.16</td>
                   <td>1.014</td>
                   <td>5,976</td>
                 </tr>
@@ -579,56 +492,56 @@
                 <tr>
                   <td class="method-name" rowspan="5">V2VAM</td>
                   <td class="agent-config">V+I</td>
-                  <td>0.40</td>
-                  <td>0.27</td>
-                  <td>0.14</td>
                   <td>0.37</td>
                   <td>0.24</td>
                   <td>0.13</td>
+                  <td class="col-unlimited">0.40</td>
+                  <td class="col-unlimited">0.27</td>
+                  <td class="col-unlimited">0.14</td>
                   <td>0.423</td>
                   <td>2,264</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.44</td>
-                  <td>0.37</td>
-                  <td>0.18</td>
                   <td>0.36</td>
                   <td>0.28</td>
                   <td>0.13</td>
+                  <td class="col-unlimited">0.44</td>
+                  <td class="col-unlimited">0.37</td>
+                  <td class="col-unlimited">0.18</td>
                   <td>0.423</td>
                   <td>2,253</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.46</td>
-                  <td>0.38</td>
-                  <td>0.19</td>
                   <td>0.36</td>
                   <td>0.28</td>
                   <td>0.13</td>
+                  <td class="col-unlimited">0.46</td>
+                  <td class="col-unlimited">0.38</td>
+                  <td class="col-unlimited">0.19</td>
                   <td>0.846</td>
                   <td>10,301</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td class="best">0.63</td>
-                  <td>0.57</td>
-                  <td>0.33</td>
-                  <td>0.43</td>
-                  <td>0.35</td>
-                  <td>0.18</td>
+                  <td class="best">0.43</td>
+                  <td class="best">0.35</td>
+                  <td class="best">0.18</td>
+                  <td class="col-unlimited best-unlimited">0.63</td>
+                  <td class="col-unlimited best-unlimited">0.57</td>
+                  <td class="col-unlimited">0.33</td>
                   <td>0.846</td>
                   <td>8,117</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td class="best">0.63</td>
-                  <td>0.56</td>
-                  <td>0.34</td>
                   <td>0.42</td>
                   <td>0.32</td>
                   <td>0.17</td>
+                  <td class="col-unlimited best-unlimited">0.63</td>
+                  <td class="col-unlimited">0.56</td>
+                  <td class="col-unlimited best-unlimited">0.34</td>
                   <td>1.269</td>
                   <td>11,302</td>
                 </tr>
@@ -636,66 +549,62 @@
                 <tr>
                   <td class="method-name" rowspan="5">CoBEVT</td>
                   <td class="agent-config">V+I</td>
-                  <td>0.37</td>
-                  <td>0.26</td>
-                  <td>0.14</td>
                   <td>0.33</td>
                   <td>0.23</td>
                   <td>0.12</td>
+                  <td class="col-unlimited">0.37</td>
+                  <td class="col-unlimited">0.26</td>
+                  <td class="col-unlimited">0.14</td>
                   <td>0.500</td>
                   <td>2,707</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.40</td>
-                  <td>0.33</td>
-                  <td>0.18</td>
                   <td>0.32</td>
                   <td>0.24</td>
                   <td>0.13</td>
+                  <td class="col-unlimited">0.40</td>
+                  <td class="col-unlimited">0.33</td>
+                  <td class="col-unlimited">0.18</td>
                   <td>0.500</td>
                   <td>2,393</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.44</td>
-                  <td>0.38</td>
-                  <td>0.21</td>
                   <td>0.34</td>
                   <td>0.27</td>
                   <td>0.14</td>
+                  <td class="col-unlimited">0.44</td>
+                  <td class="col-unlimited">0.38</td>
+                  <td class="col-unlimited">0.21</td>
                   <td>1.000</td>
                   <td>11,059</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td>0.56</td>
-                  <td>0.51</td>
-                  <td>0.32</td>
-                  <td>0.37</td>
-                  <td>0.31</td>
-                  <td>0.17</td>
+                  <td class="best">0.37</td>
+                  <td class="best">0.31</td>
+                  <td class="best">0.17</td>
+                  <td class="col-unlimited">0.56</td>
+                  <td class="col-unlimited">0.51</td>
+                  <td class="col-unlimited">0.32</td>
                   <td>1.000</td>
                   <td>8,987</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td>0.57</td>
-                  <td>0.53</td>
-                  <td>0.33</td>
                   <td>0.36</td>
                   <td>0.30</td>
-                  <td>0.17</td>
+                  <td class="best">0.17</td>
+                  <td class="col-unlimited best-unlimited">0.57</td>
+                  <td class="col-unlimited best-unlimited">0.53</td>
+                  <td class="col-unlimited best-unlimited">0.33</td>
                   <td>1.500</td>
                   <td>12,381</td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p class="has-text-grey is-size-7 mt-2">
-            <strong>Bold</strong> indicates best result per column within each agent configuration.
-            C-V2X Network results reflect real communication constraints with 3GPP-compliant radios.
-          </p>
         </div>
 
         <!-- Multi-Modal Evaluation -->
@@ -878,62 +787,6 @@
     </div>
   </section>
 
-  <!-- ===== Our Model ===== -->
-  <section class="section section-alt" id="model">
-    <div class="container is-max-desktop">
-      <h2 class="title is-3 has-text-centered">Our Model</h2>
-      <div class="section-divider"></div>
-
-      <div class="content has-text-centered">
-        <p class="is-size-5" style="color: #888;">TBD</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== Paper & Github ===== -->
-  <section class="section" id="paper">
-    <div class="container is-max-desktop">
-      <h2 class="title is-3 has-text-centered">Paper &amp; Code</h2>
-      <div class="section-divider"></div>
-
-      <div class="columns is-centered">
-        <div class="column is-5">
-          <div class="download-card">
-            <div class="download-icon" style="color: var(--accent-color);">
-              <i class="fas fa-file-pdf"></i>
-            </div>
-            <h4>Paper</h4>
-            <p>CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization</p>
-            <a class="button is-link is-rounded" href="#" target="_blank">
-              <span class="icon"><i class="ai ai-arxiv"></i></span>
-              <span>arXiv (coming soon)</span>
-            </a>
-          </div>
-        </div>
-        <div class="column is-5">
-          <div class="download-card">
-            <div class="download-icon" style="color: var(--primary-color);">
-              <i class="fab fa-github"></i>
-            </div>
-            <h4>Development Kit</h4>
-            <p>Data loading, evaluation scripts, visualization tools, and baseline model configurations for
-              CooperScene.</p>
-            <a class="button is-dark is-rounded" href="#" target="_blank">
-              <span class="icon"><i class="fab fa-github"></i></span>
-              <span>GitHub (coming soon)</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <!-- BibTeX -->
-      <h3 class="title is-5 mt-6 has-text-centered">BibTeX</h3>
-      <div class="bibtex-block">
-        <pre><code>TBD</code></pre>
-      </div>
-    </div>
-  </section>
-
   <!-- ===== Download ===== -->
   <section class="section section-alt" id="download">
     <div class="container is-max-desktop">
@@ -998,14 +851,6 @@
         </div>
       </div>
 
-      <div class="notification is-info is-light mt-5">
-        <p>
-          <strong><i class="fas fa-info-circle mr-1"></i> Data Access:</strong>
-          The dataset is hosted on <a href="https://data.ucr.edu" target="_blank">data.ucr.edu</a>.
-          For access requests or questions, please contact
-          <a href="mailto:victor@ucr.edu">Victor</a> or reach out through the registered data website.
-        </p>
-      </div>
     </div>
   </section>
 
@@ -1015,10 +860,6 @@
       <p>
         &copy; 2026 CooperScene &mdash;
         <a href="#">University of California, Riverside</a>
-      </p>
-      <p class="is-size-7 mt-2" style="color: rgba(255,255,255,0.5);">
-        Website template inspired by
-        <a href="https://nerfies.github.io" style="color: rgba(255,255,255,0.6);">Nerfies</a>.
       </p>
     </div>
   </footer>

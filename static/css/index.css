@@ -354,6 +354,25 @@ body {
   text-decoration: underline;
 }
 
+/* Unlimited-network columns: light gray text (the paper renders them in
+   muted color because they are infeasible under real C-V2X). */
+.benchmark-table .col-unlimited {
+  color: #b8b8b8;
+}
+
+.benchmark-table thead .col-unlimited {
+  color: #cccccc;
+}
+
+.benchmark-table .best-unlimited {
+  font-weight: 700;
+}
+
+.unlimited-tag {
+  color: #b8b8b8;
+}
+
+
 .benchmark-table .method-name {
   text-align: left;
   font-weight: 600;
@@ -374,6 +393,13 @@ body {
 
 .tabs-wrapper .tabs ul {
   border-bottom-color: var(--border-color);
+}
+
+.tabs-wrapper .tabs a {
+  font-family: 'Noto Sans', 'Google Sans', sans-serif;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: var(--primary-color);
 }
 
 .tabs-wrapper .tabs li.is-active a {
