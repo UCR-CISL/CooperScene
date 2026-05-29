@@ -10,6 +10,10 @@ from mmengine.runner import Runner
 from mmdet3d.utils import replace_ceph_backend
 
 
+# Detectors whose evaluation is delegated to a dedicated runner (not mmengine).
+COOPERATIVE_DETECTORS = {'OpenCOODCooperativeDetector'}
+
+
 # TODO: support fuse_conv_bn and format_only
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -120,6 +124,12 @@ def main():
                                 osp.splitext(osp.basename(args.config))[0])
 
     cfg.load_from = args.checkpoint
+
+    # Dispatch to the cooperative runner for the intermediate-fusion models.
+    if cfg.model.get('type') in COOPERATIVE_DETECTORS:
+        from models.cooperative.runner import test as coop_test
+        coop_test(cfg, args)
+        return
 
     if args.show or args.show_dir:
         cfg = trigger_visualization_hook(cfg, args)

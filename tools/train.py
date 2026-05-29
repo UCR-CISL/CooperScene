@@ -12,6 +12,11 @@ from mmengine.runner import Runner
 from mmdet3d.utils import replace_ceph_backend
 
 
+# Detectors whose training is delegated to a dedicated runner (not mmengine).
+# These models use the original cooperative-perception training loop directly.
+COOPERATIVE_DETECTORS = {'OpenCOODCooperativeDetector'}
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a 3D detector')
     parser.add_argument('config', help='train config file path')
@@ -88,6 +93,14 @@ def main():
         # use config filename as default work_dir if cfg.work_dir is None
         cfg.work_dir = osp.join('./work_dirs',
                                 osp.splitext(osp.basename(args.config))[0])
+
+    # Dispatch to the cooperative runner for the intermediate-fusion models.
+    if cfg.model.get('type') in COOPERATIVE_DETECTORS:
+        from models.cooperative.runner import train as coop_train
+        if args.resume is not None:
+            cfg.resume = True
+        coop_train(cfg, args)
+        return
 
     # enable automatic-mixed-precision training
     if args.amp is True:
