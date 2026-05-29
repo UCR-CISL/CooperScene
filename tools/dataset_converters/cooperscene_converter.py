@@ -35,34 +35,32 @@ EGO_CANDIDATE_IDS = ('1', '2', '3')
 
 def _extract_images_for_ts(meta, split, scenario, agent_id, timestamp,
                            data_root):
-    """Per-agent `images` dict (img_path, lidar2cam, cam2img) built by
-    walking `camera0..camera3` entries in the agent yaml. Skips cameras
-    whose .png file is missing on disk."""
+    """Per-agent `images` dict (img_path, lidar2cam, cam2img). CooperScene
+    only carries the front camera, stored as yaml key `camera_0` and image
+    file `<ts>_camera0.png`. Returns empty dict if the camera is missing
+    (e.g. agent 0 — LiDAR-only RSU)."""
     images = {}
-    for cam_id in ('camera0', 'camera1', 'camera2', 'camera3'):
-        cam_data = meta.get(cam_id)
-        if not isinstance(cam_data, dict):
-            continue
-        cam_img_filename = f'{timestamp}_{cam_id}.png'
-        cam_img_path = osp.join(
-            data_root, split, scenario, agent_id, cam_img_filename)
-        if not osp.exists(cam_img_path):
-            continue
-        try:
-            extrinsic_carla = np.array(
-                cam_data['extrinsic'], dtype=np.float64)
-            lidar2cam = (CARLA_TO_CV_CAM @ extrinsic_carla).astype(
-                np.float32)
-            cam2img = np.array(
-                cam_data['intrinsic'], dtype=np.float32)
-        except (KeyError, ValueError):
-            continue
-        images[cam_id] = {
-            'img_path': osp.join(
-                split, scenario, agent_id, cam_img_filename),
-            'lidar2cam': lidar2cam.tolist(),
-            'cam2img': cam2img.tolist(),
-        }
+    cam_data = meta.get('camera_0')
+    if not isinstance(cam_data, dict):
+        return images
+    cam_img_filename = f'{timestamp}_camera0.png'
+    cam_img_path = osp.join(
+        data_root, split, scenario, agent_id, cam_img_filename)
+    if not osp.exists(cam_img_path):
+        return images
+    try:
+        extrinsic_carla = np.array(
+            cam_data['extrinsic'], dtype=np.float64)
+        lidar2cam = (CARLA_TO_CV_CAM @ extrinsic_carla).astype(np.float32)
+        cam2img = np.array(cam_data['intrinsic'], dtype=np.float32)
+    except (KeyError, ValueError):
+        return images
+    images['camera0'] = {
+        'img_path': osp.join(
+            split, scenario, agent_id, cam_img_filename),
+        'lidar2cam': lidar2cam.tolist(),
+        'cam2img': cam2img.tolist(),
+    }
     return images
 
 
