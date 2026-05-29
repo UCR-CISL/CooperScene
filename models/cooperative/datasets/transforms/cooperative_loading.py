@@ -79,11 +79,22 @@ class LoadCooperativePointCloud(BaseTransform):
         self.point_cloud_range = point_cloud_range
 
     def _load_points(self, pts_filename: str) -> np.ndarray:
+        # Always prefer reading .pcd via OpenCOOD's reader so intensity goes
+        # through the same `int32 / 65535` normalization as the training data.
+        # The pkl points to .bin files where intensity was lost to a constant
+        # 1.0 — using those would feed the PFE a saturated 4th channel.
+        import os
+        pcd_path = pts_filename
+        if pts_filename.endswith('.bin'):
+            cand = pts_filename[:-4] + '.pcd'
+            if os.path.exists(cand):
+                pcd_path = cand
+        if pcd_path.endswith('.pcd'):
+            from opencood.utils.pcd_utils import pcd_to_np
+            return pcd_to_np(pcd_path, isIntensity=True).reshape(-1)
         if pts_filename.endswith('.npy'):
-            points = np.load(pts_filename)
-        else:
-            points = np.fromfile(pts_filename, dtype=np.float32)
-        return points
+            return np.load(pts_filename)
+        return np.fromfile(pts_filename, dtype=np.float32)
 
     def _filter_by_range(self, pts: np.ndarray) -> np.ndarray:
         if self.point_cloud_range is None:
@@ -94,16 +105,47 @@ class LoadCooperativePointCloud(BaseTransform):
                 (pts[:, 2] >= r[2]) & (pts[:, 2] <= r[5]))
         return pts[mask]
 
+    @staticmethod
+    def _shuffle_points(pts: np.ndarray) -> np.ndarray:
+        if pts.shape[0] == 0:
+            return pts
+        from opencood.utils.pcd_utils import shuffle_points as ocd_shuffle
+        return ocd_shuffle(pts)
+
+    @staticmethod
+    def _mask_ego_points(pts: np.ndarray) -> np.ndarray:
+        if pts.shape[0] == 0:
+            return pts
+        from opencood.utils.pcd_utils import mask_ego_points as ocd_mask_ego
+        return ocd_mask_ego(pts)
+
     def transform(self, results: dict) -> dict:
         cooperators = results.get('cooperators', [])
         t_matrix = results.get('transformation_matrix', None)
         coop_mask = results.get('coop_mask', None)
 
-        ego_points = results['points']
-        if isinstance(ego_points, BasePoints):
-            ego_np = ego_points.tensor.numpy()
+        # Always re-load ego from .pcd so the intensity channel matches
+        # OpenCOOD's training convention (int32 / 65535). The default mmengine
+        # LoadPointsFromFile reads .bin which we observed to be a constant 1.0
+        # intensity placeholder.
+        ego_lidar_path = None
+        if 'lidar_points' in results and 'lidar_path' in results['lidar_points']:
+            ego_lidar_path = results['lidar_points']['lidar_path']
+        elif 'lidar_path' in results:
+            ego_lidar_path = results['lidar_path']
+        if ego_lidar_path is not None:
+            raw = self._load_points(ego_lidar_path)
+            valid = (raw.size // self.load_dim) * self.load_dim
+            ego_np = raw[:valid].reshape(-1, self.load_dim)[:, self.use_dim]
         else:
-            ego_np = np.array(ego_points)
+            ego_points = results['points']
+            if isinstance(ego_points, BasePoints):
+                ego_np = ego_points.tensor.numpy()
+            else:
+                ego_np = np.array(ego_points)
+        # OpenCOOD parity: shuffle + drop ego self-returns BEFORE range filter
+        ego_np = self._shuffle_points(ego_np)
+        ego_np = self._mask_ego_points(ego_np)
         ego_np = self._filter_by_range(ego_np)
 
         cav_points_list = [ego_np]
@@ -120,15 +162,21 @@ class LoadCooperativePointCloud(BaseTransform):
                     pts = pts[:valid_len].reshape(-1, self.load_dim)
                     pts = pts[:, self.use_dim]
 
+                    # Match OpenCOOD: shuffle + mask ego_points in CAV-local
+                    # frame, THEN project, THEN range-filter in ego frame.
+                    pts = self._shuffle_points(pts)
+                    pts = self._mask_ego_points(pts)
+
                     if self.proj_first:
+                        from opencood.utils.box_utils import (
+                            project_points_by_matrix_torch)
                         idx = record_len
                         T = t_matrix[idx]
-                        pts_xyz = pts[:, :3]
-                        pts_homo = np.hstack([
-                            pts_xyz,
-                            np.ones((pts_xyz.shape[0], 1),
-                                    dtype=np.float32)])
-                        pts[:, :3] = (T @ pts_homo.T).T[:, :3]
+                        pts_xyz_t = torch.from_numpy(
+                            pts[:, :3].astype(np.float32))
+                        T_t = torch.from_numpy(T.astype(np.float32))
+                        proj = project_points_by_matrix_torch(pts_xyz_t, T_t)
+                        pts[:, :3] = proj.cpu().numpy()
 
                     pts = self._filter_by_range(pts)
                     cav_points_list.append(pts)

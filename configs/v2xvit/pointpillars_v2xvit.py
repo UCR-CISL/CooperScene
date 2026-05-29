@@ -28,6 +28,7 @@ model = dict(
 
     voxel_encoder=dict(
         type='PillarFeatureNet',
+        legacy=False,
         in_channels=4,
         feat_channels=[64],
         with_distance=False,

@@ -89,11 +89,13 @@ def compute_3d_iou_cuda(pred_boxes: torch.Tensor, gt_boxes: torch.Tensor,
     sum_areas = pred_areas[:, None] + gt_areas[None, :]  # (N, M)
     inter_areas = bev_iou_matrix * sum_areas / (1 + bev_iou_matrix + 1e-10)
 
-    # Z ranges (center +/- half height)
-    pred_z_min = pred_boxes[:, 2] - pred_boxes[:, 5] / 2  # (N,)
-    pred_z_max = pred_boxes[:, 2] + pred_boxes[:, 5] / 2
-    gt_z_min = gt_boxes[:, 2] - gt_boxes[:, 5] / 2  # (M,)
-    gt_z_max = gt_boxes[:, 2] + gt_boxes[:, 5] / 2
+    # LiDARInstance3DBoxes stores z as the BOTTOM of the box (mmdet3d's
+    # default origin = (0.5, 0.5, 0)), so the actual z range is
+    # [z, z + dz], not z +/- dz/2.
+    pred_z_min = pred_boxes[:, 2]                       # (N,)
+    pred_z_max = pred_boxes[:, 2] + pred_boxes[:, 5]
+    gt_z_min = gt_boxes[:, 2]                           # (M,)
+    gt_z_max = gt_boxes[:, 2] + gt_boxes[:, 5]
 
     # Z overlap
     z_overlap = torch.clamp(
@@ -322,42 +324,87 @@ class OPV2VMetric(BaseMetric):
             self.results.append(result)
 
     def compute_metrics(self, results: List[dict]) -> Dict[str, float]:
-        """Compute the metrics from processed results."""
+        """Delegate to OpenCOOD's exact AP code (`caluclate_tp_fp` +
+        `calculate_ap`) so the BEV polygon IoU + matching logic match
+        bit-for-bit with OpenCOOD-modified inference."""
         logger: MMLogger = MMLogger.get_current_instance()
 
+        from opencood.utils.eval_utils import caluclate_tp_fp, calculate_ap
+        from opencood.utils.box_utils import boxes_to_corners_3d
+        import torch as _t
+
+        def _to_corners(boxes_np):
+            """Our 7-DOF storage: tensor[:, :7] = [x, y, z_bottom, dx=l, dy=w, dz=h, yaw].
+            OpenCOOD `boxes_to_corners_3d(order='hwl')` expects
+            [x, y, z_center, h, w, l, yaw].  Convert z_bottom -> z_center and
+            swap slots 3 and 5.
+            """
+            if boxes_np.shape[0] == 0:
+                return _t.zeros((0, 8, 3), dtype=_t.float32)
+            b = _t.as_tensor(boxes_np[:, :7], dtype=_t.float32)
+            b_hwl = b.clone()
+            b_hwl[:, 2] = b[:, 2] + b[:, 5] / 2.0   # z_bottom -> z_center
+            b_hwl[:, 3] = b[:, 5]                   # h
+            b_hwl[:, 5] = b[:, 3]                   # l
+            # b_hwl[:, 4] == w (unchanged)
+            return boxes_to_corners_3d(b_hwl, order='hwl')
+
+        thresholds = list(self.iou_thresholds)
+
+        def _empty_stat():
+            return {t: {'tp': [], 'fp': [], 'gt': 0, 'score': []}
+                    for t in thresholds}
+
+        result_stat_bev = _empty_stat()
+        result_stat_3d = _empty_stat()
+
+        for res in results:
+            pred_b = res['pred_bboxes']
+            pred_s = res['pred_scores']
+            pred_l = res['pred_labels']
+            gt_b = res['gt_bboxes']
+            gt_l = res['gt_labels']
+
+            # Only the 'vehicle' class (label 0) — same as before.
+            pm = pred_l == 0
+            gm = gt_l == 0
+            pred_corners = _to_corners(pred_b[pm])
+            pred_scores = _t.as_tensor(pred_s[pm], dtype=_t.float32)
+            gt_corners = _to_corners(gt_b[gm])
+
+            for thr in thresholds:
+                caluclate_tp_fp(pred_corners, pred_scores, gt_corners,
+                                result_stat_bev, thr, iou_mode='bev')
+                caluclate_tp_fp(pred_corners, pred_scores, gt_corners,
+                                result_stat_3d, thr, iou_mode='3d')
+
         metrics_dict = {}
+        print_log('\n' + '=' * 60, logger=logger)
+        print_log('OPV2V Evaluation Results (OpenCOOD polygon IoU)',
+                  logger=logger)
+        print_log('=' * 60, logger=logger)
 
-        # Determine device
-        device = 'cuda' if torch.cuda.is_available() else 'cpu'
-
-        print_log('\n' + '='*60, logger=logger)
-        print_log(f'OPV2V Evaluation Results (using {device.upper()})', logger=logger)
-        print_log('='*60, logger=logger)
-
-        for iou_thresh in self.iou_thresholds:
-            # 2D BEV AP
-            ap_bev = calculate_ap(results, iou_thresh, use_3d_iou=False, device=device)
-            metrics_dict[f'AP_BEV@{iou_thresh}'] = ap_bev
-
-            # 3D AP
-            ap_3d = calculate_ap(results, iou_thresh, use_3d_iou=True, device=device)
-            metrics_dict[f'AP_3D@{iou_thresh}'] = ap_3d
-
-            print_log(f'\n--- IoU Threshold: {iou_thresh} ---', logger=logger)
+        for thr in thresholds:
+            ap_bev, _, _ = calculate_ap(result_stat_bev, thr,
+                                         global_sort_detections=False)
+            ap_3d, _, _ = calculate_ap(result_stat_3d, thr,
+                                        global_sort_detections=False)
+            metrics_dict[f'AP_BEV@{thr}'] = ap_bev
+            metrics_dict[f'AP_3D@{thr}'] = ap_3d
+            print_log(f'\n--- IoU Threshold: {thr} ---', logger=logger)
             print_log(f'  AP_BEV (2D): {ap_bev:.4f}', logger=logger)
             print_log(f'  AP_3D:       {ap_3d:.4f}', logger=logger)
 
-        # Overall mAP
-        mAP_bev = np.mean([metrics_dict[f'AP_BEV@{t}'] for t in self.iou_thresholds])
-        mAP_3d = np.mean([metrics_dict[f'AP_3D@{t}'] for t in self.iou_thresholds])
-
+        mAP_bev = float(np.mean(
+            [metrics_dict[f'AP_BEV@{t}'] for t in thresholds]))
+        mAP_3d = float(np.mean(
+            [metrics_dict[f'AP_3D@{t}'] for t in thresholds]))
         metrics_dict['mAP_BEV'] = mAP_bev
         metrics_dict['mAP_3D'] = mAP_3d
-
-        print_log(f'\n{"="*60}', logger=logger)
-        print_log(f'Summary:', logger=logger)
+        print_log(f'\n{"=" * 60}', logger=logger)
+        print_log('Summary:', logger=logger)
         print_log(f'  mAP_BEV (2D): {mAP_bev:.4f}', logger=logger)
         print_log(f'  mAP_3D:       {mAP_3d:.4f}', logger=logger)
-        print_log(f'{"="*60}\n', logger=logger)
+        print_log(f'{"=" * 60}\n', logger=logger)
 
         return metrics_dict

@@ -80,8 +80,14 @@ class CoopDet3DDataPreprocessor(Det3DDataPreprocessor):
                     cav_pts = torch.from_numpy(cav_pts).float()
                 cav_pts = cav_pts.to(self.device)
                 if cav_pts.shape[0] == 0:
-                    cav_idx += 1
-                    continue
+                    # Empty CAV: PointPillarScatter sets batch_size by
+                    # coords[:, 0].max()+1. If the LAST CAV is empty its
+                    # cav_idx vanishes from coords and scatter outputs fewer
+                    # rows than record_len, breaking v2vnet's warp_affine.
+                    # Insert one zero point so cav_idx survives.
+                    cav_pts = torch.zeros(
+                        (1, cav_pts.shape[1] if cav_pts.ndim == 2 else 4),
+                        dtype=torch.float32, device=self.device)
                 res_voxels, res_coors, res_num_points = \
                     self.voxel_layer(cav_pts)
                 res_voxel_centers = (

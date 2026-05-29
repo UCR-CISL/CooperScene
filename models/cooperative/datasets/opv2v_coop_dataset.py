@@ -15,19 +15,24 @@ from .opv2v_dataset import OPV2VDataset
 
 
 def pose_to_matrix(pose):
-    """Convert [x, y, z, roll_deg, yaw_deg, pitch_deg] to a 4x4 matrix.
+    """Convert pose to a 4x4 transformation matrix.
 
-    Args:
-        pose: List of [x, y, z, roll, yaw, pitch] in degrees.
+    Accepts either:
+      - OPV2V style: flat list [x, y, z, roll_deg, yaw_deg, pitch_deg]
+      - CooperScene style: 4x4 matrix already (list of 4 lists or ndarray)
 
     Returns:
         4x4 numpy transformation matrix (world frame).
     """
-    x, y, z = pose[0], pose[1], pose[2]
-    roll, yaw, pitch = np.radians(pose[3]), np.radians(pose[4]), \
-        np.radians(pose[5])
+    pose_arr = np.asarray(pose, dtype=np.float64)
+    if pose_arr.ndim == 2 and pose_arr.shape == (4, 4):
+        return pose_arr
 
-    # Rotation matrices
+    x, y, z = pose_arr[0], pose_arr[1], pose_arr[2]
+    roll = np.radians(pose_arr[3])
+    yaw = np.radians(pose_arr[4])
+    pitch = np.radians(pose_arr[5])
+
     Rx = np.array([
         [1, 0, 0],
         [0, np.cos(roll), -np.sin(roll)],
@@ -92,13 +97,14 @@ class OPV2VCoopDataset(OPV2VDataset):
         # Compute transformation matrices and filter by range
         valid_coops = []
         if ego_pose is not None:
-            ego_pos = np.array(ego_pose[:3])
             T_ego = pose_to_matrix(ego_pose)
+            ego_pos = T_ego[:3, 3]
             T_ego_inv = np.linalg.inv(T_ego)
 
             for coop in cooperators:
                 coop_pose = coop['ego_pose']
-                coop_pos = np.array(coop_pose[:3])
+                T_cav = pose_to_matrix(coop_pose)
+                coop_pos = T_cav[:3, 3]
 
                 # Filter by communication range
                 dist = np.linalg.norm(ego_pos[:2] - coop_pos[:2])
@@ -106,7 +112,6 @@ class OPV2VCoopDataset(OPV2VDataset):
                     continue
 
                 # Compute cav-to-ego transformation
-                T_cav = pose_to_matrix(coop_pose)
                 T_cav_to_ego = T_ego_inv @ T_cav
 
                 # Make cooperator lidar_path absolute, matching

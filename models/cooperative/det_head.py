@@ -71,16 +71,12 @@ class DetHead(nn.Module):
 
         pcr = self.point_cloud_range
         vw, vh = self.voxel_size[0], self.voxel_size[1]
-        fs = self.feature_stride
 
-        x = np.linspace(
-            pcr[0] + vw * fs / 2,
-            pcr[3] - vw * fs / 2,
-            W)
-        y = np.linspace(
-            pcr[1] + vh * fs / 2,
-            pcr[4] - vh * fs / 2,
-            H)
+        # Match OpenCOOD VoxelPostprocessor anchor generation exactly so
+        # converted ckpts decode boxes at the same world coordinates.  The
+        # offset is the voxel size, independent of feature_stride.
+        x = np.linspace(pcr[0] + vw, pcr[3] - vw, W)
+        y = np.linspace(pcr[1] + vh, pcr[4] - vh, H)
 
         xx, yy = np.meshgrid(x, y)
         l, w, h = self.anchor_size
@@ -161,29 +157,38 @@ class DetHead(nn.Module):
         return cls_targets, reg_targets, reg_weights
 
     def _encode(self, anchors, gt):
-        l, w = anchors[:, 3], anchors[:, 4]
+        # anchors / gt stored as (x, y, z, l, w, h, yaw).
+        # reg_head channels follow OpenCOOD's `order: hwl` convention so
+        # OpenCOOD-trained ckpts (cobevt/v2vam/v2vnet/v2xvit) decode correctly:
+        #   ch3 = log(gt_h / anchor_h)
+        #   ch4 = log(gt_w / anchor_w)
+        #   ch5 = log(gt_l / anchor_l)
+        l, w, h = anchors[:, 3], anchors[:, 4], anchors[:, 5]
         diag = torch.sqrt(l ** 2 + w ** 2)
 
         dx = (gt[:, 0] - anchors[:, 0]) / diag
         dy = (gt[:, 1] - anchors[:, 1]) / diag
-        dz = (gt[:, 2] - anchors[:, 2]) / anchors[:, 5]
-        dl = torch.log(gt[:, 3] / anchors[:, 3])
-        dw = torch.log(gt[:, 4] / anchors[:, 4])
-        dh = torch.log(gt[:, 5] / anchors[:, 5])
+        dz = (gt[:, 2] - anchors[:, 2]) / h
+        dh = torch.log(gt[:, 5] / h)
+        dw = torch.log(gt[:, 4] / w)
+        dl = torch.log(gt[:, 3] / l)
         dr = gt[:, 6] - anchors[:, 6]
 
-        return torch.stack([dx, dy, dz, dl, dw, dh, dr], dim=-1)
+        return torch.stack([dx, dy, dz, dh, dw, dl, dr], dim=-1)
 
     def _decode(self, anchors, deltas):
-        l, w = anchors[:, 3], anchors[:, 4]
+        # Inverse of _encode.  Reg head channels follow OpenCOOD `hwl`:
+        #   ch3 -> h-delta, ch4 -> w-delta, ch5 -> l-delta.
+        # Output is in mmdet3d's (l, w, h) slot order at [3, 4, 5].
+        l, w, h = anchors[:, 3], anchors[:, 4], anchors[:, 5]
         diag = torch.sqrt(l ** 2 + w ** 2)
 
         x = deltas[:, 0] * diag + anchors[:, 0]
         y = deltas[:, 1] * diag + anchors[:, 1]
-        z = deltas[:, 2] * anchors[:, 5] + anchors[:, 2]
-        dl = torch.exp(deltas[:, 3]) * anchors[:, 3]
-        dw = torch.exp(deltas[:, 4]) * anchors[:, 4]
-        dh = torch.exp(deltas[:, 5]) * anchors[:, 5]
+        z = deltas[:, 2] * h + anchors[:, 2]
+        dh = torch.exp(deltas[:, 3]) * h
+        dw = torch.exp(deltas[:, 4]) * w
+        dl = torch.exp(deltas[:, 5]) * l
         r = deltas[:, 6] + anchors[:, 6]
 
         return torch.stack([x, y, z, dl, dw, dh, r], dim=-1)
@@ -272,6 +277,15 @@ class DetHead(nn.Module):
         bboxes_3d (LiDAR, 7-dim), scores_3d, labels_3d.
         """
         psm, rm = self.forward(x)
+        return self.predict_from_logits(psm, rm, batch_data_samples)
+
+    def predict_from_logits(self, psm, rm, batch_data_samples=None, **kwargs):
+        """Same as predict() but skip the internal cls/reg conv layers.
+
+        Used by `OpenCOODCooperativeDetector` which has its OWN cls/reg heads
+        inside the imported OpenCOOD model and just needs anchor decoding +
+        NMS + InstanceData packing here.
+        """
         B, _, H, W = psm.shape
         device = psm.device
 
@@ -292,7 +306,8 @@ class DetHead(nn.Module):
             if scores.shape[0] == 0:
                 result = InstanceData()
                 result.bboxes_3d = LiDARInstance3DBoxes(
-                    torch.zeros(0, 7, device=device))
+                    torch.zeros(0, 7, device=device),
+                    origin=(0.5, 0.5, 0.5))
                 result.scores_3d = torch.zeros(0, device=device)
                 result.labels_3d = torch.zeros(
                     0, dtype=torch.long, device=device)
@@ -301,20 +316,62 @@ class DetHead(nn.Module):
 
             boxes = self._decode(anchors_sel, reg_pred)
 
-            from mmcv.ops import nms_rotated
-            nms_boxes = torch.stack([
-                boxes[:, 0], boxes[:, 1],
-                boxes[:, 4], boxes[:, 3],
-                boxes[:, 6] * 180 / np.pi
-            ], dim=-1)
-            _, keep = nms_rotated(nms_boxes, scores, self.nms_threshold)
+            # === bit-match OpenCOOD's VoxelPostprocessor.post_process ===
+            # Build (N, 8, 3) corners with OpenCOOD's convention so that
+            # `convert_format` (which takes the first 4 corners as the BEV
+            # polygon) gets a valid planar quad. Our decoded boxes are in
+            # mmdet3d order [x, y, z_center, l, w, h, yaw]; OpenCOOD wants
+            # [x, y, z, h, w, l, yaw] for order='hwl'.
+            from opencood.utils.box_utils import (
+                boxes_to_corners_3d, remove_large_pred_bbx,
+                remove_bbx_abnormal_z, get_mask_for_boxes_within_range_torch)
+            from opencood.utils.box_utils import nms_rotated as ocd_nms
+
+            boxes_hwl = boxes.clone()
+            boxes_hwl[:, 3] = boxes[:, 5]  # h
+            boxes_hwl[:, 5] = boxes[:, 3]  # l
+            # boxes_hwl[:, 4] == w (unchanged)
+            corners = boxes_to_corners_3d(boxes_hwl, order='hwl')
+
+            keep_size = remove_large_pred_bbx(corners)
+            keep_z = remove_bbx_abnormal_z(corners)
+            keep_pre = torch.logical_and(keep_size, keep_z)
+            boxes = boxes[keep_pre]
+            scores = scores[keep_pre]
+            corners = corners[keep_pre]
+
+            if scores.shape[0] == 0:
+                result = InstanceData()
+                result.bboxes_3d = LiDARInstance3DBoxes(
+                    torch.zeros(0, 7, device=device),
+                    origin=(0.5, 0.5, 0.5))
+                result.scores_3d = torch.zeros(0, device=device)
+                result.labels_3d = torch.zeros(
+                    0, dtype=torch.long, device=device)
+                results.append(result)
+                continue
+
+            # OpenCOOD's nms_rotated takes (N, 8, 3) corners + scores + thr,
+            # returns kept indices as a numpy int32 array.
+            keep_np = ocd_nms(corners, scores, self.nms_threshold)
+            keep = torch.as_tensor(keep_np, dtype=torch.long, device=device)
             keep = keep[:self.max_num]
+            boxes = boxes[keep]
+            scores = scores[keep]
+            corners = corners[keep]
+
+            # Post-NMS range filter against the same GT_RANGE OpenCOOD uses.
+            if boxes.shape[0] > 0:
+                mask_in_range = get_mask_for_boxes_within_range_torch(corners)
+                boxes = boxes[mask_in_range]
+                scores = scores[mask_in_range]
 
             result = InstanceData()
-            result.bboxes_3d = LiDARInstance3DBoxes(boxes[keep])
-            result.scores_3d = scores[keep]
+            result.bboxes_3d = LiDARInstance3DBoxes(
+                boxes, origin=(0.5, 0.5, 0.5))
+            result.scores_3d = scores
             result.labels_3d = torch.zeros(
-                len(keep), dtype=torch.long, device=device)
+                len(boxes), dtype=torch.long, device=device)
             results.append(result)
 
         return results
