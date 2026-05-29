@@ -220,16 +220,7 @@ param_scheduler = [
 ]
 
 # ===================== Visualizer: update wandb name =====================
-vis_backends = [
-    dict(type='LocalVisBackend'),
-    dict(
-        type='WandbVisBackend',
-        init_kwargs=dict(
-            project='cooperscene-bevfusion',
-            name='bevfusion_lidar-cam_cooperscene',
-        ),
-    ),
-]
+vis_backends = [dict(type='LocalVisBackend')]
 visualizer = dict(
     type='Det3DLocalVisualizer', vis_backends=vis_backends, name='visualizer')
 

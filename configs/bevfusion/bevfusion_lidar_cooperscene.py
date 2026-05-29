@@ -233,16 +233,7 @@ val_evaluator = dict(
 test_evaluator = val_evaluator
 
 # ===================== Visualizer Settings =====================
-vis_backends = [
-    dict(type='LocalVisBackend'),
-    dict(
-        type='WandbVisBackend',
-        init_kwargs=dict(
-            project='cooperscene-bevfusion',
-            name='bevfusion_lidar_cooperscene',
-        ),
-    ),
-]
+vis_backends = [dict(type='LocalVisBackend')]
 visualizer = dict(
     type='Det3DLocalVisualizer', vis_backends=vis_backends, name='visualizer')
 
