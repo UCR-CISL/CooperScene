@@ -1,5 +1,5 @@
 _base_ = [
-    './bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-30e_opv2v-3d_lrA.py'
+    './bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-30e_opv2v-3d.py'
 ]
 
 # OPV2V point cloud range (same as base, redeclared for use in pipelines)

@@ -26,31 +26,33 @@ including intersections, highway ramps, and parking areas.
 
 ### Docker
 
-A pre-built image with all Python + CUDA dependencies (PyTorch 2.1.1, mmdet3d 1.4,
-mmcv 2.1, spconv 2.x, etc.):
+Build a local image (extends a pre-built base with all Python + CUDA dependencies
+— PyTorch 2.1.1, mmdet3d 1.4, mmcv 2.1, spconv 2.x — and adds an entrypoint
+that auto-compiles the BEVFusion CUDA ops on first run):
 
 ```bash
-docker pull bwu109/motion_prediction@sha256:32e06e6533ce82d267696b8821b9f494d2f508971ab5501e736a65f1fb1ddcc3
+docker build -t cooperscene:latest -f docker/Dockerfile docker/
 
 docker run --gpus all -it --rm \
     -v $(pwd):/workspace/CooperScene \
     -v /path/to/data:/data \
-    bwu109/motion_prediction@sha256:32e06e6533ce82d267696b8821b9f494d2f508971ab5501e736a65f1fb1ddcc3 \
+    cooperscene:latest \
     bash
 ```
 
-(Other tags: <https://hub.docker.com/repository/docker/bwu109/motion_prediction/tags>.)
+The entrypoint runs `python setup.py develop` under `models/bevfusion/` if
+`bev_pool_ext*.so` is not already present, then exec's your command. Subsequent
+runs skip the build. The other cooperative configs (`configs/cobevt/`,
+`configs/v2vam/`, `configs/v2vnet/`, `configs/v2xvit/`) do **not** use these
+ops, so the build is only needed for BEVFusion configs.
 
-### Build BEVFusion CUDA ops (one-time)
+If you prefer the bare base image:
 
 ```bash
+docker pull bwu109/motion_prediction@sha256:32e06e6533ce82d267696b8821b9f494d2f508971ab5501e736a65f1fb1ddcc3
+# then manually:
 cd models/bevfusion && python setup.py develop && cd ../..
 ```
-
-This compiles `bev_pool_ext` and the voxel ops needed by the BEVFusion configs
-under `configs/bevfusion/`. The other cooperative configs (`configs/cobevt/`,
-`configs/v2vam/`, `configs/v2vnet/`, `configs/v2xvit/`) do **not** require
-this step.
 
 ---
 
