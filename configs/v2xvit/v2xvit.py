@@ -1,8 +1,3 @@
-"""cobevt config that calls OpenCOOD's modules directly via wrapper detector.
-
-Use with a ckpt wrapped by `tools/wrap_opencood_ckpt.py`.
-Note: cobevt uses a slightly different lidar_range than v2vam.
-"""
 _base_ = ['../_base_/default_runtime.py']
 
 custom_imports = dict(
@@ -14,7 +9,6 @@ visualizer = dict(
     type='Det3DLocalVisualizer', vis_backends=vis_backends, name='visualizer')
 
 voxel_size = [0.4, 0.4, 4]
-# cobevt training y range is ±38.4, not ±40 like v2vam — keep them matched.
 point_cloud_range = [-140.8, -38.4, -3, 140.8, 38.4, 1]
 
 opencood_args = dict(
@@ -23,7 +17,7 @@ opencood_args = dict(
     voxel_size=voxel_size,
     anchor_number=2,
     backbone_fix=False,
-    compression=64,
+    compression=32,
     pillar_vfe=dict(
         num_filters=[64],
         use_absolute_xyz=True,
@@ -40,24 +34,33 @@ opencood_args = dict(
         upsample_strides=[1, 2, 4]),
     shrink_header=dict(
         kernal_size=[3],
-        stride=[1],
+        stride=[2],
         padding=[1],
         dim=[256],
         input_dim=384),
-    fax_fusion=dict(
-        agent_size=5,
-        depth=3,
-        dim_head=32,
-        drop_out=0.1,
-        input_dim=256,
-        mask=True,
-        mlp_dim=256,
-        window_size=4),
+    transformer=dict(
+        encoder=dict(
+            cav_att_config=dict(
+                RTE_ratio=2, dim=256, dim_head=32, dropout=0.3,
+                heads=8, use_RTE=True, use_hetero=True),
+            depth=3,
+            use_RTE=True,
+            RTE_ratio=2,
+            feed_forward=dict(dropout=0.3, mlp_dim=256),
+            num_blocks=1,
+            pwindow_att_config=dict(
+                dim=256, dim_head=[16, 32, 64], dropout=0.3,
+                fusion_method='split_attn',
+                heads=[16, 8, 4],
+                relative_pos_embedding=True,
+                window_size=[4, 8, 16]),
+            sttf=dict(downsample_rate=4, voxel_size=voxel_size),
+            use_roi_mask=True)),
 )
 
 opencood_anchor_args = dict(
     D=1,
-    H=192,            # cobevt uses y range ±38.4 -> grid 192
+    H=192,
     W=704,
     l=3.9,
     w=1.6,
@@ -65,7 +68,7 @@ opencood_anchor_args = dict(
     num=2,
     r=[0, 90],
     cav_lidar_range=point_cloud_range,
-    feature_stride=2,  # cobevt shrink stride=1 -> feature_stride=2
+    feature_stride=4,
     vd=4,
     vh=0.4,
     vw=0.4,
@@ -88,7 +91,7 @@ opencood_loss_args = dict(
 
 model = dict(
     type='OpenCOODCooperativeDetector',
-    arch='cobevt',
+    arch='v2xvit',
     max_cav=5,
     opencood_args=opencood_args,
     anchor_args=opencood_anchor_args,
@@ -116,7 +119,7 @@ model = dict(
         anchor_z=-1.0,
         point_cloud_range=point_cloud_range,
         voxel_size=voxel_size,
-        feature_stride=2,  # cobevt shrink stride=1 -> feature_stride=2
+        feature_stride=4,
         pos_threshold=0.6,
         neg_threshold=0.45,
         score_threshold=0.20,
@@ -190,15 +193,13 @@ optim_wrapper = dict(
     optimizer=dict(type='Adam', lr=0.001, eps=1e-10, weight_decay=1e-4))
 
 param_scheduler = [
-    dict(type='LinearLR', start_factor=0.2, by_epoch=True,
-         begin=0, end=10),
-    dict(type='CosineAnnealingLR', by_epoch=True,
-         begin=10, end=90, eta_min=2e-5),
+    dict(type='LinearLR', start_factor=0.2, by_epoch=True, begin=0, end=10),
+    dict(type='CosineAnnealingLR', by_epoch=True, begin=10, end=90,
+         eta_min=2e-5),
 ]
 
 train_cfg = dict(by_epoch=True, max_epochs=60, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
-default_hooks = dict(
-    checkpoint=dict(type='CheckpointHook', interval=10))
+default_hooks = dict(checkpoint=dict(type='CheckpointHook', interval=10))

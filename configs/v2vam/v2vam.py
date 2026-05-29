@@ -1,7 +1,7 @@
 _base_ = ['../_base_/default_runtime.py']
 
 custom_imports = dict(
-    imports=['models.cooperative', 'models.v2vam'],
+    imports=['models.cooperative'],
     allow_failed_imports=False)
 
 vis_backends = [dict(type='LocalVisBackend')]
@@ -11,60 +11,87 @@ visualizer = dict(
 voxel_size = [0.4, 0.4, 4]
 point_cloud_range = [-140.8, -40, -3, 140.8, 40, 1]
 
-model = dict(
-    type='CooperativeDetector',
+opencood_args = dict(
     max_cav=5,
-    fusion_type='intermediate',
+    lidar_range=point_cloud_range,
+    voxel_size=voxel_size,
+    anchor_number=2,
+    backbone_fix=False,
+    compression=32,
+    pillar_vfe=dict(
+        num_filters=[64],
+        use_absolute_xyz=True,
+        use_norm=True,
+        with_distance=False),
+    point_pillar_scatter=dict(
+        num_features=64,
+        grid_size=[704, 200, 1]),
+    base_bev_backbone=dict(
+        layer_nums=[3, 5, 8],
+        layer_strides=[2, 2, 2],
+        num_filters=[64, 128, 256],
+        num_upsample_filter=[128, 128, 128],
+        upsample_strides=[1, 2, 4]),
+    shrink_header=dict(
+        kernal_size=[3],
+        stride=[2],
+        padding=[1],
+        dim=[256],
+        input_dim=384),
+)
+
+opencood_anchor_args = dict(
+    D=1,
+    H=200,
+    W=704,
+    l=3.9,
+    w=1.6,
+    h=1.56,
+    num=2,
+    r=[0, 90],
+    cav_lidar_range=point_cloud_range,
+    feature_stride=4,
+    vd=4,
+    vh=0.4,
+    vw=0.4,
+)
+
+opencood_postprocess_args = dict(
+    max_num=100,
+    nms_thresh=0.15,
+    target_args=dict(
+        pos_threshold=0.6,
+        neg_threshold=0.45,
+        score_threshold=0.20,
+    ),
+)
+
+opencood_loss_args = dict(
+    cls_weight=1.0,
+    reg=2.0,
+)
+
+model = dict(
+    type='OpenCOODCooperativeDetector',
+    arch='v2vam',
+    max_cav=5,
+    opencood_args=opencood_args,
+    anchor_args=opencood_anchor_args,
+    postprocess_args=opencood_postprocess_args,
+    loss_args=opencood_loss_args,
     data_preprocessor=dict(
-        type='CoopDet3DDataPreprocessor',
+        type='OpenCOODCoopDet3DDataPreprocessor',
         voxel=True,
         voxel_layer=dict(
             max_num_points=32,
             point_cloud_range=point_cloud_range,
             voxel_size=voxel_size,
-            max_voxels=(32000, 70000))),
-
-    voxel_encoder=dict(
-        type='PillarFeatureNet',
-        legacy=False,
-        in_channels=4,
-        feat_channels=[64],
-        with_distance=False,
+            max_voxels=(32000, 70000)),
+        cav_lidar_range=point_cloud_range,
         voxel_size=voxel_size,
-        point_cloud_range=point_cloud_range),
-
-    middle_encoder=dict(
-        type='PointPillarsScatter',
-        in_channels=64,
-        output_shape=[200, 704]),
-
-    backbone=dict(
-        type='SECOND',
-        in_channels=64,
-        layer_nums=[3, 5, 8],
-        layer_strides=[2, 2, 2],
-        out_channels=[64, 128, 256]),
-    neck=dict(
-        type='SECONDFPN',
-        in_channels=[64, 128, 256],
-        upsample_strides=[1, 2, 4],
-        out_channels=[128, 128, 128]),
-
-    shrink_header=dict(
-        type='DownsampleConv',
-        input_dim=384,
-        dim=[256],
-        kernal_size=[3],
-        stride=[2],
-        padding=[1]),
-
-    compression=dict(
-        type='NaiveCompressor', input_dim=256, compress_ratio=32),
-
-    fusion_module=dict(
-        type='V2VAttFusion',
-        feature_dim=256),
-
+        max_points_per_voxel=32,
+        max_voxel_train=32000,
+        max_voxel_test=70000),
     bbox_head=dict(
         type='DetHead',
         in_channels=256,
@@ -82,7 +109,6 @@ model = dict(
         max_num=100,
         cls_weight=1.0,
         reg_weight=2.0),
-
     train_cfg=None,
     test_cfg=None)
 
@@ -90,8 +116,6 @@ dataset_type = 'OPV2VCoopDataset'
 data_root = '/data/OPV2V'
 
 train_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR',
-         load_dim=4, use_dim=4),
     dict(type='LoadCooperativePointCloud', coord_type='LIDAR',
          load_dim=4, use_dim=[0, 1, 2, 3], max_cav=5,
          proj_first=True,
@@ -103,8 +127,6 @@ train_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR',
-         load_dim=4, use_dim=4),
     dict(type='LoadCooperativePointCloud', coord_type='LIDAR',
          load_dim=4, use_dim=[0, 1, 2, 3], max_cav=5,
          proj_first=True,

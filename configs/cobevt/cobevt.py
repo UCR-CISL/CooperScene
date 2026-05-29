@@ -1,78 +1,106 @@
 _base_ = ['../_base_/default_runtime.py']
 
 custom_imports = dict(
-    imports=['models.cooperative', 'models.cobevt'],
+    imports=['models.cooperative'],
     allow_failed_imports=False)
 
 vis_backends = [dict(type='LocalVisBackend')]
 visualizer = dict(
     type='Det3DLocalVisualizer', vis_backends=vis_backends, name='visualizer')
 
-
 voxel_size = [0.4, 0.4, 4]
 point_cloud_range = [-140.8, -38.4, -3, 140.8, 38.4, 1]
 
-model = dict(
-    type='CooperativeDetector',
+opencood_args = dict(
     max_cav=5,
-    fusion_type='intermediate',
+    lidar_range=point_cloud_range,
+    voxel_size=voxel_size,
+    anchor_number=2,
+    backbone_fix=False,
+    compression=64,
+    pillar_vfe=dict(
+        num_filters=[64],
+        use_absolute_xyz=True,
+        use_norm=True,
+        with_distance=False),
+    point_pillar_scatter=dict(
+        num_features=64,
+        grid_size=[704, 192, 1]),
+    base_bev_backbone=dict(
+        layer_nums=[3, 5, 8],
+        layer_strides=[2, 2, 2],
+        num_filters=[64, 128, 256],
+        num_upsample_filter=[128, 128, 128],
+        upsample_strides=[1, 2, 4]),
+    shrink_header=dict(
+        kernal_size=[3],
+        stride=[1],
+        padding=[1],
+        dim=[256],
+        input_dim=384),
+    fax_fusion=dict(
+        agent_size=5,
+        depth=3,
+        dim_head=32,
+        drop_out=0.1,
+        input_dim=256,
+        mask=True,
+        mlp_dim=256,
+        window_size=4),
+)
+
+opencood_anchor_args = dict(
+    D=1,
+    H=192,
+    W=704,
+    l=3.9,
+    w=1.6,
+    h=1.56,
+    num=2,
+    r=[0, 90],
+    cav_lidar_range=point_cloud_range,
+    feature_stride=2,
+    vd=4,
+    vh=0.4,
+    vw=0.4,
+)
+
+opencood_postprocess_args = dict(
+    max_num=100,
+    nms_thresh=0.15,
+    target_args=dict(
+        pos_threshold=0.6,
+        neg_threshold=0.45,
+        score_threshold=0.20,
+    ),
+)
+
+opencood_loss_args = dict(
+    cls_weight=1.0,
+    reg=2.0,
+)
+
+model = dict(
+    type='OpenCOODCooperativeDetector',
+    arch='cobevt',
+    max_cav=5,
+    opencood_args=opencood_args,
+    anchor_args=opencood_anchor_args,
+    postprocess_args=opencood_postprocess_args,
+    loss_args=opencood_loss_args,
     data_preprocessor=dict(
-        type='CoopDet3DDataPreprocessor',
+        type='OpenCOODCoopDet3DDataPreprocessor',
         voxel=True,
         voxel_layer=dict(
             max_num_points=32,
             point_cloud_range=point_cloud_range,
             voxel_size=voxel_size,
-            max_voxels=(32000, 70000))),
-
-    voxel_encoder=dict(
-        type='PillarFeatureNet',
-        legacy=False,
-        in_channels=4,
-        feat_channels=[64],
-        with_distance=False,
+            max_voxels=(32000, 70000)),
+        cav_lidar_range=point_cloud_range,
         voxel_size=voxel_size,
-        point_cloud_range=point_cloud_range),
-
-    middle_encoder=dict(
-        type='PointPillarsScatter',
-        in_channels=64,
-        output_shape=[192, 704]),
-
-    backbone=dict(
-        type='SECOND',
-        in_channels=64,
-        layer_nums=[3, 5, 8],
-        layer_strides=[2, 2, 2],
-        out_channels=[64, 128, 256]),
-    neck=dict(
-        type='SECONDFPN',
-        in_channels=[64, 128, 256],
-        upsample_strides=[1, 2, 4],
-        out_channels=[128, 128, 128]),
-
-    shrink_header=dict(
-        type='DownsampleConv',
-        input_dim=384,
-        dim=[256],
-        kernal_size=[3],
-        stride=[1],
-        padding=[1]),
-
-    compression=dict(
-        type='NaiveCompressor', input_dim=256, compress_ratio=64),
-
-    fusion_module=dict(
-        type='SwapFusionEncoder',
-        depth=3,
-        input_dim=256,
-        mlp_dim=256,
-        agent_size=5,
-        window_size=4,
-        drop_out=0.1,
-        dim_head=32,
-        mask=True),
-
+        max_points_per_voxel=32,
+        max_voxel_train=32000,
+        max_voxel_test=70000),
     bbox_head=dict(
         type='DetHead',
         in_channels=256,
@@ -85,22 +113,18 @@ model = dict(
         feature_stride=2,
         pos_threshold=0.6,
         neg_threshold=0.45,
-        score_threshold=0.1,
+        score_threshold=0.20,
         nms_threshold=0.15,
         max_num=100,
         cls_weight=1.0,
         reg_weight=2.0),
-
     train_cfg=None,
     test_cfg=None)
 
 dataset_type = 'OPV2VCoopDataset'
-# data_root = '/data/OPV2V'
-data_root = '/data/Cooperscene/benchmark_opencood/250928_opv2v'
+data_root = '/data/OPV2V'
 
 train_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR',
-         load_dim=4, use_dim=4),
     dict(type='LoadCooperativePointCloud', coord_type='LIDAR',
          load_dim=4, use_dim=[0, 1, 2, 3], max_cav=5,
          proj_first=True,
@@ -112,8 +136,6 @@ train_pipeline = [
 ]
 
 test_pipeline = [
-    dict(type='LoadPointsFromFile', coord_type='LIDAR',
-         load_dim=4, use_dim=4),
     dict(type='LoadCooperativePointCloud', coord_type='LIDAR',
          load_dim=4, use_dim=[0, 1, 2, 3], max_cav=5,
          proj_first=True,
@@ -122,7 +144,7 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=2,
+    batch_size=4,
     collate_fn=dict(type='cooperative_collate'),
     num_workers=4,
     sampler=dict(type='DefaultSampler', shuffle=True),
@@ -143,7 +165,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='cooperscene_coop_infos_test.pkl',
+        ann_file='opv2v_coop_infos_val.pkl',
         data_prefix=dict(pts=''),
         pipeline=test_pipeline,
         test_mode=True,
@@ -154,13 +176,12 @@ test_dataloader = val_dataloader
 
 val_evaluator = dict(
     type='OPV2VMetric',
-    ann_file=data_root + '/cooperscene_coop_infos_test.pkl')
+    ann_file=data_root + '/opv2v_coop_infos_val.pkl')
 test_evaluator = val_evaluator
 
 optim_wrapper = dict(
     type='OptimWrapper',
     optimizer=dict(type='Adam', lr=0.001, eps=1e-10, weight_decay=1e-4))
-
 
 param_scheduler = [
     dict(type='LinearLR', start_factor=0.2, by_epoch=True,
@@ -169,7 +190,7 @@ param_scheduler = [
          begin=10, end=90, eta_min=2e-5),
 ]
 
-train_cfg = dict(by_epoch=True, max_epochs=90, val_interval=1)
+train_cfg = dict(by_epoch=True, max_epochs=60, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 

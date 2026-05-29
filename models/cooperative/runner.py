@@ -410,15 +410,15 @@ def test(cfg, args: argparse.Namespace) -> None:
     dataset = _build_dataset(hypes, train=False, ego_candidates=ego_candidates)
     print(f'{len(dataset)} samples found.')
 
-    # Match upstream inference.py: batch_size=1, num_workers=16 unless the
-    # user explicitly bumped it in the cfg.
+    # Match upstream inference.py exactly: batch_size=1, num_workers=16,
+    # PyTorch default prefetch. Going higher can thrash networked storage
+    # (sshfs / NFS) where I/O is bandwidth-limited rather than throughput
+    # bound.
     num_workers = max(int(cfg.test_dataloader.num_workers), 16)
     data_loader = DataLoader(
         dataset, batch_size=1, num_workers=num_workers,
         collate_fn=dataset.collate_batch_test, shuffle=False,
-        pin_memory=False, drop_last=False,
-        prefetch_factor=4,
-        persistent_workers=num_workers > 0)
+        pin_memory=False, drop_last=False)
 
     print('Creating Model')
     model = _build_model(hypes)

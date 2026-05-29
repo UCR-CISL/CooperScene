@@ -1,4 +1,3 @@
-"""v2vnet config that calls OpenCOOD's modules directly via wrapper detector."""
 _base_ = ['../_base_/default_runtime.py']
 
 custom_imports = dict(
@@ -18,7 +17,7 @@ opencood_args = dict(
     voxel_size=voxel_size,
     anchor_number=2,
     backbone_fix=False,
-    compression=0,                   # v2vnet has NO compression
+    compression=0,
     pillar_vfe=dict(
         num_filters=[64],
         use_absolute_xyz=True,
