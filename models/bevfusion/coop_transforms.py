@@ -79,7 +79,7 @@ class LoadCoopPointsFromFile(BaseTransform):
 
         coop_points = []
         for i, coop in enumerate(cooperators):
-            # Paths are made absolute by OPV2VCoopDataset.parse_data_info
+            # Paths are made absolute by CoopDataset.parse_data_info
             points = self._load_points(coop['lidar_path'])
 
             # Project to ego coordinate frame

@@ -255,7 +255,7 @@ def calculate_ap(results: List[dict], iou_thresh: float, use_3d_iou: bool = Fals
 
 
 @METRICS.register_module()
-class OPV2VMetric(BaseMetric):
+class EvalMetric(BaseMetric):
     """OPV2V evaluation metric.
 
     Computes both 2D BEV AP and 3D AP with CUDA acceleration.
@@ -268,8 +268,8 @@ class OPV2VMetric(BaseMetric):
                  prefix: Optional[str] = None,
                  collect_device: str = 'cpu',
                  backend_args: Optional[dict] = None) -> None:
-        self.default_prefix = 'OPV2V metric'
-        super(OPV2VMetric, self).__init__(
+        self.default_prefix = 'Eval metric'
+        super(EvalMetric, self).__init__(
             collect_device=collect_device, prefix=prefix)
 
         self.ann_file = ann_file

@@ -224,7 +224,7 @@ test_dataloader = val_dataloader
 
 # ===================== Evaluator Settings =====================
 val_evaluator = dict(
-    type='OPV2VMetric',
+    type='EvalMetric',
     ann_file=data_root + 'cooperscene_infos_val.pkl',
     metric='bbox',
     iou_thresholds=[0.3, 0.5, 0.7],

@@ -57,7 +57,7 @@ def pose_to_matrix(pose):
 
 
 @DATASETS.register_module()
-class OPV2VCoopDataset(OPV2VDataset):
+class CoopDataset(OPV2VDataset):
     """OPV2V Cooperative Dataset.
 
     Extends single-agent OPV2VDataset with multi-agent support.

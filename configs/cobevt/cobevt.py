@@ -121,8 +121,8 @@ model = dict(
     train_cfg=None,
     test_cfg=None)
 
-dataset_type = 'OPV2VCoopDataset'
-data_root = '/data/OPV2V'
+dataset_type = 'CoopDataset'
+data_root = 'data/cooperscene'
 
 train_pipeline = [
     dict(type='LoadCooperativePointCloud', coord_type='LIDAR',
@@ -151,7 +151,6 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_coop_infos_train.pkl',
         data_prefix=dict(pts=''),
         pipeline=train_pipeline,
         max_cav=5,
@@ -165,7 +164,6 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_coop_infos_val.pkl',
         data_prefix=dict(pts=''),
         pipeline=test_pipeline,
         test_mode=True,
@@ -174,9 +172,7 @@ val_dataloader = dict(
 
 test_dataloader = val_dataloader
 
-val_evaluator = dict(
-    type='OPV2VMetric',
-    ann_file=data_root + '/opv2v_coop_infos_val.pkl')
+val_evaluator = dict(type='EvalMetric')
 test_evaluator = val_evaluator
 
 optim_wrapper = dict(

@@ -242,13 +242,13 @@ test_dataloader = dict(
 
 # ===================== Evaluator Settings =====================
 val_evaluator = dict(
-    type='OPV2VMetric',
+    type='EvalMetric',
     ann_file=data_root + 'opv2v_infos_val.pkl',
     metric='bbox',
     iou_thresholds=[0.3, 0.5, 0.7],
     backend_args=backend_args)
 test_evaluator = dict(
-    type='OPV2VMetric',
+    type='EvalMetric',
     ann_file=data_root + 'opv2v_infos_test.pkl',
     metric='bbox',
     iou_thresholds=[0.3, 0.5, 0.7],

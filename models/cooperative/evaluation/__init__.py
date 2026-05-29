@@ -1,1 +1,1 @@
-from .opv2v_metric import OPV2VMetric  # noqa: F401
+from .eval_metric import EvalMetric  # noqa: F401

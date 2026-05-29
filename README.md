@@ -81,13 +81,16 @@ cooperscene/
 │   │   ├── 2/  3/            # other agents — same layout as agent 1
 │   ├── 2/  3/  ...           # other takes — same 4-agent layout
 ├── validate/
-└── test/
+├── test/
+└── mcap/                     # per-take MCAP recordings (LiDAR + camera + throughput)
+    ├── 1.mcap
+    ├── 2.mcap
+    └── ...
 ```
 
-A **mini set** of 180 contiguous frames (120 train / 30 validate / 30 test,
-all from one take, 4 agents aligned) is shipped alongside the full release for
-pipeline smoke tests — same `<split>/<take>/<agent>/<frame>` layout, rooted at
-`cooperscene_mini/`.
+A **mini set** of 180 contiguous frames (120 train / 30 validate / 30 test) 
+is shipped alongside the full release for pipeline smoke tests — same `<split>/<take>/<agent>/<frame>` layout, rooted at
+`/mini`.
 
 ### Generate `.pkl` index files (and `.bin` point clouds)
 
