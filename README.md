@@ -50,12 +50,15 @@ If you prefer the bare base image:
 
 ```bash
 docker pull bwu109/motion_prediction@sha256:32e06e6533ce82d267696b8821b9f494d2f508971ab5501e736a65f1fb1ddcc3
-# then manually:
-cd models/bevfusion && python setup.py develop --user && cd ../..
+# then from the project root (NOT from models/bevfusion/):
+python models/bevfusion/setup.py develop --user
 ```
 
 `--user` is required if site-packages is read-only (Apptainer, locked-down
 Docker images). The compiled `.so` lands in the source tree either way.
+The setup.py uses sources relative to the project root, so it must be invoked
+from the root rather than from `models/bevfusion/` (running it inside that
+directory produces a duplicated path and ninja fails).
 
 ---
 
