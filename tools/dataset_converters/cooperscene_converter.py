@@ -111,7 +111,8 @@ def _list_subdirs(p):
 
 
 def build_split(data_root: str, split: str, out_path: str,
-                convert_pcd: bool = False) -> int:
+                convert_pcd: bool = False,
+                bin_dir: str = None) -> int:
     split_path = osp.join(data_root, split)
     if not osp.exists(split_path):
         print(f'  SKIP {split}, not found')
@@ -158,20 +159,39 @@ def build_split(data_root: str, split: str, out_path: str,
             # `LoadPointsFromFile` only handles raw float32 (.bin); the
             # cooperative loader can read .pcd directly, but bevfusion
             # uses LoadPointsFromFile, so for that pipeline we want
-            # `.bin`. With --convert-pcd, build a .bin next to the .pcd
-            # on the fly.
-            bin_filename = f'{timestamp}.bin'
-            bin_abs = osp.join(split_path, scenario, agent_id, bin_filename)
+            # `.bin`. With --convert-pcd, build a .bin (next to the .pcd
+            # by default, or under `--bin-dir` mirroring the original
+            # tree); pkl lidar_path stays relative when .bin is next to
+            # .pcd, and becomes absolute when --bin-dir is in use.
             pcd_filename = f'{timestamp}.pcd'
             pcd_abs = osp.join(split_path, scenario, agent_id, pcd_filename)
-            if convert_pcd and osp.exists(pcd_abs) and not osp.exists(bin_abs):
-                convert_pcd_to_bin(pcd_abs, bin_abs)
-            if osp.exists(bin_abs):
-                pts_filename = bin_filename
-            elif osp.exists(pcd_abs):
-                pts_filename = pcd_filename
+            inplace_bin = osp.join(
+                split_path, scenario, agent_id, f'{timestamp}.bin')
+            if bin_dir is not None:
+                external_bin = osp.join(
+                    bin_dir, split, scenario, agent_id, f'{timestamp}.bin')
+                if convert_pcd and osp.exists(pcd_abs) \
+                        and not osp.exists(external_bin):
+                    os.makedirs(osp.dirname(external_bin), exist_ok=True)
+                    convert_pcd_to_bin(pcd_abs, external_bin)
+                if osp.exists(external_bin):
+                    pts_filename = external_bin  # absolute path
+                elif osp.exists(inplace_bin):
+                    pts_filename = f'{timestamp}.bin'  # relative to split
+                elif osp.exists(pcd_abs):
+                    pts_filename = pcd_filename
+                else:
+                    continue
             else:
-                continue
+                if convert_pcd and osp.exists(pcd_abs) \
+                        and not osp.exists(inplace_bin):
+                    convert_pcd_to_bin(pcd_abs, inplace_bin)
+                if osp.exists(inplace_bin):
+                    pts_filename = f'{timestamp}.bin'
+                elif osp.exists(pcd_abs):
+                    pts_filename = pcd_filename
+                else:
+                    continue
 
             images = _extract_images_for_ts(
                 meta, split, scenario, agent_id, timestamp, data_root)
@@ -256,8 +276,12 @@ def parse_args():
     ap.add_argument('--data-root', required=True,
                     help='e.g. /workspace/data/Cooperscene/release/250928_opv2v')
     ap.add_argument('--convert-pcd', action='store_true',
-                    help='Convert each .pcd to .bin next to it so mmdet3d'
+                    help='Convert each .pcd to .bin so mmdet3d'
                          ' LoadPointsFromFile (bevfusion path) can read it.')
+    ap.add_argument('--bin-dir', default=None,
+                    help='Optional output dir for the converted .bin files'
+                         ' (mirrors <split>/<scenario>/<agent>/ tree). When'
+                         ' unset, .bin lives next to the .pcd.')
     return ap.parse_args()
 
 
@@ -265,12 +289,13 @@ def main():
     args = parse_args()
     dr = args.data_root
     cp = args.convert_pcd
+    bd = args.bin_dir
     build_split(dr, 'train',
-                osp.join(dr, 'cooperscene_coop_infos_train.pkl'), cp)
+                osp.join(dr, 'cooperscene_coop_infos_train.pkl'), cp, bd)
     build_split(dr, 'validate',
-                osp.join(dr, 'cooperscene_coop_infos_val.pkl'), cp)
+                osp.join(dr, 'cooperscene_coop_infos_val.pkl'), cp, bd)
     build_split(dr, 'test',
-                osp.join(dr, 'cooperscene_coop_infos_test.pkl'), cp)
+                osp.join(dr, 'cooperscene_coop_infos_test.pkl'), cp, bd)
 
 
 if __name__ == '__main__':
