@@ -137,6 +137,13 @@ def _build_hypes(cfg, *, for_train: bool) -> dict:
         'validate_dir': val_root,
         'test_dir': test_root,
 
+        # Coordinate system flag in the upstream base dataset; OPV2V / Carla
+        # data is left-handed (not ENU), so this stays False.
+        'useENU': False,
+        # Read .pcd intensity (int32 / 65535) instead of constant 1.0.
+        # Matches what the upstream models were trained with.
+        'intensity': True,
+
         'wild_setting': {
             'async': False, 'async_overhead': 0, 'seed': 20,
             'loc_err': False, 'xyz_std': 0.0, 'ryp_std': 0.0,
@@ -403,11 +410,15 @@ def test(cfg, args: argparse.Namespace) -> None:
     dataset = _build_dataset(hypes, train=False, ego_candidates=ego_candidates)
     print(f'{len(dataset)} samples found.')
 
+    # Match upstream inference.py: batch_size=1, num_workers=16 unless the
+    # user explicitly bumped it in the cfg.
+    num_workers = max(int(cfg.test_dataloader.num_workers), 16)
     data_loader = DataLoader(
-        dataset, batch_size=1,
-        num_workers=int(cfg.test_dataloader.num_workers),
+        dataset, batch_size=1, num_workers=num_workers,
         collate_fn=dataset.collate_batch_test, shuffle=False,
-        pin_memory=False, drop_last=False)
+        pin_memory=False, drop_last=False,
+        prefetch_factor=4,
+        persistent_workers=num_workers > 0)
 
     print('Creating Model')
     model = _build_model(hypes)
