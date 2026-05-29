@@ -28,9 +28,42 @@ from tqdm import tqdm
 import sys
 _HERE = osp.dirname(osp.abspath(__file__))
 sys.path.insert(0, _HERE)
-from opv2v_converter import parse_opv2v_vehicle  # noqa: E402
+from opv2v_converter import parse_opv2v_vehicle, CARLA_TO_CV_CAM  # noqa: E402
 
 EGO_CANDIDATE_IDS = ('1', '2', '3')
+
+
+def _extract_images_for_ts(meta, split, scenario, agent_id, timestamp,
+                           data_root):
+    """Per-agent `images` dict (img_path, lidar2cam, cam2img) built by
+    walking `camera0..camera3` entries in the agent yaml. Skips cameras
+    whose .png file is missing on disk."""
+    images = {}
+    for cam_id in ('camera0', 'camera1', 'camera2', 'camera3'):
+        cam_data = meta.get(cam_id)
+        if not isinstance(cam_data, dict):
+            continue
+        cam_img_filename = f'{timestamp}_{cam_id}.png'
+        cam_img_path = osp.join(
+            data_root, split, scenario, agent_id, cam_img_filename)
+        if not osp.exists(cam_img_path):
+            continue
+        try:
+            extrinsic_carla = np.array(
+                cam_data['extrinsic'], dtype=np.float64)
+            lidar2cam = (CARLA_TO_CV_CAM @ extrinsic_carla).astype(
+                np.float32)
+            cam2img = np.array(
+                cam_data['intrinsic'], dtype=np.float32)
+        except (KeyError, ValueError):
+            continue
+        images[cam_id] = {
+            'img_path': osp.join(
+                split, scenario, agent_id, cam_img_filename),
+            'lidar2cam': lidar2cam.tolist(),
+            'cam2img': cam2img.tolist(),
+        }
+    return images
 
 
 def _list_subdirs(p):
@@ -91,13 +124,15 @@ def build_split(data_root: str, split: str, out_path: str) -> int:
                     continue
                 pts_filename = bin_filename
 
+            images = _extract_images_for_ts(
+                meta, split, scenario, agent_id, timestamp, data_root)
             agent_data.append({
                 'agent_id': agent_id,
                 'ego_pose': pose,
                 'lidar_path': osp.join(
                     split, scenario, agent_id, pts_filename),
                 'meta': meta,
-                'images': {},
+                'images': images,
             })
 
         if not agent_data:
