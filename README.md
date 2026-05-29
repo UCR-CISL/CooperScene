@@ -137,19 +137,50 @@ All configs live under `configs/`:
 
 ```
 configs/
-├── bevfusion/   # BEVFusion (single-agent + cooperative)
-├── cobevt/      # PointPillars + CoBEVT
-├── v2vam/       # PointPillars + V2VAM
-├── v2vnet/      # PointPillars + V2VNet
-└── v2xvit/      # PointPillars + V2X-ViT
+├── bevfusion/      # BEVFusion (single-agent + cooperative)
+├── cobevt/cobevt.py
+├── v2vam/v2vam.py
+├── v2vnet/v2vnet.py
+└── v2xvit/v2xvit.py
 ```
 
-Each method's `_base_` (runtime defaults) is `configs/_base_/default_runtime.py`.
+Each cooperative-perception config (`cobevt/v2vam/v2vnet/v2xvit`) is
+self-contained and shares the same field layout. Common knobs you'll
+override most often:
+
+| Field | Meaning |
+|---|---|
+| `train_dataloader.batch_size` | per-GPU batch (default 4) |
+| `train_dataloader.num_workers` | worker processes (default 4) |
+| `train_dataloader.dataset.data_root` | dataset root containing `train/`, `validate/`, `test/` |
+| `optim_wrapper.optimizer.lr` | base learning rate (default `1e-3`) |
+| `train_cfg.max_epochs` | total epochs (default 60) |
+| `ego_candidates` | rotate ego across these agent IDs per (scenario, timestamp). Default `None` = use the agent with the smallest `cav_id` |
+| `load_from` | warm-start ckpt path |
+
+BEVFusion configs (mmengine path) additionally use
+`train_dataloader.dataset.ann_file` for the `.pkl` index.
+
+Override any of these from the CLI with `--cfg-options`:
+
+```bash
+python tools/train.py configs/v2vam/v2vam.py \
+    --cfg-options \
+        train_dataloader.batch_size=2 \
+        train_dataloader.num_workers=8 \
+        train_dataloader.dataset.data_root=$DR \
+        val_dataloader.dataset.data_root=$DR \
+        test_dataloader.dataset.data_root=$DR \
+        train_cfg.max_epochs=40 \
+        optim_wrapper.optimizer.lr=5e-4 \
+        "ego_candidates=['1','2','3']" \
+        load_from=work_dirs/opencood_converted/v2vam.pth
+```
 
 ### Train
 
 ```bash
-python tools/train.py configs/cobevt/pointpillars_cobevt.py
+python tools/train.py configs/cobevt/cobevt.py
 ```
 
 Swap in any other config under `configs/`. Checkpoints and logs land under
@@ -158,9 +189,16 @@ Swap in any other config under `configs/`. Checkpoints and logs land under
 ### Inference
 
 ```bash
-python tools/test.py configs/cobevt/pointpillars_cobevt.py \
-    work_dirs/pointpillars_cobevt/epoch_90.pth
+python tools/test.py configs/cobevt/cobevt.py \
+    work_dirs/cobevt/epoch_60.pth
 ```
+
+### Pre-trained Checkpoints
+
+
+<https://drive.google.com/drive/folders/129KNKz9ovrBB_DZ-NS9MUTai2p9PG1cv?usp=sharing>
+
+use `load_from=...` to warm-start training or `tools/test.py <cfg> <ckpt>` for inference. 
 
 ---
 
