@@ -17,10 +17,8 @@ from torch import Tensor
 
 from mmdet3d.models.data_preprocessors.data_preprocessor import (
     Det3DDataPreprocessor)
-from mmdet3d.registry import MODELS
 
 
-@MODELS.register_module()
 class CoopDet3DDataPreprocessor(Det3DDataPreprocessor):
 
     def forward(self, data: dict, training: bool = False) -> dict:

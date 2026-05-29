@@ -2,6 +2,8 @@ __pycache__/
 *.py[cod]
 *.egg-info/
 *.so
+build/
+**/build/
 
 work_dirs/
 **/work_dirs/
