@@ -28,38 +28,80 @@ from tqdm import tqdm
 import sys
 _HERE = osp.dirname(osp.abspath(__file__))
 sys.path.insert(0, _HERE)
-from opv2v_converter import parse_opv2v_vehicle, CARLA_TO_CV_CAM  # noqa: E402
+from opv2v_converter import parse_opv2v_vehicle  # noqa: E402
 
 EGO_CANDIDATE_IDS = ('1', '2', '3')
+
+
+# Per-vehicle camera calibration (front camera, "camera0").
+# Source: SensorPlatform/utils/constants.py (CALIBRATION).
+# `intrinsic` is the 3x3 pinhole matrix; `T_lidar_to_cam` is the 4x4
+# lidar->camera transform already in CV convention (X right, Y down,
+# Z forward), so no CARLA->CV swap is needed.
+AGENT_CALIBRATION = {
+    '1': {
+        'intrinsic': [
+            [1810.6983377214349, 0.0, 970.0037900558976],
+            [0.0, 1808.4746114412712, 526.7243033929532],
+            [0.0, 0.0, 1.0],
+        ],
+        'lidar2cam': [
+            [ 1.97675856e-02, -9.98998871e-01, -4.01310140e-02, -1.14236290e-04],
+            [-4.47204289e-02,  3.92152089e-02, -9.98229558e-01, -1.75248879e-01],
+            [ 9.98803948e-01,  2.15272644e-02, -4.39004680e-02, -5.25987245e-02],
+            [ 0.0, 0.0, 0.0, 1.0],
+        ],
+    },
+    '2': {
+        'intrinsic': [
+            [1807.294188309111, 0.0, 959.1274184107824],
+            [0.0, 1805.1344921703185, 562.0235332672737],
+            [0.0, 0.0, 1.0],
+        ],
+        'lidar2cam': [
+            [ 0.00383388, -0.99998521, -0.00385735, -0.0013977],
+            [-0.00271154,  0.00384697, -0.99998892, -0.23015363],
+            [ 0.99998897,  0.0038443,  -0.00269675, -0.07767752],
+            [ 0.0, 0.0, 0.0, 1.0],
+        ],
+    },
+    '3': {
+        'intrinsic': [
+            [1814.1641900346326, 0.0, 951.718698093622],
+            [0.0, 1812.1352460466578, 568.1954332460546],
+            [0.0, 0.0, 1.0],
+        ],
+        'lidar2cam': [
+            [ 0.064023,   -0.99792386, -0.00700149, -0.00332843],
+            [-0.01444825,  0.00608825, -0.99987708, -0.26612881],
+            [ 0.99784383,  0.06411629, -0.01402846, -0.0864176],
+            [ 0.0, 0.0, 0.0, 1.0],
+        ],
+    },
+}
 
 
 def _extract_images_for_ts(meta, split, scenario, agent_id, timestamp,
                            data_root):
     """Per-agent `images` dict (img_path, lidar2cam, cam2img). CooperScene
-    only carries the front camera, stored as yaml key `camera_0` and image
-    file `<ts>_camera0.png`. Returns empty dict if the camera is missing
-    (e.g. agent 0 — LiDAR-only RSU)."""
+    release ships front camera frames as `<ts>_camera0.png` for vehicle
+    agents {1, 2, 3}; intrinsic / extrinsic are not in the yaml so we
+    look them up from `AGENT_CALIBRATION`. Agent 0 (LiDAR-only RSU) has
+    no entry and returns an empty dict."""
     images = {}
-    cam_data = meta.get('camera_0')
-    if not isinstance(cam_data, dict):
+    calib = AGENT_CALIBRATION.get(str(agent_id))
+    if calib is None:
         return images
     cam_img_filename = f'{timestamp}_camera0.png'
     cam_img_path = osp.join(
         data_root, split, scenario, agent_id, cam_img_filename)
     if not osp.exists(cam_img_path):
         return images
-    try:
-        extrinsic_carla = np.array(
-            cam_data['extrinsic'], dtype=np.float64)
-        lidar2cam = (CARLA_TO_CV_CAM @ extrinsic_carla).astype(np.float32)
-        cam2img = np.array(cam_data['intrinsic'], dtype=np.float32)
-    except (KeyError, ValueError):
-        return images
     images['camera0'] = {
         'img_path': osp.join(
             split, scenario, agent_id, cam_img_filename),
-        'lidar2cam': lidar2cam.tolist(),
-        'cam2img': cam2img.tolist(),
+        'lidar2cam': calib['lidar2cam'],
+        'cam2img': calib['intrinsic'],
     }
     return images
 
