@@ -28,7 +28,7 @@ from tqdm import tqdm
 import sys
 _HERE = osp.dirname(osp.abspath(__file__))
 sys.path.insert(0, _HERE)
-from opv2v_converter import parse_opv2v_vehicle  # noqa: E402
+from opv2v_converter import parse_opv2v_vehicle, convert_pcd_to_bin  # noqa: E402
 
 EGO_CANDIDATE_IDS = ('1', '2', '3')
 
@@ -110,7 +110,8 @@ def _list_subdirs(p):
     return [d for d in os.listdir(p) if osp.isdir(osp.join(p, d))]
 
 
-def build_split(data_root: str, split: str, out_path: str) -> int:
+def build_split(data_root: str, split: str, out_path: str,
+                convert_pcd: bool = False) -> int:
     split_path = osp.join(data_root, split)
     if not osp.exists(split_path):
         print(f'  SKIP {split}, not found')
@@ -153,16 +154,24 @@ def build_split(data_root: str, split: str, out_path: str) -> int:
             if pose is None:
                 continue
 
-            pts_filename = f'{timestamp}.pcd'
-            pts_abs = osp.join(
-                split_path, scenario, agent_id, pts_filename)
-            if not osp.exists(pts_abs):
-                bin_filename = f'{timestamp}.bin'
-                bin_abs = osp.join(
-                    split_path, scenario, agent_id, bin_filename)
-                if not osp.exists(bin_abs):
-                    continue
+            # Prefer .bin if it exists, fall back to .pcd. mmdet3d's
+            # `LoadPointsFromFile` only handles raw float32 (.bin); the
+            # cooperative loader can read .pcd directly, but bevfusion
+            # uses LoadPointsFromFile, so for that pipeline we want
+            # `.bin`. With --convert-pcd, build a .bin next to the .pcd
+            # on the fly.
+            bin_filename = f'{timestamp}.bin'
+            bin_abs = osp.join(split_path, scenario, agent_id, bin_filename)
+            pcd_filename = f'{timestamp}.pcd'
+            pcd_abs = osp.join(split_path, scenario, agent_id, pcd_filename)
+            if convert_pcd and osp.exists(pcd_abs) and not osp.exists(bin_abs):
+                convert_pcd_to_bin(pcd_abs, bin_abs)
+            if osp.exists(bin_abs):
                 pts_filename = bin_filename
+            elif osp.exists(pcd_abs):
+                pts_filename = pcd_filename
+            else:
+                continue
 
             images = _extract_images_for_ts(
                 meta, split, scenario, agent_id, timestamp, data_root)
@@ -246,18 +255,22 @@ def parse_args():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--data-root', required=True,
                     help='e.g. /workspace/data/Cooperscene/release/250928_opv2v')
+    ap.add_argument('--convert-pcd', action='store_true',
+                    help='Convert each .pcd to .bin next to it so mmdet3d'
+                         ' LoadPointsFromFile (bevfusion path) can read it.')
     return ap.parse_args()
 
 
 def main():
     args = parse_args()
     dr = args.data_root
+    cp = args.convert_pcd
     build_split(dr, 'train',
-                osp.join(dr, 'cooperscene_coop_infos_train.pkl'))
+                osp.join(dr, 'cooperscene_coop_infos_train.pkl'), cp)
     build_split(dr, 'validate',
-                osp.join(dr, 'cooperscene_coop_infos_val.pkl'))
+                osp.join(dr, 'cooperscene_coop_infos_val.pkl'), cp)
     build_split(dr, 'test',
-                osp.join(dr, 'cooperscene_coop_infos_test.pkl'))
+                osp.join(dr, 'cooperscene_coop_infos_test.pkl'), cp)
 
 
 if __name__ == '__main__':
