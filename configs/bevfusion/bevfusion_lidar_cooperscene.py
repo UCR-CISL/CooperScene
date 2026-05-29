@@ -1,6 +1,7 @@
 _base_ = ['../_base_/default_runtime.py']
 custom_imports = dict(
-    imports=['models.bevfusion'], allow_failed_imports=False)
+    imports=['models.bevfusion', 'models.cooperative'],
+    allow_failed_imports=False)
 
 # ===================== Model Settings =====================
 voxel_size = [0.1, 0.1, 0.2]

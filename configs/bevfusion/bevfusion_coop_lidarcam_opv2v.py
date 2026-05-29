@@ -3,7 +3,8 @@ _base_ = [
 ]
 
 custom_imports = dict(
-    imports=['models.bevfusion'], allow_failed_imports=False)
+    imports=['models.bevfusion', 'models.cooperative'],
+    allow_failed_imports=False)
 
 # ===================== Cooperative LiDAR+Camera Model =====================
 # Per vehicle (each in OWN coordinate frame):

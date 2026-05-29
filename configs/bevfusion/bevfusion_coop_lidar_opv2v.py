@@ -3,7 +3,8 @@ _base_ = [
 ]
 
 custom_imports = dict(
-    imports=['models.bevfusion'], allow_failed_imports=False)
+    imports=['models.bevfusion', 'models.cooperative'],
+    allow_failed_imports=False)
 
 # ===================== Cooperative Model Settings =====================
 # Cooperative BEVFusion: multi-agent LiDAR fusion with CoBEVT SwapFusion

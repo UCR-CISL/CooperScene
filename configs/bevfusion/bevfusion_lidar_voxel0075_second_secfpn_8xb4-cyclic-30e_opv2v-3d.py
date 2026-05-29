@@ -1,6 +1,7 @@
 _base_ = ['../_base_/default_runtime.py']
 custom_imports = dict(
-    imports=['models.bevfusion'], allow_failed_imports=False)
+    imports=['models.bevfusion', 'models.cooperative'],
+    allow_failed_imports=False)
 
 # ===================== Model Settings =====================
 # LR Strategy A: Lower warmup peak lr (eta_min = lr * 2), 30 epochs
