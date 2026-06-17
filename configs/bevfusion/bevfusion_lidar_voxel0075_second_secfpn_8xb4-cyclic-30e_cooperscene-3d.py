@@ -17,8 +17,8 @@ num_classes = 1
 grid_size = [1440, 1440, 41]
 
 metainfo = dict(classes=class_names)
-dataset_type = 'OPV2VDataset'
-data_root = '/workspace/data/OPV2V/'
+dataset_type = 'CooperSceneDataset'
+data_root = 'data/cooperscene/'
 data_prefix = dict(pts='')
 
 input_modality = dict(use_lidar=True, use_camera=False)
@@ -85,7 +85,7 @@ model = dict(
             norm_cfg=dict(type='LN'),
             pos_encoding_cfg=dict(input_channel=2, num_pos_feats=128)),
         train_cfg=dict(
-            dataset='OPV2V',
+            dataset='CooperScene',
             point_cloud_range=point_cloud_range,
             grid_size=grid_size,
             voxel_size=voxel_size,
@@ -105,7 +105,7 @@ model = dict(
                 reg_cost=dict(type='BBoxBEVL1Cost', weight=0.25),
                 iou_cost=dict(type='IoU3DCost', weight=0.25))),
         test_cfg=dict(
-            dataset='OPV2V',
+            dataset='CooperScene',
             grid_size=grid_size,
             out_size_factor=8,
             voxel_size=voxel_size[:2],
@@ -193,7 +193,7 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_infos_train.pkl',
+        ann_file='cooperscene_infos_train.pkl',
         pipeline=train_pipeline,
         metainfo=metainfo,
         modality=input_modality,
@@ -212,7 +212,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_infos_val.pkl',
+        ann_file='cooperscene_infos_val.pkl',
         pipeline=test_pipeline,
         metainfo=metainfo,
         modality=input_modality,
@@ -231,7 +231,7 @@ test_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_infos_test.pkl',
+        ann_file='cooperscene_infos_test.pkl',
         pipeline=test_pipeline,
         metainfo=metainfo,
         modality=input_modality,
@@ -244,13 +244,13 @@ test_dataloader = dict(
 # ===================== Evaluator Settings =====================
 val_evaluator = dict(
     type='EvalMetric',
-    ann_file=data_root + 'opv2v_infos_val.pkl',
+    ann_file=data_root + 'cooperscene_infos_val.pkl',
     metric='bbox',
     iou_thresholds=[0.3, 0.5, 0.7],
     backend_args=backend_args)
 test_evaluator = dict(
     type='EvalMetric',
-    ann_file=data_root + 'opv2v_infos_test.pkl',
+    ann_file=data_root + 'cooperscene_infos_test.pkl',
     metric='bbox',
     iou_thresholds=[0.3, 0.5, 0.7],
     backend_args=backend_args)

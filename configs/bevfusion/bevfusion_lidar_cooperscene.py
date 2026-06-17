@@ -13,15 +13,19 @@ num_classes = 1
 grid_size = [1440, 1440, 41]
 
 metainfo = dict(classes=class_names)
+# Single-agent BEVFusion uses the registered CooperSceneDataset; .pkl index files
+# are produced by tools/dataset_converters/data_converter.py (cooperscene_infos_*).
 dataset_type = 'CooperSceneDataset'
-data_root = '/workspace/data/Cooperscene/benchmark_opencood/250928_opv2v/'
+data_root = 'data/cooperscene/'
 data_prefix = dict(pts='')
 
 input_modality = dict(use_lidar=True, use_camera=False)
 backend_args = None
 
-# Load OPV2V pretrained checkpoint
-load_from = '/workspace/work_dirs/bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-30e_opv2v-3d_lrA/epoch_25.pth'
+# Stage 1: warm-start from the official nuScenes BEVFusion lidar pretrain.
+# The sparse encoder / SECOND / neck (1440^3 grid) load; the input conv
+# (5->4 dim) and head (10->1 class) are shape-mismatched and re-init.
+load_from = 'work_dirs/bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-20e_nus-3d-2628f933.pth'
 
 model = dict(
     type='BEVFusion',
@@ -84,7 +88,7 @@ model = dict(
             norm_cfg=dict(type='LN'),
             pos_encoding_cfg=dict(input_channel=2, num_pos_feats=128)),
         train_cfg=dict(
-            dataset='OPV2V',
+            dataset='CooperScene',
             point_cloud_range=point_cloud_range,
             grid_size=grid_size,
             voxel_size=voxel_size,
@@ -104,7 +108,7 @@ model = dict(
                 reg_cost=dict(type='BBoxBEVL1Cost', weight=0.25),
                 iou_cost=dict(type='IoU3DCost', weight=0.25))),
         test_cfg=dict(
-            dataset='OPV2V',
+            dataset='CooperScene',
             grid_size=grid_size,
             out_size_factor=8,
             voxel_size=voxel_size[:2],
@@ -233,12 +237,17 @@ val_evaluator = dict(
 test_evaluator = val_evaluator
 
 # ===================== Visualizer Settings =====================
-vis_backends = [dict(type='LocalVisBackend')]
+vis_backends = [
+    dict(type='LocalVisBackend'),
+    dict(type='WandbVisBackend',
+         init_kwargs=dict(project='cooperscene_bevfusion',
+                          name='single_lidar')),
+]
 visualizer = dict(
     type='Det3DLocalVisualizer', vis_backends=vis_backends, name='visualizer')
 
 # ===================== Training Settings =====================
-# Fine-tuning from OPV2V checkpoint: lower lr, shorter training
+# Fine-tuning from CooperScene checkpoint: lower lr, shorter training
 lr = 0.0001
 param_scheduler = [
     dict(

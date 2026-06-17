@@ -1,5 +1,5 @@
 _base_ = [
-    './bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-30e_opv2v-3d.py'
+    './bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-30e_cooperscene-3d.py'
 ]
 
 custom_imports = dict(
@@ -93,7 +93,7 @@ model = dict(
 
 # ===================== Dataset Settings =====================
 dataset_type = 'CoopDataset'
-data_root = '/workspace/data/OPV2V/'
+data_root = 'data/cooperscene/'
 
 class_names = ['vehicle']
 metainfo = dict(classes=class_names)
@@ -235,7 +235,7 @@ train_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_coop_infos_train.pkl',
+        ann_file='cooperscene_coop_infos_train.pkl',
         pipeline=train_pipeline,
         metainfo=metainfo,
         modality=input_modality,
@@ -256,7 +256,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_coop_infos_val.pkl',
+        ann_file='cooperscene_coop_infos_val.pkl',
         pipeline=test_pipeline,
         metainfo=metainfo,
         modality=input_modality,
@@ -277,7 +277,7 @@ test_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        ann_file='opv2v_coop_infos_test.pkl',
+        ann_file='cooperscene_coop_infos_test.pkl',
         pipeline=test_pipeline,
         metainfo=metainfo,
         modality=input_modality,
@@ -292,13 +292,13 @@ test_dataloader = dict(
 # ===================== Evaluator Settings =====================
 val_evaluator = dict(
     type='EvalMetric',
-    ann_file=data_root + 'opv2v_coop_infos_val.pkl',
+    ann_file=data_root + 'cooperscene_coop_infos_val.pkl',
     metric='bbox',
     iou_thresholds=[0.3, 0.5, 0.7],
     backend_args=backend_args)
 test_evaluator = dict(
     type='EvalMetric',
-    ann_file=data_root + 'opv2v_coop_infos_test.pkl',
+    ann_file=data_root + 'cooperscene_coop_infos_test.pkl',
     metric='bbox',
     iou_thresholds=[0.3, 0.5, 0.7],
     backend_args=backend_args)

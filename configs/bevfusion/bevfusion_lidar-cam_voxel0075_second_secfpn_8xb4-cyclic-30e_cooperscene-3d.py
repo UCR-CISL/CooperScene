@@ -1,8 +1,8 @@
 _base_ = [
-    './bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-30e_opv2v-3d.py'
+    './bevfusion_lidar_voxel0075_second_secfpn_8xb4-cyclic-30e_cooperscene-3d.py'
 ]
 
-# OPV2V point cloud range (same as base, redeclared for use in pipelines)
+# CooperScene point cloud range (same as base, redeclared for use in pipelines)
 point_cloud_range = [-72.0, -72.0, -5.0, 72.0, 72.0, 3.0]
 input_modality = dict(use_lidar=True, use_camera=True)
 backend_args = None
@@ -43,7 +43,7 @@ model = dict(
         norm_cfg=dict(type='BN2d', requires_grad=True),
         act_cfg=dict(type='ReLU', inplace=True),
         upsample_cfg=dict(mode='bilinear', align_corners=False)),
-    # OPV2V images: 800x600, resize to ~576x432, crop to 256x512
+    # CooperScene images: 800x600, resize to ~576x432, crop to 256x512
     # view_transform BEV grid: [-72,72]/0.4 = 360 bins, /2 (downsample) = 180
     # This matches LiDAR BEV spatial size: 1440/8 = 180
     view_transform=dict(
@@ -61,7 +61,6 @@ model = dict(
         type='ConvFuser', in_channels=[80, 256], out_channels=256))
 
 # ===================== Data Pipeline =====================
-# OPV2V cameras: 4 views, 800x600 RGB
 # resize_lim=[0.64, 0.80] ensures resized width >= 512 (800*0.64=512)
 # and resized height >= 256 (600*0.64=384)
 train_pipeline = [
