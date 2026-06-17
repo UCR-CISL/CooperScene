@@ -11,7 +11,7 @@ the other 2 vehicles + agent 0 (infra) as cooperators.
 
 Usage:
     python tools/dataset_converters/cooperscene_train_val_converter.py \
-        --data-root /workspace/data/Cooperscene/release/250928_opv2v
+        --data-root /workspace/data/Cooperscene/release/250928_cooperscene
 """
 import argparse
 import os
@@ -24,13 +24,17 @@ import numpy as np
 import yaml
 from tqdm import tqdm
 
-# Re-use the OPV2V vehicle parser from the existing converter
+# Re-use the CooperScene vehicle parser from the existing converter
 import sys
 _HERE = osp.dirname(osp.abspath(__file__))
 sys.path.insert(0, _HERE)
-from opv2v_converter import parse_opv2v_vehicle, convert_pcd_to_bin  # noqa: E402
+from data_converter import parse_cooperscene_vehicle, convert_pcd_to_bin  # noqa: E402
 
 EGO_CANDIDATE_IDS = ('1', '2', '3')
+
+# Communication range (m): cavs farther than this from the ego don't
+# cooperate, matching OpenCOOD's COM_RANGE and CoopDataset.com_range.
+COM_RANGE = 70.0
 
 
 # Per-vehicle camera calibration (front camera, "camera0").
@@ -217,12 +221,32 @@ def build_split(data_root: str, split: str, out_path: str,
             cooperators = [a for a in agent_data
                            if a['agent_id'] != ego['agent_id']]
 
-            # GT bboxes in ego LiDAR frame (parse_opv2v_vehicle requires
+            # GT bboxes in ego LiDAR frame (parse_cooperscene_vehicle requires
             # ego_pose as 6-element [x, y, z, roll, yaw, pitch]).
+            #
+            # Cooperative GT is the UNION of every agent's visible vehicles
+            # (deduplicated by vehicle id), matching OpenCOOD's
+            # IntermediateFusionDataset which merges object_bbx_center across
+            # all CAVs. Using only the ego's own `vehicles` misses vehicles
+            # that the ego can't see but cooperators can - those then count as
+            # false positives at eval and depress AP. Iterate ego-first so the
+            # ego's pose is kept for vehicles seen by multiple agents.
+            # Only cavs within the communication range contribute GT, matching
+            # OpenCOOD (its GT collection sits inside the COM_RANGE filter).
+            ego_xy = np.asarray(ego['ego_pose'][:2], dtype=np.float64)
+            vehicles = {}
+            for a in [ego] + cooperators:
+                if a is not ego:
+                    a_xy = np.asarray(a['ego_pose'][:2], dtype=np.float64)
+                    if np.linalg.norm(a_xy - ego_xy) > COM_RANGE:
+                        continue
+                for vid, vdata in a['meta'].get('vehicles', {}).items():
+                    if vid not in vehicles:
+                        vehicles[vid] = vdata
+
             instances = []
-            vehicles = ego['meta'].get('vehicles', {})
             for veh_id, veh_data in vehicles.items():
-                bbox_ego = parse_opv2v_vehicle(veh_data, ego['ego_pose'])
+                bbox_ego = parse_cooperscene_vehicle(veh_data, ego['ego_pose'])
                 if bbox_ego is None:
                     continue
                 instances.append({
@@ -274,7 +298,7 @@ def build_split(data_root: str, split: str, out_path: str,
 def parse_args():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('--data-root', required=True,
-                    help='e.g. /workspace/data/Cooperscene/release/250928_opv2v')
+                    help='e.g. /workspace/data/Cooperscene/release/250928_cooperscene')
     ap.add_argument('--convert-pcd', action='store_true',
                     help='Convert each .pcd to .bin so mmdet3d'
                          ' LoadPointsFromFile (bevfusion path) can read it.')
