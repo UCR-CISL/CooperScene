@@ -1,0 +1,14 @@
+# Keep the Docker build context small. Only models/, configs/, tools/ and
+# requirements.txt are COPYed by the Dockerfile; everything else is excluded.
+.git
+work_dirs
+_site
+build
+data
+assets
+docs
+*.log
+nohup.out
+**/__pycache__
+*.egg-info
+**/*.so

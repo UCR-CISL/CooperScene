@@ -26,9 +26,10 @@ including intersections, highway ramps, and parking areas.
 
 ### Docker
 
-Build a local image (extends a pre-built base with all Python + CUDA dependencies
-— PyTorch 2.1.1, mmdet3d 1.4, mmcv 2.1, spconv 2.x — and adds an entrypoint
-that auto-compiles the BEVFusion CUDA ops on first run):
+The image builds **from scratch** on the public
+`pytorch/pytorch:2.1.1-cuda12.1-cudnn8-devel` base and installs the full stack
+(mmengine / mmcv 2.1 / mmdet 3.x / mmdet3d 1.4 / spconv). The entrypoint
+auto-compiles the BEVFusion CUDA ops on first run.
 
 ```bash
 docker build -t cooperscene:latest -f docker/Dockerfile docker/
@@ -40,25 +41,29 @@ docker run --gpus all -it --rm \
     bash
 ```
 
-The entrypoint runs `python setup.py develop` under `models/bevfusion/` if
-`bev_pool_ext*.so` is not already present, then exec's your command. Subsequent
-runs skip the build. The other cooperative configs (`configs/cobevt/`,
+The entrypoint runs `python models/bevfusion/setup.py develop` from the project
+root if `bev_pool_ext*.so` is not already present, then exec's your command.
+Subsequent runs skip the build. The cooperative configs (`configs/cobevt/`,
 `configs/v2vam/`, `configs/v2vnet/`, `configs/v2xvit/`) do **not** use these
 ops, so the build is only needed for BEVFusion configs.
 
-If you prefer the bare base image:
+### Local install (no Docker)
+
+On a host that already has a CUDA toolchain and PyTorch ≥ 2.0 (versions pinned in
+`requirements.txt`):
 
 ```bash
-docker pull bwu109/motion_prediction@sha256:32e06e6533ce82d267696b8821b9f494d2f508971ab5501e736a65f1fb1ddcc3
-# then from the project root (NOT from models/bevfusion/):
+pip install -U openmim
+mim install "mmengine>=0.10" "mmcv>=2.0,<2.2" "mmdet>=3.2,<3.4" "mmdet3d>=1.4,<1.5"
+pip install "numpy<1.25" spconv-cu120 einops tqdm pyyaml
+# BEVFusion configs additionally need the CUDA ops (run once, from the repo root):
 python models/bevfusion/setup.py develop --user
 ```
 
-`--user` is required if site-packages is read-only (Apptainer, locked-down
-Docker images). The compiled `.so` lands in the source tree either way.
-The setup.py uses sources relative to the project root, so it must be invoked
-from the root rather than from `models/bevfusion/` (running it inside that
-directory produces a duplicated path and ninja fails).
+Use `spconv-cu120` for CUDA 12.x (or the wheel matching your toolkit). `--user`
+is required when site-packages is read-only (Apptainer, locked-down images).
+`setup.py` resolves sources relative to the project root, so it must be invoked
+from there — not from inside `models/bevfusion/`.
 
 ---
 
@@ -69,7 +74,7 @@ directory produces a duplicated path and ninja fails).
 *TBD* — public release link will be posted at
 <https://data.ucr.edu/datasets/cooperscene/>.
 
-The benchmark ships in **OPV2V format**:
+The benchmark ships in **CooperScene format**:
 `<split>/<take>/<agent>/<frame>.{pcd,yaml}` plus `<frame>_camera0.png` on
 camera-equipped agents. Each take has **4 agents**: agent `0` is LiDAR-only;
 agents `1–3` also carry a front camera.
@@ -96,36 +101,39 @@ cooperscene/
     └── ...
 ```
 
+> The `mcap/` recordings are distributed separately and are **not** part of the
+> core `train/`/`validate/`/`test/` archive — they are only needed for raw replay
+> /visualization, not for training or evaluation.
+
 A **mini set** of 180 contiguous frames (120 train / 30 validate / 30 test) 
 is shipped alongside the full release for pipeline smoke tests — same `<split>/<take>/<agent>/<frame>` layout, rooted at
 `/mini`.
 
-### Generate `.pkl` index files (and `.bin` point clouds)
+### Data preparation
 
-mmdet3d-style `.pkl` info files are generated from raw OPV2V/CooperScene scenes
-by the converters under `tools/dataset_converters/`.
+What you need to prepare depends on the model family.
 
-**Cooperative models** (CoBEVT / V2VAM / V2VNet / V2X-ViT / coop BEVFusion):
+**Cooperative models** (CoBEVT / V2VAM / V2VNet / V2X-ViT) — **no conversion
+needed.** These run through the cooperative runner (OpenCOOD
+`IntermediateFusionDataset`), which reads the raw scene folders directly. Point
+`data_root` at the directory containing `train/`, `validate/`, `test/` and train
+— no `.pkl` index and no `.bin` conversion are required.
+
+**BEVFusion** (single-agent lidar / lidar-cam) — runs on the mmdet3d
+`CooperSceneDataset` path and needs `.pkl` info files plus `.bin` point clouds.
+Generate them with:
 
 ```bash
-python tools/dataset_converters/opv2v_cooper_converter.py \
-    --data-root /workspace/cooperscene_mini \
-    --out-dir   /workspace/cooperscene_mini \
+python tools/dataset_converters/data_converter.py \
+    --data-root /path/to/cooperscene \
+    --out-dir   /path/to/cooperscene \
     --convert-pcd
 ```
 
-**Single-agent BEVFusion** (lidar / lidar-cam):
-
-```bash
-python tools/dataset_converters/opv2v_converter.py \
-    --data-root /workspace/cooperscene_mini \
-    --out-dir   /workspace/cooperscene_mini \
-    --convert-pcd
-```
-
-`--data-root` must contain `train/`, `validate/`, `test/`. Set `--out-dir`
-equal to `--data-root` so configs find the `.pkl` files. Pass `--convert-pcd`
-on the first run (writes `.bin` next to each `.pcd`); drop it on later runs.
+This writes `cooperscene_infos_{train,val,test}.pkl` into `--out-dir` (set it equal to
+`--data-root` so the configs find them) and, with `--convert-pcd`, a `.bin` next
+to each `.pcd`. Drop `--convert-pcd` on later runs. `--data-root` must contain
+`train/`, `validate/`, `test/`.
 
 ---
 
@@ -160,6 +168,11 @@ override most often:
 
 BEVFusion configs (mmengine path) additionally use
 `train_dataloader.dataset.ann_file` for the `.pkl` index.
+
+> **CooperScene ego note:** agent `0` is the LiDAR-only **RSU** and should never
+> be the ego. The default `ego_candidates=None` falls back to the smallest
+> `cav_id` (agent `0`), which is wrong for CooperScene — always set
+> `ego_candidates=['1','2','3']` (the camera-equipped CAVs) for cooperative runs.
 
 Override any of these from the CLI with `--cfg-options`:
 
