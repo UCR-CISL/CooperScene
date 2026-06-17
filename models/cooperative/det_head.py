@@ -2,7 +2,7 @@
 
 Input:  BEV feature map x of shape (B, C=in_channels, H, W).
 Output: cls map psm (B, A, H, W) + reg map rm (B, 7A, H, W),
-        where A = anchor_number (2 rotations on OPV2V).
+        where A = anchor_number (2 rotations on CooperScene).
 Loss:   focal (cls) + smooth-L1 with sin-difference on yaw (reg).
 """
 import numpy as np

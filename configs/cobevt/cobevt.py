@@ -10,6 +10,7 @@ visualizer = dict(
 
 voxel_size = [0.4, 0.4, 4]
 point_cloud_range = [-140.8, -38.4, -3, 140.8, 38.4, 1]
+gt_range = [-140, -40, -10, 140, 40, 10]
 
 opencood_args = dict(
     max_cav=5,
@@ -144,51 +145,72 @@ test_pipeline = [
 ]
 
 train_dataloader = dict(
-    batch_size=4,
+    batch_size=2,
     collate_fn=dict(type='cooperative_collate'),
     num_workers=4,
     sampler=dict(type='DefaultSampler', shuffle=True),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
+        ann_file='cooperscene_coop_infos_train.pkl',
         data_prefix=dict(pts=''),
         pipeline=train_pipeline,
+        pcd_limit_range=point_cloud_range,
         max_cav=5,
         com_range=70))
 
 val_dataloader = dict(
-    batch_size=4,
+    batch_size=2,
     collate_fn=dict(type='cooperative_collate'),
     num_workers=4,
     sampler=dict(type='DefaultSampler', shuffle=False),
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
+        ann_file='cooperscene_coop_infos_val.pkl',
         data_prefix=dict(pts=''),
         pipeline=test_pipeline,
         test_mode=True,
+        pcd_limit_range=gt_range,
         max_cav=5,
         com_range=70))
 
-test_dataloader = val_dataloader
+test_dataloader = dict(
+    batch_size=2,
+    collate_fn=dict(type='cooperative_collate'),
+    num_workers=4,
+    sampler=dict(type='DefaultSampler', shuffle=False),
+    dataset=dict(
+        type=dataset_type,
+        data_root=data_root,
+        ann_file='cooperscene_coop_infos_test.pkl',
+        data_prefix=dict(pts=''),
+        pipeline=test_pipeline,
+        test_mode=True,
+        pcd_limit_range=gt_range,
+        max_cav=5,
+        com_range=70))
 
 val_evaluator = dict(type='EvalMetric')
-test_evaluator = val_evaluator
+test_evaluator = dict(type='EvalMetric')
+
+# Fine-tune from the existing converted checkpoint.
+load_from = 'work_dirs/opencood_converted/cobevt.pth'
 
 optim_wrapper = dict(
     type='OptimWrapper',
-    optimizer=dict(type='Adam', lr=0.001, eps=1e-10, weight_decay=1e-4))
+    optimizer=dict(type='Adam', lr=1e-4, eps=1e-10, weight_decay=1e-4))
 
 param_scheduler = [
     dict(type='LinearLR', start_factor=0.2, by_epoch=True,
-         begin=0, end=10),
+         begin=0, end=3),
     dict(type='CosineAnnealingLR', by_epoch=True,
-         begin=10, end=90, eta_min=2e-5),
+         begin=3, end=30, eta_min=1e-6),
 ]
 
-train_cfg = dict(by_epoch=True, max_epochs=60, val_interval=1)
+train_cfg = dict(by_epoch=True, max_epochs=30, val_interval=1)
 val_cfg = dict()
 test_cfg = dict()
 
 default_hooks = dict(
-    checkpoint=dict(type='CheckpointHook', interval=10))
+    checkpoint=dict(type='CheckpointHook', interval=1))

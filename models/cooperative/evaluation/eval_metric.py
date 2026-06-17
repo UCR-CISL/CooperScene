@@ -1,7 +1,7 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-"""OPV2V Evaluation Metric.
+"""CooperScene Evaluation Metric.
 
-Computes both 2D BEV AP and 3D AP for OPV2V dataset.
+Computes both 2D BEV AP and 3D AP for CooperScene dataset.
 - 2D BEV AP: Matches original OpenCOOD evaluation (only XY plane IoU)
 - 3D AP: Considers full 3D IoU (BEV IoU * height overlap)
 
@@ -256,23 +256,24 @@ def calculate_ap(results: List[dict], iou_thresh: float, use_3d_iou: bool = Fals
 
 @METRICS.register_module()
 class EvalMetric(BaseMetric):
-    """OPV2V evaluation metric.
+    """CooperScene evaluation metric.
 
     Computes both 2D BEV AP and 3D AP with CUDA acceleration.
     """
 
     def __init__(self,
-                 ann_file: str,
+                 ann_file: Optional[str] = None,
                  metric: Union[str, List[str]] = 'bbox',
                  iou_thresholds: List[float] = [0.3, 0.5, 0.7],
                  prefix: Optional[str] = None,
                  collect_device: str = 'cpu',
                  backend_args: Optional[dict] = None) -> None:
+        # `ann_file` is accepted for backward compatibility but unused: the GT
+        # comes from the data pipeline (data_samples), not from loading it.
         self.default_prefix = 'Eval metric'
         super(EvalMetric, self).__init__(
             collect_device=collect_device, prefix=prefix)
 
-        self.ann_file = ann_file
         self.iou_thresholds = iou_thresholds
         self.backend_args = backend_args
         self.metrics = metric if isinstance(metric, list) else [metric]
@@ -380,7 +381,7 @@ class EvalMetric(BaseMetric):
 
         metrics_dict = {}
         print_log('\n' + '=' * 60, logger=logger)
-        print_log('OPV2V Evaluation Results (OpenCOOD polygon IoU)',
+        print_log('CooperScene Evaluation Results (OpenCOOD polygon IoU)',
                   logger=logger)
         print_log('=' * 60, logger=logger)
 

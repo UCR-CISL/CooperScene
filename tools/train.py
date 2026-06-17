@@ -47,6 +47,15 @@ def parse_args():
     parser.add_argument(
         '--ceph', action='store_true', help='Use ceph as data storage backend')
     parser.add_argument(
+        '--engine',
+        choices=['auto', 'mmengine', 'opencood'],
+        default='auto',
+        help='Training engine for the cooperative intermediate-fusion '
+        'detectors. "auto"/"opencood" use the original OpenCOOD training '
+        'loop (models/cooperative/runner.py); "mmengine" routes them through '
+        'the standard mmengine Runner, the same path as BEVFusion. Has no '
+        'effect on non-cooperative models.')
+    parser.add_argument(
         '--cfg-options',
         nargs='+',
         action=DictAction,
@@ -95,7 +104,11 @@ def main():
                                 osp.splitext(osp.basename(args.config))[0])
 
     # Dispatch to the cooperative runner for the intermediate-fusion models.
-    if cfg.model.get('type') in COOPERATIVE_DETECTORS:
+    # `--engine mmengine` forces these models through the standard mmengine
+    # Runner instead (the migration target); the configs are already
+    # mmengine-complete, so they fall through to `Runner.from_cfg(cfg)` below.
+    is_coop = cfg.model.get('type') in COOPERATIVE_DETECTORS
+    if is_coop and args.engine in ('auto', 'opencood'):
         from models.cooperative.runner import train as coop_train
         if args.resume is not None:
             cfg.resume = True

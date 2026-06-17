@@ -1,13 +1,12 @@
 # Copyright (c) OpenMMLab. All rights reserved.
-"""OPV2V Dataset for 3D Object Detection.
+"""CooperScene Dataset for 3D Object Detection.
 
-OPV2V is a large-scale open simulated dataset for Vehicle-to-Vehicle
-cooperative perception. This implementation treats each CAV frame as
-an independent sample for single-agent training.
+CooperScene is a real-world, multi-agent, multi-modal cooperative perception
+dataset. This loader walks the per-agent scene-folder layout and treats each
+CAV frame as an independent sample for single-agent training.
 
 Reference:
-    https://github.com/DerrickXuNu/OpenCOOD
-    https://opencood.readthedocs.io/en/latest/md_files/data_intro.html
+    https://github.com/UCR-CISL/CooperScene
 """
 
 from typing import Callable, List, Optional, Union
@@ -20,10 +19,10 @@ from mmdet3d.datasets.det3d_dataset import Det3DDataset
 
 
 @DATASETS.register_module()
-class OPV2VDataset(Det3DDataset):
-    """OPV2V Dataset.
+class CooperSceneDataset(Det3DDataset):
+    """CooperScene Dataset.
 
-    This class serves as the API for experiments on the OPV2V Dataset.
+    This class serves as the API for experiments on the CooperScene Dataset.
 
     Args:
         data_root (str): Path of dataset root.
@@ -39,7 +38,7 @@ class OPV2VDataset(Det3DDataset):
         test_mode (bool): Whether the dataset is in test mode.
             Defaults to False.
         with_velocity (bool): Whether to include velocity prediction.
-            Defaults to False (OPV2V has speed but not always reliable).
+            Defaults to False (CooperScene has speed but not always reliable).
         pcd_limit_range (list[float]): Point cloud range for filtering.
             Defaults to [-100, -100, -5, 100, 100, 3].
     """
@@ -119,7 +118,7 @@ class OPV2VDataset(Det3DDataset):
                         [gt_bboxes_3d, gt_velocities], axis=-1)
 
             # Create LiDARInstance3DBoxes
-            # OPV2V boxes: [x, y, z, dx, dy, dz, yaw]
+            # CooperScene boxes: [x, y, z, dx, dy, dz, yaw]
             # Box center is at the geometric center
             box_dim = 9 if self.with_velocity else 7
             if len(gt_bboxes_3d) > 0:
@@ -166,9 +165,9 @@ class OPV2VDataset(Det3DDataset):
 
         # Required by BEVLoadMultiViewImageFromFiles to determine
         # how to handle camera intrinsics/extrinsics
-        data_info['dataset'] = 'OPV2V'
+        data_info['dataset'] = 'CooperScene'
 
-        # Add OPV2V specific fields if needed
+        # Add CooperScene specific fields if needed
         if 'scenario' in info:
             data_info['scenario'] = info['scenario']
         if 'agent_id' in info:

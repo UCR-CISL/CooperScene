@@ -1,6 +1,6 @@
-"""OPV2V Cooperative Dataset for 3D Object Detection.
+"""CooperScene Cooperative Dataset for 3D Object Detection.
 
-Extends the single-agent OPV2VDataset to support cooperative perception
+Extends the single-agent CooperSceneDataset to support cooperative perception
 with multiple Connected Autonomous Vehicles (CAVs). Each sample contains
 ego agent data plus cooperating agents' LiDAR data and poses.
 """
@@ -11,14 +11,14 @@ from typing import Callable, List, Optional, Union
 import numpy as np
 
 from mmdet3d.registry import DATASETS
-from .opv2v_dataset import OPV2VDataset
+from .cooperscene_dataset import CooperSceneDataset
 
 
 def pose_to_matrix(pose):
     """Convert pose to a 4x4 transformation matrix.
 
     Accepts either:
-      - OPV2V style: flat list [x, y, z, roll_deg, yaw_deg, pitch_deg]
+      - CooperScene style: flat list [x, y, z, roll_deg, yaw_deg, pitch_deg]
       - CooperScene style: 4x4 matrix already (list of 4 lists or ndarray)
 
     Returns:
@@ -32,23 +32,19 @@ def pose_to_matrix(pose):
     roll = np.radians(pose_arr[3])
     yaw = np.radians(pose_arr[4])
     pitch = np.radians(pose_arr[5])
+    c_y, s_y = np.cos(yaw), np.sin(yaw)
+    c_r, s_r = np.cos(roll), np.sin(roll)
+    c_p, s_p = np.cos(pitch), np.sin(pitch)
 
-    Rx = np.array([
-        [1, 0, 0],
-        [0, np.cos(roll), -np.sin(roll)],
-        [0, np.sin(roll), np.cos(roll)]
+    # Must match OpenCOOD's `transformation_utils.x_to_world` (CARLA /
+    # CooperScene left-handed convention). A naive right-handed Rz @ Ry @ Rx
+    # flips the sign of the pitch/roll terms in the z-row and tilts the
+    # cooperator point clouds relative to the ego frame.
+    R = np.array([
+        [c_p * c_y, c_y * s_p * s_r - s_y * c_r, -c_y * s_p * c_r - s_y * s_r],
+        [s_y * c_p, s_y * s_p * s_r + c_y * c_r, -s_y * s_p * c_r + c_y * s_r],
+        [s_p,       -c_p * s_r,                   c_p * c_r],
     ])
-    Ry = np.array([
-        [np.cos(pitch), 0, np.sin(pitch)],
-        [0, 1, 0],
-        [-np.sin(pitch), 0, np.cos(pitch)]
-    ])
-    Rz = np.array([
-        [np.cos(yaw), -np.sin(yaw), 0],
-        [np.sin(yaw), np.cos(yaw), 0],
-        [0, 0, 1]
-    ])
-    R = Rz @ Ry @ Rx
 
     T = np.eye(4)
     T[:3, :3] = R
@@ -57,10 +53,10 @@ def pose_to_matrix(pose):
 
 
 @DATASETS.register_module()
-class CoopDataset(OPV2VDataset):
-    """OPV2V Cooperative Dataset.
+class CoopDataset(CooperSceneDataset):
+    """CooperScene Cooperative Dataset.
 
-    Extends single-agent OPV2VDataset with multi-agent support.
+    Extends single-agent CooperSceneDataset with multi-agent support.
     Loads cooperating agents' LiDAR data and computes transformation
     matrices from each agent's frame to the ego frame.
 
@@ -144,8 +140,15 @@ class CoopDataset(OPV2VDataset):
 
                 valid_coops.append(coop_entry)
 
-            # Sort by distance so closest cooperators are selected first
-            valid_coops.sort(key=lambda x: x['dist'])
+            # Match OpenCOOD's cav ordering: vehicles by cav_id ascending,
+            # with the infra / roadside unit (agent '0') moved to the END
+            # (OpenCOOD's RSU handling puts it last; it is never ego). V2VAM's
+            # fusion is order-sensitive, so the cooperator ordering must match
+            # the convention the checkpoints were trained/evaluated under -
+            # otherwise the fused features (and psm/rm) differ.
+            valid_coops.sort(
+                key=lambda x: (1 if str(x['agent_id']) == '0' else 0,
+                               int(x['agent_id'])))
 
         # Build transformation_matrix: (max_cav, 4, 4)
         # Index 0 = ego (identity), index 1..max_cav-1 = cooperators
@@ -163,6 +166,7 @@ class CoopDataset(OPV2VDataset):
             t_matrix[idx] = coop['transformation_matrix']
             coop_mask[idx] = True
             coop_entry = {
+                'agent_id': coop.get('agent_id', ''),
                 'lidar_path': coop['lidar_path'],
                 'num_pts_feats': coop['num_pts_feats'],
             }

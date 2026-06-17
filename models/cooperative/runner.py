@@ -22,6 +22,7 @@ import os
 import os.path as osp
 import statistics
 import time
+from collections import OrderedDict
 from typing import Optional, Sequence
 
 import numpy as np
@@ -87,6 +88,18 @@ def _make_rotating_ego_dataset_class():
             scen = self.scenario_database[scenario_idx]
             for cav_id in scen:
                 scen[cav_id]['ego'] = (str(cav_id) == ego_id)
+            # OpenCOOD's IntermediateFusionDataset asserts the ego cav is the
+            # FIRST key in base_data_dict (built in scenario_database order).
+            # The default ego is the min cav_id (agent 0 / infra); when we
+            # rotate ego onto a vehicle (1/2/3) we must move it to the front.
+            ego_key = next(
+                (k for k in scen if str(k) == ego_id), None)
+            if ego_key is not None and next(iter(scen)) != ego_key:
+                reordered = OrderedDict([(ego_key, scen[ego_key])])
+                for k, v in scen.items():
+                    if k != ego_key:
+                        reordered[k] = v
+                self.scenario_database[scenario_idx] = reordered
 
     return RotatingEgoDataset
 
@@ -137,7 +150,7 @@ def _build_hypes(cfg, *, for_train: bool) -> dict:
         'validate_dir': val_root,
         'test_dir': test_root,
 
-        # Coordinate system flag in the upstream base dataset; OPV2V / Carla
+        # Coordinate system flag in the upstream base dataset; CooperScene / Carla
         # data is left-handed (not ENU), so this stays False.
         'useENU': False,
         # Read .pcd intensity (int32 / 65535) instead of constant 1.0.

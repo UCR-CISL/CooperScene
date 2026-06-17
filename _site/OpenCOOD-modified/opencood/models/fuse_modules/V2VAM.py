@@ -33,12 +33,18 @@ class V2V_AttFusion(nn.Module):
         split_x = self.regroup(x, record_len)  #x =[5, 64, 100, 352], record_len=[3,2]
 
         out = []
-        att = []
         for xx in split_x:#split_x[0] [num_car, C, W, H]
+
+            # Reset per sample. With `att` shared across the batch, sample k's
+            # pooling would aggregate samples 0..k's attentions -> cross-sample
+            # contamination that makes the output depend on batch size. Only
+            # benign at bs=1 (which is why upstream never noticed: it tests
+            # bs=1).
+            att = []
 
             ''' CCNet: Criss-Cross Attention Module: attention for ego vehicle feature + cav feature '''
 
-            ego_q, ego_k, ego_v = xx[0:1], xx[0:1], xx[0:1] 
+            ego_q, ego_k, ego_v = xx[0:1], xx[0:1], xx[0:1]
             for i in range(len(xx[:,0,0,0])):
                 att_vehicle = self.CCNet(ego_q, xx[i:i+1], xx[i:i+1])
                 att.append(att_vehicle)
