@@ -82,7 +82,7 @@
             <span>Paper</span>
           </a>
           <a class="button is-rounded is-dark"
-             href="https://github.com/UCR-CISL/CooperScene/tree/plugin-refactor" target="_blank">
+             href="https://github.com/UCR-CISL/CooperScene/tree/main" target="_blank">
             <span class="icon"><i class="fab fa-github"></i></span>
             <span>Code</span>
           </a>
@@ -198,16 +198,17 @@
 
       <div class="content has-text-justified">
         <p>
-          <strong>CooperScene</strong> is the first real-world, multi-agent, multi-modal cooperative autonomy dataset
-          with C-V2X communication characterization. It focuses on complex urban intersection scenarios involving
-          <strong>three connected autonomous vehicles</strong> and <strong>one instrumented infrastructure roadside
-            unit</strong>, all equipped with multi-modal sensors and commercial off-the-shelf C-V2X communication
-          radios.
+          CooperScene is the first real-world, multi-agent, multi-modal cooperative autonomy dataset
+          with C-V2X communication characterization. It is organized into diverse real-world scenes&mdash;spanning
+          urban intersection, freeway ramp, local street, and parking lot&mdash;that introduce
+          different traffic and occlusion patterns. In urban intersection scnario, our data involves three connected autonomous
+          vehicles and one instrumented infrastructure roadside unit, all equipped with
+          multi-modal sensors and commercial C-V2X communication radios.
         </p>
         <p>
           The dataset provides tightly aligned LiDAR, camera, GNSS/IMU, and C-V2X network data, enabling the community
-          to jointly evaluate perception performance and the practical constraints imposed by real-world vehicular
-          networks. CooperScene supports 3D object detection, tracking, and motion prediction benchmarks with
+          to jointly evaluate perception performance and the practical constraints under real-world vehicular
+          networks. CooperScene supports 3D object detection and motion prediction benchmarks with
           synchronized pair-wise C-V2X throughput measurements.
         </p>
       </div>
@@ -219,7 +220,7 @@
           <span class="stat-label">Synchronized LiDAR Frames</span>
         </div>
         <div class="stat-card">
-          <span class="stat-number">18K</span>
+          <span class="stat-number">53K</span>
           <span class="stat-label">Image Frames</span>
         </div>
         <div class="stat-card">
@@ -252,7 +253,7 @@
             </div>
             <h4>C-V2X Communication Traces</h4>
             <p>Real-world C-V2X network traces including latency, throughput, packet loss rate and jitter &mdash;
-              enabling cross-disciplinary research.</p>
+              bridging wireless networking and autonomous driving research.</p>
           </div>
         </div>
         <div class="column is-4">
@@ -291,7 +292,7 @@
               <i class="fas fa-chart-bar"></i>
             </div>
             <h4>Unified Benchmark</h4>
-            <p>Comprehensive benchmarks for detection, tracking, and motion prediction evaluating both perception
+            <p>Comprehensive benchmarks for detection and motion prediction evaluating both perception
               accuracy and communication efficiency.</p>
           </div>
         </div>
@@ -310,8 +311,7 @@
       <div class="content has-text-justified mb-5">
         <p>
           We benchmark state-of-the-art cooperative perception methods under five cooperative settings with varying
-          numbers of agents. All models are retrained on CooperScene using the
-          <a href="https://github.com/DerrickXuNu/OpenCOOD" target="_blank">OpenCOOD</a> framework.
+          numbers of agents. All models are retrained on CooperScene.
         </p>
       </div>
 
@@ -801,7 +801,7 @@
 
       <div class="content has-text-centered mb-5">
         <p>
-          CooperScene is hosted on <strong>data.ucr.edu</strong>. We provide sample sequences for quick exploration and
+          CooperScene is hosted on <strong>data.ucr.edu</strong>. We provide a mini set for quick exploration and
           the full dataset in manageable chunks.
         </p>
       </div>
@@ -813,14 +813,14 @@
             <div class="download-icon" style="color: #2ecc71;">
               <i class="fas fa-flask"></i>
             </div>
-            <h4>Samples</h4>
-            <p>A curated set of sample scenes for quick exploration. Includes multi-agent LiDAR, camera, annotations,
+            <h4>Mini Set</h4>
+            <p>A curated mini set of scenes for quick exploration. Includes multi-agent LiDAR, camera, annotations,
               and C-V2X traces.</p>
-            <a class="button is-success is-rounded" href="https://data.ucr.edu" target="_blank">
+            <a class="button is-success is-rounded" href="https://data.ucr.edu/datasets/cooperscene/mini/" target="_blank">
               <span class="icon"><i class="fas fa-download"></i></span>
-              <span>Download Samples</span>
+              <span>Download Mini Set</span>
             </a>
-            <p class="is-size-7 has-text-grey mt-2">~2 GB</p>
+            <p class="is-size-7 has-text-grey mt-2">~2.9 GB</p>
           </div>
         </div>
         <!-- Full Dataset -->
@@ -832,11 +832,11 @@
             <h4>Full Dataset</h4>
             <p>Complete CooperScene dataset split into downloadable chunks. Includes train/val/test splits with all
               modalities.</p>
-            <a class="button is-link is-rounded" href="https://data.ucr.edu" target="_blank">
+            <a class="button is-link is-rounded" href="https://data.ucr.edu/datasets/cooperscene/" target="_blank">
               <span class="icon"><i class="fas fa-download"></i></span>
               <span>Download Full Dataset</span>
             </a>
-            <p class="is-size-7 has-text-grey mt-2">~XX GB (in chunks)</p>
+            <p class="is-size-7 has-text-grey mt-2">~94.3 GB (in chunks)</p>
           </div>
         </div>
         <!-- MCAP Files -->
@@ -847,12 +847,12 @@
             </div>
             <h4>MCAP Visualizations</h4>
             <p>Pre-packaged MCAP files for Foxglove Studio. Browse data interactively without processing raw files.</p>
-            <a class="button is-rounded" style="background-color: #9b59b6; color: #fff;" href="https://data.ucr.edu"
+            <a class="button is-rounded" style="background-color: #9b59b6; color: #fff;" href="https://data.ucr.edu/datasets/cooperscene/mcap/"
               target="_blank">
               <span class="icon"><i class="fas fa-download"></i></span>
               <span>Download MCAP Files</span>
             </a>
-            <p class="is-size-7 has-text-grey mt-2">~XX GB</p>
+            <p class="is-size-7 has-text-grey mt-2">~90.9 GB</p>
           </div>
         </div>
       </div>
@@ -864,8 +864,8 @@
   <footer class="footer">
     <div class="container has-text-centered">
       <p>
-        &copy; 2026 CooperScene &mdash;
-        <a href="#">University of California, Riverside</a>
+        CooperScene &mdash; ECCV 2026 &mdash;
+        University of California, Riverside
       </p>
     </div>
   </footer>
