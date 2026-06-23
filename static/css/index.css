@@ -105,13 +105,18 @@ body {
 }
 
 .viz-section {
-  background: #fff;
+  background: #000;
   padding: 1.5rem 0 2rem;
-  color: var(--text-color);
+  color: #e8e8e8;
 }
 
 .viz-section .title {
-  color: var(--primary-color);
+  color: #ffffff;
+}
+
+/* Keep form controls / labels readable on the dark section. */
+.viz-section label {
+  color: #e8e8e8;
 }
 
 .viz-section .section-divider {
@@ -126,7 +131,7 @@ body {
 }
 
 .viz-section #viz-video {
-  max-height: 70vh;
+  max-height: 88vh;
   object-fit: contain;
 }
 

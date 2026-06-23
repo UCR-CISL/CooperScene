@@ -52,33 +52,34 @@
   <section class="hero hero-section">
     <div class="hero-body" style="padding-top: 1.5rem; padding-bottom: 1rem;">
       <div class="container has-text-centered">
-        <div class="publication-venue mb-2">ECCV 2026</div>
         <h1 class="title is-2 publication-title mb-2">
           CooperScene
         </h1>
-        <h2 class="subtitle is-5 mb-3" style="max-width: 800px; margin: 0 auto;">
-          Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
+        <h2 class="subtitle is-5 mb-3" style="margin: 0 auto;">
+          Multi-Modal Cooperative Autonomy Benchmark<br>with C-V2X Communication Characterization
         </h2>
 
         <div class="is-size-6 mb-2" style="color: rgba(255,255,255,0.9);">
-          <span class="author-block"><a href="#">Bo Wu</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Ruoshen Mo</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Justin Yue</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Yanyu Zhang</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Janice Nguyen</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Guoyuan Wu</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Amit Roy-Chowdhury</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Matthew J. Barth</a><sup>1</sup>,</span>
-          <span class="author-block"><a href="#">Hang Qiu</a><sup>1</sup></span>
+          <span class="author-block"><a href="#">Bo Wu</a>,</span>
+          <span class="author-block"><a href="#">Ruoshen Mo</a>,</span>
+          <span class="author-block"><a href="#">Justin Yue</a>,</span>
+          <span class="author-block"><a href="#">Yanyu Zhang</a>,</span>
+          <span class="author-block"><a href="#">Janice Nguyen</a>,</span>
+          <span class="author-block"><a href="#">Guoyuan Wu</a>,</span>
+          <span class="author-block"><a href="#">Amit Roy-Chowdhury</a>,</span>
+          <span class="author-block"><a href="#">Matthew J. Barth</a>,</span>
+          <span class="author-block"><a href="#">Hang Qiu</a></span>
         </div>
 
         <div class="affiliation-block mb-3">
-          <span><sup>1</sup> University of California, Riverside</span>
+          <span>University of California, Riverside</span>
         </div>
+
+        <div class="publication-venue mb-2">ECCV 2026</div>
 
         <div class="hero-buttons">
           <a class="button is-rounded is-dark" href="#" target="_blank">
-            <span class="icon"><i class="fas fa-file-pdf"></i></span>
+            <span class="icon"><i class="fas fa-file"></i></span>
             <span>Paper</span>
           </a>
           <a class="button is-rounded is-dark"
@@ -100,9 +101,8 @@
       <!-- Default state: mp4 preview + Visualize More button -->
       <div id="viz-video-state">
         <video id="viz-video" controls autoplay muted loop playsinline
-               style="width: 80vw; max-width: 1500px; height: 55vh;
-                      margin: 0 auto;
-                      display: block; border-radius: 8px; object-fit: contain;">
+               style="width: 100vw; margin-left: calc(50% - 50vw); height: 88vh;
+                      display: block; object-fit: contain; background: #000;">
           <source src="static/take_6.mp4" type="video/mp4">
           Your browser does not support the video tag.
         </video>
@@ -116,11 +116,11 @@
 
       <!-- On-demand state: Foxglove viewer -->
       <div id="viz-foxglove-state" style="display: none;">
-        <!-- Inner column matched to foxglove-viewer width so controls align with it. -->
-        <div style="width: 80vw; max-width: 1500px; margin: 0 auto;">
+        <!-- Inner column: full-bleed so the viewer spans the whole viewport width. -->
+        <div style="width: 100vw; margin-left: calc(50% - 50vw);">
           <label style="font-weight: 450; text-align: center; display: block;">(Sign in with a .edu account)</label>
 
-          <div style="margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem;">
+          <div style="margin-bottom: 1rem; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem;">
             <label style="font-weight: 600;">Choose Scene:</label>
             <div class="select">
               <select id="scene-select">
@@ -142,8 +142,13 @@
             </div>
           </div>
 
+          <style>
+            /* Full-bleed children use 100vw; stop that from creating a horizontal scrollbar. */
+            html, body { overflow-x: hidden; }
+          </style>
           <div id="foxglove-viewer"
-               style="width: 100%; height: 55vh; border-radius: 8px; overflow: hidden;"></div>
+               style="width: 100%; height: 88vh; overflow: hidden; position: relative;">
+          </div>
         </div>
       </div>
     </div>
@@ -815,7 +820,7 @@
             </div>
             <h4>Mini Set</h4>
             <p>A curated mini set of scenes for quick exploration, with multi-agent LiDAR, camera, and 3D annotations.</p>
-            <a class="button is-success is-rounded" href="https://data.ucr.edu/datasets/cooperscene/mini/" target="_blank">
+            <a class="button is-success is-rounded" href="https://data.ucr.edu/datasets/cooperscene/" target="_blank">
               <span class="icon"><i class="fas fa-download"></i></span>
               <span>Download Mini Set</span>
             </a>
