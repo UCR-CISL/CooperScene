@@ -4,6 +4,9 @@ mmcv>=2.0,<2.2
 mmdet>=3.2,<3.4
 mmdet3d>=1.4,<1.5
 numpy<1.25
+spconv-cu120
+shapely
+open3d
 einops
 tqdm
 pyyaml

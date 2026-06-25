@@ -1,8 +1,10 @@
-# Keep the Docker build context small. Only models/, configs/, tools/ and
+# Keep the Docker build context small. Only models/, tools/ and
 # requirements.txt are COPYed by the Dockerfile; everything else is excluded.
+# (configs + checkpoints are pulled from Hugging Face at runtime.)
 .git
 work_dirs
-_site
+vendor
+configs
 build
 data
 assets

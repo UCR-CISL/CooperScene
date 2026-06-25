@@ -5,11 +5,23 @@ __pycache__/
 build/
 **/build/
 
+# keep the vendored OpenCOOD box_overlaps extension (needed by the postprocessor)
+!vendor/opencood/utils/*.so
+
 work_dirs/
 **/work_dirs/
 nohup.out
 *.log
 ckpts/
+
+# configs + checkpoints are distributed via Hugging Face, not the repo
+configs/
+# datasets and downloaded assets (configs/checkpoints pulled from Hugging Face)
+data/
+assets/
+*.pth
+*.sif
+*.tar
 
 .vscode/
 .idea/

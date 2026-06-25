@@ -21,15 +21,10 @@ RUN pip install --no-cache-dir -U pip openmim \
 ENV COOPERSCENE_ROOT=/workspace/CooperScene
 WORKDIR /workspace/CooperScene
 
-# Copy the source needed to build + run the models (build context = repo root).
 COPY requirements.txt ./
 COPY models  ./models
-COPY configs ./configs
 COPY tools   ./tools
 
-# Build the BEVFusion CUDA ops at image-build time. No GPU is needed at build
-# time: FORCE_CUDA=1 + TORCH_CUDA_ARCH_LIST drive nvcc to cross-compile for the
-# target archs. The .so lands in models/bevfusion/ops/ inside the image.
 RUN python models/bevfusion/setup.py develop
 
 COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
