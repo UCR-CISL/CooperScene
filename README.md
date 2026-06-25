@@ -1,6 +1,6 @@
 # CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
 
-[**arXiv**](TBD) &nbsp;|&nbsp; [**Project Website**](TBD) &nbsp;|&nbsp; [**Full demo video (mp4)**](assets/take_10.mp4)
+[**arXiv**](TBD) &nbsp;|&nbsp; [**Project Website**](https://cisl.ucr.edu/CooperScene) &nbsp;|&nbsp; [**Hugging Face**](https://huggingface.co/cisl-hf/CooperScene)
 
 ![Demo](assets/take_10.gif)
 
@@ -22,56 +22,11 @@ including intersections, highway ramps, and parking areas.
 
 ---
 
-## Quick Start
-
-### Docker
-
-The image builds **from scratch** on the public
-`pytorch/pytorch:2.1.1-cuda12.1-cudnn8-devel` base and installs the full stack
-(mmengine / mmcv 2.1 / mmdet 3.x / mmdet3d 1.4 / spconv). The entrypoint
-auto-compiles the BEVFusion CUDA ops on first run.
-
-```bash
-docker build -t cooperscene:latest -f docker/Dockerfile docker/
-
-docker run --gpus all -it --rm \
-    -v $(pwd):/workspace/CooperScene \
-    -v /path/to/data:/data \
-    cooperscene:latest \
-    bash
-```
-
-The entrypoint runs `python models/bevfusion/setup.py develop` from the project
-root if `bev_pool_ext*.so` is not already present, then exec's your command.
-Subsequent runs skip the build. The cooperative configs (`configs/cobevt/`,
-`configs/v2vam/`, `configs/v2vnet/`, `configs/v2xvit/`) do **not** use these
-ops, so the build is only needed for BEVFusion configs.
-
-### Local install (no Docker)
-
-On a host that already has a CUDA toolchain and PyTorch ≥ 2.0 (versions pinned in
-`requirements.txt`):
-
-```bash
-pip install -U openmim
-mim install "mmengine>=0.10" "mmcv>=2.0,<2.2" "mmdet>=3.2,<3.4" "mmdet3d>=1.4,<1.5"
-pip install "numpy<1.25" spconv-cu120 einops tqdm pyyaml
-# BEVFusion configs additionally need the CUDA ops (run once, from the repo root):
-python models/bevfusion/setup.py develop --user
-```
-
-Use `spconv-cu120` for CUDA 12.x (or the wheel matching your toolkit). `--user`
-is required when site-packages is read-only (Apptainer, locked-down images).
-`setup.py` resolves sources relative to the project root, so it must be invoked
-from there — not from inside `models/bevfusion/`.
-
----
-
 ## Data Download & Preparation
 
 ### Download
 
-*TBD* — public release link will be posted at
+Public release link
 <https://data.ucr.edu/datasets/cooperscene/>.
 
 The benchmark ships in **CooperScene format**:
@@ -106,112 +61,171 @@ cooperscene/
 > /visualization, not for training or evaluation.
 
 A **mini set** of 180 contiguous frames (120 train / 30 validate / 30 test) 
-is shipped alongside the full release for pipeline smoke tests — same `<split>/<take>/<agent>/<frame>` layout, rooted at
-`/mini`.
+is shipped alongside the full release for pipeline smoke tests — same `<split>/<take>/<agent>/<frame>` layout.
 
 ### Data preparation
 
-What you need to prepare depends on the model family.
+All models run on the mmengine pipeline and need `.pkl` index files plus `.bin`
+point clouds. Run the converter **once** with `--convert-pcd` (writes a `.bin`
+next to every `.pcd`); drop the flag on later runs. `--data-root` must contain
+`train/`, `validate/`, `test/`.
 
-**Cooperative models** (CoBEVT / V2VAM / V2VNet / V2X-ViT) — **no conversion
-needed.** These run through the cooperative runner (OpenCOOD
-`IntermediateFusionDataset`), which reads the raw scene folders directly. Point
-`data_root` at the directory containing `train/`, `validate/`, `test/` and train
-— no `.pkl` index and no `.bin` conversion are required.
 
-**BEVFusion** (single-agent lidar / lidar-cam) — runs on the mmdet3d
-`CooperSceneDataset` path and needs `.pkl` info files plus `.bin` point clouds.
-Generate them with:
+```bash
+python tools/dataset_converters/coop_data_converter.py \
+    --data-root /path/to/cooperscene \
+    --convert-pcd
+# -> <data-root>/cooperscene_coop_infos_{train,val,test}.pkl
+```
+
+**Single-agent BEVFusion**:
 
 ```bash
 python tools/dataset_converters/data_converter.py \
     --data-root /path/to/cooperscene \
     --out-dir   /path/to/cooperscene \
     --convert-pcd
+# -> <out-dir>/cooperscene_infos_{train,val,test}.pkl
 ```
-
-This writes `cooperscene_infos_{train,val,test}.pkl` into `--out-dir` (set it equal to
-`--data-root` so the configs find them) and, with `--convert-pcd`, a `.bin` next
-to each `.pcd`. Drop `--convert-pcd` on later runs. `--data-root` must contain
-`train/`, `validate/`, `test/`.
 
 ---
 
-## Training & Inference
+## Quick Start
 
-### Configs
+### Docker
 
-All configs live under `configs/`:
+The image builds on `pytorch/pytorch:2.1.1-cuda12.1-cudnn8-devel` and installs
+the full stack (mmengine / mmcv 2.1 / mmdet 3.x / mmdet3d 1.4 / spconv /
+shapely). 
 
+#### 1. Build the image
+
+```bash
+cd CooperScene/
+docker build -t cooperscene -f docker/Dockerfile .
 ```
-configs/
-├── bevfusion/      # BEVFusion (single-agent + cooperative)
-├── cobevt/cobevt.py
-├── v2vam/v2vam.py
-├── v2vnet/v2vnet.py
-└── v2xvit/v2xvit.py
+
+#### 2. Get configs + checkpoints from Hugging Face
+
+```bash
+cd CooperScene/
+pip install -U huggingface_hub
+hf download cisl-hf/CooperScene --local-dir assets
+# -> assets/configs/<model>/{<model>.py, <model>.pth}  (config + checkpoint together)
 ```
 
-Each cooperative-perception config (`cobevt/v2vam/v2vnet/v2xvit`) is
-self-contained and shares the same field layout. Common knobs you'll
-override most often:
+#### 3. Enter the container (bind code + dataset)
+
+All configs use `data_root = 'data/cooperscene'`, so bind your dataset to
+`…/data/cooperscene` and the commands below need no path overrides.
+
+```bash
+cd CooperScene/
+docker run --gpus all -it --rm \
+    -v "$(pwd)":/workspace/CooperScene \
+    -v /path/to/cooperscene_dataset:/workspace/CooperScene/data/cooperscene \
+    cooperscene bash
+```
+
+#### 4. Train (inside the container)
+`tools/train.py` trains models on **train** split, and validates on **validate** split
+```bash
+python tools/train.py assets/configs/ermvp/ermvp.py
+```
+
+Available configs (swap the path above for any of these):
+
+- **BEVFusion** (single / cooperative × lidar / lidar-cam):
+  `bevfusion/bevfusion_single_lidar.py`, `bevfusion/bevfusion_single_lidarcam.py`,
+  `bevfusion/bevfusion_coop_lidar.py`, `bevfusion/bevfusion_coop_lidarcam.py`
+- **CoBEVT / CoSDH / ERMVP / V2VAM / V2VNet / V2X-ViT**:
+  `cobevt/cobevt.py`, `cosdh/cosdh.py`, `ermvp/ermvp.py`,
+  `v2vam/v2vam.py`, `v2vnet/v2vnet.py`, `v2xvit/v2xvit.py`
+
+#### 5. Evaluate
+
+`tools/test.py` evaluates the **test** split by default. Each config has a
+matching checkpoint in the same folder (`<model>.pth`):
+
+```bash
+# ERMVP
+python tools/test.py assets/configs/ermvp/ermvp.py assets/configs/ermvp/ermvp.pth
+
+# BEVFusion (cooperative lidar)
+python tools/test.py assets/configs/bevfusion/bevfusion_coop_lidar.py \
+                     assets/configs/bevfusion/bevfusion_coop_lidar.pth
+```
+
+#### Table 2: agent settings x network
+
+The cooperative `CoopDataset` accepts two eval-time knobs (override with
+`--cfg-options test_dataloader.dataset.<field>=...`):
+
+| Field | Values | Meaning |
+|---|---|---|
+| `agent_setting` | `V+I`, `V+V`, `V+V+I`, `V+2V`, `V+2V+I`, `None` | which cooperators participate; sub-settings are averaged over every valid agent combination. `None` = full V+2V+I, no expansion |
+| `network` | `unlimited`, `cv2x` | `unlimited` = perfect sharing (mAP Unlimited); `cv2x` = async transmission delay from `share_size_mb` (per cooperator, Table 2) and `cv2x_throughput` (default 1.6 Mbps), giving mAP (C-V2X) |
+
+Single setting example (V+V over C-V2X for v2vnet):
+
+```bash
+python tools/test.py assets/configs/v2vnet/v2vnet.py assets/configs/v2vnet/v2vnet.pth \
+    --cfg-options \
+        test_dataloader.dataset.agent_setting=V+V \
+        test_dataloader.dataset.network=cv2x \
+        test_dataloader.dataset.share_size_mb=10.0
+```
+
+Full Table 2 sweep (all models x settings x networks):
+
+```bash
+bash tools/run_table2.sh                 # -> work_dirs/table2/<model>__<setting>__<network>/
+MODELS="cobevt" SETTINGS="V+I V+2V+I" NETWORKS=cv2x bash tools/run_table2.sh
+```
+
+
+### Local install
+
+Tested with Python 3.10 / CUDA 12.1 / PyTorch 2.1. Dependencies are listed in
+`requirements.txt` (use `mim` so the correct `mmcv` wheel is fetched):
+
+```bash
+cd CooperScene/
+pip install -U openmim
+mim install -r requirements.txt
+# BEVFusion configs need the CUDA ops, built once from the repo root:
+python models/bevfusion/setup.py develop
+```
+
+---
+
+## Arguments
+
+
+Common parameters you'll override most often:
 
 | Field | Meaning |
 |---|---|
 | `train_dataloader.batch_size` | per-GPU batch (default 4) |
 | `train_dataloader.num_workers` | worker processes (default 4) |
-| `train_dataloader.dataset.data_root` | dataset root containing `train/`, `validate/`, `test/` |
-| `optim_wrapper.optimizer.lr` | base learning rate (default `1e-3`) |
-| `train_cfg.max_epochs` | total epochs (default 60) |
-| `ego_candidates` | rotate ego across these agent IDs per (scenario, timestamp). Default `None` = use the agent with the smallest `cav_id` |
-| `load_from` | warm-start ckpt path |
+| `*_dataloader.dataset.data_root` | dataset root containing `train/`, `validate/`, `test/` (default `data/cooperscene`) |
+| `*_dataloader.dataset.ann_file` | `.pkl` index for that split (e.g. `cooperscene_coop_infos_val.pkl`) |
+| `optim_wrapper.optimizer.lr` | base learning rate (per-config) |
+| `train_cfg.max_epochs` | total epochs (per-config) |
+| `load_from` | warm-start checkpoint path (default `None` = train from scratch) |
 
-BEVFusion configs (mmengine path) additionally use
-`train_dataloader.dataset.ann_file` for the `.pkl` index.
-
-> **CooperScene ego note:** agent `0` is the LiDAR-only **RSU** and should never
-> be the ego. The default `ego_candidates=None` falls back to the smallest
-> `cav_id` (agent `0`), which is wrong for CooperScene — always set
-> `ego_candidates=['1','2','3']` (the camera-equipped CAVs) for cooperative runs.
-
-Override any of these from the CLI with `--cfg-options`:
+Override any of these from the CLI with `--cfg-options`. Example (ermvp):
 
 ```bash
-python tools/train.py configs/v2vam/v2vam.py \
+python tools/train.py assets/configs/ermvp/ermvp.py \
     --cfg-options \
         train_dataloader.batch_size=2 \
         train_dataloader.num_workers=8 \
-        train_dataloader.dataset.data_root=$DR \
-        val_dataloader.dataset.data_root=$DR \
-        test_dataloader.dataset.data_root=$DR \
-        train_cfg.max_epochs=40 \
+        train_dataloader.dataset.data_root=/path/to/cooperscene \
+        train_cfg.max_epochs=30 \
         optim_wrapper.optimizer.lr=5e-4 \
-        "ego_candidates=['1','2','3']" \
-        load_from=work_dirs/opencood_converted/v2vam.pth
+        load_from=/path/to/ckpt.pth
 ```
-
-### Train
-
-```bash
-python tools/train.py configs/cobevt/cobevt.py
-```
-
-Swap in any other config under `configs/`. Checkpoints and logs land under
-`work_dirs/<config_stem>/`.
-
-### Inference
-
-```bash
-python tools/test.py configs/cobevt/cobevt.py \
-    work_dirs/cobevt/epoch_60.pth
-```
-
-### Pre-trained Checkpoints
-
-
-<https://drive.google.com/drive/folders/129KNKz9ovrBB_DZ-NS9MUTai2p9PG1cv?usp=sharing>
-
-use `load_from=...` to warm-start training or `tools/test.py <cfg> <ckpt>` for inference. 
 
 ---
 
