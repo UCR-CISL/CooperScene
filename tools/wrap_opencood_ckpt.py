@@ -1,4 +1,4 @@
-"""Wrap a raw OpenCOOD checkpoint for use with OpenCOODCooperativeDetector.
+"""Wrap a raw OpenCOOD checkpoint for use with CooperativeDetector.
 
 OpenCOOD's `net_epochN.pth` is a bare state_dict with top-level keys like
 `pillar_vfe.*`, `backbone.*`, `cls_head.*`. Our wrapper detector holds the
@@ -6,9 +6,9 @@ OpenCOOD model under `self.opencood`, so every key needs the `opencood.`
 prefix. We also wrap in `{'state_dict': ..., 'meta': ...}` so mmengine's
 `--load-from` consumes it directly.
 
-Unlike `convert_opencood_ckpt.py` this does NOT do any key remapping or
-splitting (no backbone/neck split, no hwl swap, etc.). The OpenCOOD model is
-imported as-is so it expects the raw layout.
+This does NOT do any key remapping or splitting (no backbone/neck split, no
+hwl swap, etc.). The OpenCOOD model is imported as-is so it expects the raw
+layout.
 
 Usage:
   python tools/wrap_opencood_ckpt.py SRC.pth DST.pth

@@ -282,7 +282,7 @@ class DetHead(nn.Module):
     def predict_from_logits(self, psm, rm, batch_data_samples=None, **kwargs):
         """Same as predict() but skip the internal cls/reg conv layers.
 
-        Used by `OpenCOODCooperativeDetector` which has its OWN cls/reg heads
+        Used by `CooperativeDetector` which has its OWN cls/reg heads
         inside the imported OpenCOOD model and just needs anchor decoding +
         NMS + InstanceData packing here.
         """

@@ -12,7 +12,7 @@ voxel_size = [0.4, 0.4, 4]
 point_cloud_range = [-140.8, -40, -3, 140.8, 40, 1]
 gt_range = [-140, -40, -10, 140, 40, 10]
 
-opencood_args = dict(
+model_args = dict(
     max_cav=5,
     lidar_range=point_cloud_range,
     voxel_size=voxel_size,
@@ -41,7 +41,7 @@ opencood_args = dict(
         input_dim=384),
 )
 
-opencood_anchor_args = dict(
+anchor_args = dict(
     D=1,
     H=200,
     W=704,
@@ -57,7 +57,7 @@ opencood_anchor_args = dict(
     vw=0.4,
 )
 
-opencood_postprocess_args = dict(
+postprocess_args = dict(
     max_num=100,
     nms_thresh=0.15,
     target_args=dict(
@@ -67,21 +67,21 @@ opencood_postprocess_args = dict(
     ),
 )
 
-opencood_loss_args = dict(
+loss_args = dict(
     cls_weight=1.0,
     reg=2.0,
 )
 
 model = dict(
-    type='OpenCOODCooperativeDetector',
+    type='CooperativeDetector',
     arch='v2vam',
     max_cav=5,
-    opencood_args=opencood_args,
-    anchor_args=opencood_anchor_args,
-    postprocess_args=opencood_postprocess_args,
-    loss_args=opencood_loss_args,
+    model_args=model_args,
+    anchor_args=anchor_args,
+    postprocess_args=postprocess_args,
+    loss_args=loss_args,
     data_preprocessor=dict(
-        type='OpenCOODCoopDet3DDataPreprocessor',
+        type='SpVoxelCoopDet3DDataPreprocessor',
         voxel=True,
         voxel_layer=dict(
             max_num_points=32,
@@ -114,7 +114,7 @@ model = dict(
     test_cfg=None)
 
 dataset_type = 'CoopDataset'
-data_root = '/workspace/data/Cooperscene/release/250928_opv2v'
+data_root = 'data/cooperscene'
 
 train_pipeline = [
     dict(type='LoadCooperativePointCloud', coord_type='LIDAR',
@@ -185,8 +185,7 @@ test_dataloader = dict(
 val_evaluator = dict(type='EvalMetric')
 test_evaluator = dict(type='EvalMetric')
 
-# Fine-tune from the existing converted checkpoint.
-load_from = 'work_dirs/opencood_converted/v2vam.pth'
+load_from = None
 
 optim_wrapper = dict(
     type='OptimWrapper',

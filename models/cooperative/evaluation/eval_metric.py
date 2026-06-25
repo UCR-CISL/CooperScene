@@ -330,8 +330,8 @@ class EvalMetric(BaseMetric):
         bit-for-bit with OpenCOOD-modified inference."""
         logger: MMLogger = MMLogger.get_current_instance()
 
-        from opencood.utils.eval_utils import caluclate_tp_fp, calculate_ap
-        from opencood.utils.box_utils import boxes_to_corners_3d
+        from .calculate_ap import (caluclate_tp_fp, calculate_ap,
+                                    boxes_to_corners_3d)
         import torch as _t
 
         def _to_corners(boxes_np):
@@ -386,10 +386,18 @@ class EvalMetric(BaseMetric):
         print_log('=' * 60, logger=logger)
 
         for thr in thresholds:
+            # global_sort_detections MUST be True: detectors like BEVFusion's
+            # TransFusionHead emit num_proposals (e.g. 200) boxes per frame with
+            # no NMS / score_threshold=0, so each frame contributes a flood of
+            # low-score FPs. Without globally sorting all detections by score,
+            # the per-frame FPs are counted before later frames' high-score TPs,
+            # crushing precision to ~total_gt/total_preds regardless of model
+            # quality (symptom: flat AP ~0.02). OPV2V's DetHead is unaffected
+            # only because it applies NMS and emits few boxes per frame.
             ap_bev, _, _ = calculate_ap(result_stat_bev, thr,
-                                         global_sort_detections=False)
+                                         global_sort_detections=True)
             ap_3d, _, _ = calculate_ap(result_stat_3d, thr,
-                                        global_sort_detections=False)
+                                        global_sort_detections=True)
             metrics_dict[f'AP_BEV@{thr}'] = ap_bev
             metrics_dict[f'AP_3D@{thr}'] = ap_3d
             print_log(f'\n--- IoU Threshold: {thr} ---', logger=logger)

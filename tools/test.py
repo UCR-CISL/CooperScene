@@ -10,10 +10,6 @@ from mmengine.runner import Runner
 from mmdet3d.utils import replace_ceph_backend
 
 
-# Detectors whose evaluation is delegated to a dedicated runner (not mmengine).
-COOPERATIVE_DETECTORS = {'OpenCOODCooperativeDetector'}
-
-
 # TODO: support fuse_conv_bn and format_only
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -25,15 +21,6 @@ def parse_args():
         help='the directory to save the file containing evaluation metrics')
     parser.add_argument(
         '--ceph', action='store_true', help='Use ceph as data storage backend')
-    parser.add_argument(
-        '--engine',
-        choices=['auto', 'mmengine', 'opencood'],
-        default='auto',
-        help='Evaluation engine for the cooperative intermediate-fusion '
-        'detectors. "auto"/"opencood" use the original OpenCOOD inference '
-        'loop (models/cooperative/runner.py); "mmengine" routes them through '
-        'the standard mmengine Runner. Has no effect on non-cooperative '
-        'models.')
     parser.add_argument(
         '--show', action='store_true', help='show prediction results')
     parser.add_argument(
@@ -133,15 +120,6 @@ def main():
                                 osp.splitext(osp.basename(args.config))[0])
 
     cfg.load_from = args.checkpoint
-
-    # Dispatch to the cooperative runner for the intermediate-fusion models.
-    # `--engine mmengine` forces these models through the standard mmengine
-    # Runner instead (the migration target).
-    is_coop = cfg.model.get('type') in COOPERATIVE_DETECTORS
-    if is_coop and args.engine in ('auto', 'opencood'):
-        from models.cooperative.runner import test as coop_test
-        coop_test(cfg, args)
-        return
 
     if args.show or args.show_dir:
         cfg = trigger_visualization_hook(cfg, args)

@@ -1,42 +1,71 @@
-"""Cooperative (multi-agent) 3D detector.
+"""Cooperative detector that delegates the whole encoder/fusion stack to
+OpenCOOD's original implementations.
 
-Pipeline per sample: per-CAV voxels -> shared PFE / scatter / backbone / neck
--> optional shrink -> optional compression -> fusion_module (combines CAVs
-via record_len + pairwise_t_matrix) -> bbox_head.
+Why this exists
+---------------
+The plugin-refactor pipeline reimplements PFE / backbone / fusion in
+mmdet3d-native form. Subtle numerical differences in voxelization, BatchNorm
+cuDNN paths, fusion module structure, etc. accumulate to a 0.05-0.2 mAP gap
+when reusing OpenCOOD-trained ckpts. For paper-grade reproduction we instead
+**import OpenCOOD's modules directly** through this wrapper.
 
-Key tensor shapes (intermediate fusion):
-- batch_inputs_dict['voxels']: per-CAV voxel dict, batch dim = sum(record_len)
-- record_len: (B,) int, number of CAVs per sample
-- pairwise_t_matrix: (B, L, L, 4, 4) CAV-to-CAV transforms (L=max_cav)
-- backbone output: (sum(N_cav), C, H, W)
-- after fusion: (B, C, H, W) ego-view feature map to bbox_head
+The wrapper:
+  * keeps the existing CooperativeDataset / data preprocessor / metric
+    (so we share `tools/test.py`, `tools/train.py` with BEVFusion and other
+    mmdet3d-native models);
+  * loads raw OpenCOOD `state_dict` (wrap with `tools/wrap_opencood_ckpt.py`);
+  * runs OpenCOOD's `PointPillarintermediate<Arch>` forward end-to-end;
+  * decodes psm / rm with our DetHead.predict_from_logits.
 """
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional
 
 import torch
 from torch import Tensor, nn
 
 from mmdet3d.registry import MODELS
 from mmdet3d.utils import ConfigType, OptConfigType, OptMultiConfig
-from mmdet3d.structures.det3d_data_sample import OptSampleList, SampleList
+from mmdet3d.structures.det3d_data_sample import SampleList
 from mmdet3d.models.detectors.base import Base3DDetector
+
+
+_ARCH_TO_MODULE = {
+    'v2vam': ('opencood.models.point_pillar_intermediate_V2VAM',
+              'PointPillarintermediateV2VAM'),
+    'cobevt': ('opencood.models.point_pillar_cobevt', 'PointPillarCoBEVT'),
+    'v2vnet': ('opencood.models.point_pillar_v2vnet', 'PointPillarV2VNet'),
+    'v2xvit': ('opencood.models.point_pillar_transformer',
+               'PointPillarTransformer'),
+    'ermvp': ('opencood.models.point_pillar_ermvp', 'PointPillarErmvp'),
+    'cosdh': ('opencood.models.point_pillar_comm_multiscale',
+              'PointPillarCommMultiscale'),
+}
 
 
 @MODELS.register_module()
 class CooperativeDetector(Base3DDetector):
+    """Wraps an OpenCOOD intermediate-fusion model end-to-end.
+
+    Args:
+        arch: which OpenCOOD model class to instantiate
+            ('v2vam', 'cobevt', 'v2vnet', 'v2xvit').
+        model_args: kwarg dict passed to OpenCOOD model's __init__ as `args`.
+            Same structure as the `model.args` block in OpenCOOD's training
+            yaml (pillar_vfe / base_bev_backbone / shrink_header /
+            compression / fax_fusion / anchor_number / lidar_range / ...).
+        bbox_head: built into `self.bbox_head`; we use its
+            `predict_from_logits(psm, rm, ...)` for anchor decoding + NMS.
+            The bbox_head's own cls/reg conv layers are **not** used.
+        max_cav: passed for record_len bookkeeping.
+    """
 
     def __init__(self,
-                 voxel_encoder: ConfigType,
-                 middle_encoder: ConfigType,
-                 backbone: ConfigType,
-                 fusion_module: ConfigType,
+                 arch: str,
+                 model_args: dict,
                  bbox_head: ConfigType,
-                 neck: OptConfigType = None,
-                 fusion_type: str = 'intermediate',
                  max_cav: int = 5,
-                 compression: OptConfigType = None,
-                 shrink_header: OptConfigType = None,
-                 backbone_fix: bool = False,
+                 anchor_args: Optional[dict] = None,
+                 loss_args: Optional[dict] = None,
+                 postprocess_args: Optional[dict] = None,
                  train_cfg: OptConfigType = None,
                  test_cfg: OptConfigType = None,
                  data_preprocessor: OptConfigType = None,
@@ -44,211 +73,193 @@ class CooperativeDetector(Base3DDetector):
         super().__init__(
             data_preprocessor=data_preprocessor, init_cfg=init_cfg)
 
-        self.voxel_encoder = MODELS.build(voxel_encoder)
-        self.middle_encoder = MODELS.build(middle_encoder)
-        self.backbone = MODELS.build(backbone)
-        if neck is not None:
-            self.neck = MODELS.build(neck)
-        else:
-            self.neck = None
-
-        self.fusion_module = MODELS.build(fusion_module)
-        self.fusion_type = fusion_type
+        if arch not in _ARCH_TO_MODULE:
+            raise ValueError(
+                f'arch must be one of {list(_ARCH_TO_MODULE)}, got {arch!r}')
+        mod_name, cls_name = _ARCH_TO_MODULE[arch]
+        import importlib
+        mod = importlib.import_module(mod_name)
+        opencood_cls = getattr(mod, cls_name)
+        self.arch = arch
         self.max_cav = max_cav
+        # the imported OpenCOOD module; ckpts load into self.opencood.*
+        self.opencood = opencood_cls(model_args)
 
-        if compression is not None:
-            self.compressor = MODELS.build(compression)
-        else:
-            self.compressor = None
-
-        if shrink_header is not None:
-            if 'type' in shrink_header:
-                self.shrink_conv = MODELS.build(shrink_header)
-            else:
-                self.shrink_conv = nn.Sequential(
-                    nn.Conv2d(
-                        shrink_header['in_channels'],
-                        shrink_header['out_channels'],
-                        kernel_size=shrink_header.get('kernel_size', 3),
-                        stride=shrink_header.get('stride', 1),
-                        padding=shrink_header.get('padding', 1)),
-                    nn.BatchNorm2d(shrink_header['out_channels']),
-                    nn.ReLU(inplace=True))
-        else:
-            self.shrink_conv = None
-
-        if 'train_cfg' in bbox_head or 'test_cfg' in bbox_head:
-            pass
-        else:
-            bbox_head.update(train_cfg=train_cfg)
-            bbox_head.update(test_cfg=test_cfg)
+        # Reuse our DetHead for anchor decoding + InstanceData packing only.
+        if 'train_cfg' not in bbox_head and 'test_cfg' not in bbox_head:
+            bbox_head = dict(**bbox_head)
+            bbox_head['train_cfg'] = train_cfg
+            bbox_head['test_cfg'] = test_cfg
         self.bbox_head = MODELS.build(bbox_head)
+
         self.train_cfg = train_cfg
         self.test_cfg = test_cfg
 
-        self.backbone_fix = backbone_fix
-        if self.backbone_fix:
-            self._freeze_backbone()
+        # Training-time helpers: OpenCOOD VoxelPostprocessor for anchor target
+        # assignment + PointPillarLoss. Only constructed when args provided.
+        self._post_processor = None
+        self._anchor_box_np = None
+        self._criterion = None
+        if anchor_args is not None and postprocess_args is not None:
+            from opencood.data_utils.post_processor.voxel_postprocessor import (
+                VoxelPostprocessor)
+            params = dict(postprocess_args)
+            params.setdefault('core_method', 'VoxelPostprocessor')
+            params.setdefault('order', 'hwl')
+            params['anchor_args'] = dict(anchor_args)
+            self._post_processor = VoxelPostprocessor(params, train=True)
+            self._anchor_box_np = self._post_processor.generate_anchor_box()
+            self._post_params = params
 
-    def _freeze_backbone(self) -> None:
-        modules = [self.voxel_encoder, self.middle_encoder, self.backbone]
-        if self.neck is not None:
-            modules.append(self.neck)
-        if self.compressor is not None:
-            modules.append(self.compressor)
-        if self.shrink_conv is not None:
-            modules.append(self.shrink_conv)
-        modules.append(self.bbox_head)
-        for m in modules:
-            for p in m.parameters():
-                p.requires_grad = False
-            m.eval()
+        if loss_args is not None:
+            from opencood.loss.point_pillar_loss import PointPillarLoss
+            self._criterion = PointPillarLoss(dict(loss_args))
 
-    def train(self, mode: bool = True):
-        super().train(mode)
-        if self.backbone_fix:
-            self.voxel_encoder.eval()
-            self.middle_encoder.eval()
-            self.backbone.eval()
-            if self.neck is not None:
-                self.neck.eval()
-            if self.compressor is not None:
-                self.compressor.eval()
-            if self.shrink_conv is not None:
-                self.shrink_conv.eval()
-            self.bbox_head.eval()
-        return self
+    # ------------------------------------------------------------------
+    # Forward paths
+    # ------------------------------------------------------------------
+    def _to_opencood_data_dict(self, batch_inputs_dict: dict) -> dict:
+        """Translate mmdet3d-style cooperative inputs to OpenCOOD data_dict.
 
-    def extract_feat_single(self, voxel_dict: dict) -> Tensor:
-        voxel_features = self.voxel_encoder(
-            voxel_dict['voxels'],
-            voxel_dict['num_points'],
-            voxel_dict['coors'])
-        batch_size = voxel_dict['coors'][-1, 0].item() + 1
-        x = self.middle_encoder(voxel_features, voxel_dict['coors'],
-                                batch_size)
-        x = self.backbone(x)
-        if self.neck is not None:
-            x = self.neck(x)
-        return x
+        Expected `batch_inputs_dict`:
+            voxels: dict with 'voxels' (N, max_pts, C),
+                    'num_points' (N,), 'coors' (N, 4 = [cav_idx, z, y, x])
+            record_len: (B,) int — CAV count per batch sample
+        """
+        voxels = batch_inputs_dict['voxels']
+        record_len = batch_inputs_dict['record_len']
+        if not torch.is_tensor(record_len):
+            record_len = torch.as_tensor(record_len, dtype=torch.long)
 
-    def extract_feat(self, batch_inputs_dict: dict) -> Tensor:
-        voxel_dict = batch_inputs_dict['voxels']
-        record_len = batch_inputs_dict.get('record_len', None)
-        pairwise_t_matrix = batch_inputs_dict.get(
-            'pairwise_t_matrix', None)
-        coop_mask = batch_inputs_dict.get('coop_mask', None)
+        # spatial_correction_matrix: identity (sync, proj_first).
+        device = voxels['voxels'].device
+        batch_size = int(record_len.shape[0]) if record_len.ndim == 1 else 1
+        spatial_correction_matrix = torch.eye(
+            4, device=device, dtype=torch.float32
+        ).reshape(1, 1, 4, 4).expand(batch_size, self.max_cav, 4, 4).contiguous()
 
-        x = self.extract_feat_single(voxel_dict)
-        if isinstance(x, (tuple, list)):
-            x = x[-1] if len(x) == 1 else torch.cat(
-                [xi for xi in x], dim=1)
+        # pairwise_t_matrix: real value comes from the dataset; default identity.
+        pairwise_t = batch_inputs_dict.get('pairwise_t_matrix', None)
+        if pairwise_t is None:
+            pairwise_t = torch.zeros(
+                batch_size, self.max_cav, self.max_cav, 4, 4,
+                device=device, dtype=torch.float32)
+            eye = torch.eye(4, device=device, dtype=torch.float32)
+            pairwise_t[:] = eye
+            pairwise_t = pairwise_t.contiguous()
 
-        if self.shrink_conv is not None:
-            x = self.shrink_conv(x)
-
-        if (self.fusion_type == 'early' or record_len is None or
-                (record_len.max().item() <= 1 if torch.is_tensor(record_len)
-                 else max(record_len) <= 1)):
-            return x
-
-        if self.compressor is not None:
-            x = self.compressor(x)
-
-        x = self._apply_fusion(x, record_len, pairwise_t_matrix, coop_mask)
-
-        return x
-
-    def _apply_fusion(self, x, record_len, pairwise_t_matrix, coop_mask):
-        from ..fuse_modules import (
-            SpatialFusion, RandomSumFusion, AttFusion,
-            Where2comm, CoAlignFusion)
-        from ..fuse_modules.fuse_utils import regroup
-        from ..fuse_modules.coalign_fuse import normalize_pairwise_tfm
-        from models.cobevt.swap_fusion_modules import SwapFusionEncoder
-        from models.v2vam.v2vam_fuse import V2VAttFusion
-        from models.v2vnet.v2v_fuse import V2VNetFusion
-        from models.v2xvit.v2xvit_basic import V2XTransformer
-
-        if isinstance(self.fusion_module,
-                      (SpatialFusion, RandomSumFusion, AttFusion,
-                       V2VAttFusion)):
-            return self.fusion_module(x, record_len)
-
-        if isinstance(self.fusion_module, V2VNetFusion):
-            return self.fusion_module(x, record_len, pairwise_t_matrix)
-
-        if isinstance(self.fusion_module, CoAlignFusion):
-            _, _, H, W = x.shape
-            voxel_size = self.fusion_module.att.sqrt_dim
-            normalized = normalize_pairwise_tfm(
-                pairwise_t_matrix.clone(), H, W,
-                discrete_ratio=0.4, downsample_rate=2)
-            return self.fusion_module(x, record_len, normalized)
-
-        if isinstance(self.fusion_module, SwapFusionEncoder):
-            from einops import repeat
-            regroup_feature, mask = regroup(
-                x, record_len, self.max_cav)
-            B, L, C, H, W = regroup_feature.shape
-            com_mask = mask.unsqueeze(1).unsqueeze(2).unsqueeze(3)
-            com_mask = repeat(com_mask,
-                              'b h w c l -> b (h new_h) (w new_w) c l',
-                              new_h=H, new_w=W)
-            return self.fusion_module(regroup_feature, com_mask)
-
-        if isinstance(self.fusion_module, V2XTransformer):
-            regroup_feature, mask = regroup(
-                x, record_len, self.max_cav)
-            B, L, C, H, W = regroup_feature.shape
-            regroup_feature = regroup_feature.permute(0, 1, 3, 4, 2)
+        # prior_encoding (B, max_cav, 3) = [time_delay, velocity, infra]; zeros.
+        prior_encoding = batch_inputs_dict.get('prior_encoding', None)
+        if prior_encoding is None:
             prior_encoding = torch.zeros(
-                B, L, H, W, 3, device=x.device, dtype=x.dtype)
-            regroup_feature = torch.cat(
-                [regroup_feature, prior_encoding], dim=-1)
-            if pairwise_t_matrix is not None:
-                spatial_correction = pairwise_t_matrix[:, :, 0, :, :]
-            else:
-                spatial_correction = torch.eye(
-                    4, device=x.device).unsqueeze(0).unsqueeze(0).expand(
-                    B, L, 4, 4)
-            return self.fusion_module(
-                regroup_feature, mask, spatial_correction).permute(
-                0, 3, 1, 2)
+                batch_size, self.max_cav, 3,
+                device=device, dtype=torch.float32)
 
-        if isinstance(self.fusion_module, Where2comm):
-            psm_single = x.mean(dim=1, keepdim=True)
-            return self.fusion_module(
-                x, psm_single, record_len, pairwise_t_matrix)[0]
+        return {
+            'processed_lidar': {
+                'voxel_features': voxels['voxels'],
+                'voxel_coords': voxels['coors'],
+                'voxel_num_points': voxels['num_points'],
+            },
+            'record_len': record_len,
+            'spatial_correction_matrix': spatial_correction_matrix,
+            'pairwise_t_matrix': pairwise_t,
+            'prior_encoding': prior_encoding,
+        }
 
-        return self.fusion_module(x, record_len)
-
-    def loss(self, batch_inputs_dict: dict,
-             batch_data_samples: SampleList,
-             **kwargs) -> Dict[str, Tensor]:
-        x = self.extract_feat(batch_inputs_dict)
-        if isinstance(x, Tensor):
-            x = [x]
-        losses = self.bbox_head.loss(x, batch_data_samples, **kwargs)
-        return losses
+    @staticmethod
+    def _extract_psm_rm(output_dict: dict):
+        """(psm, rm) from either psm/rm or cls_preds/reg_preds. dir_preds is
+        ignored (180° heading flip is IoU/AP-invariant)."""
+        psm = output_dict.get('psm', output_dict.get('cls_preds'))
+        rm = output_dict.get('rm', output_dict.get('reg_preds'))
+        return psm, rm
 
     def predict(self, batch_inputs_dict: dict,
-                batch_data_samples: SampleList,
-                **kwargs) -> SampleList:
-        x = self.extract_feat(batch_inputs_dict)
-        if isinstance(x, Tensor):
-            x = [x]
-        results_list = self.bbox_head.predict(
-            x, batch_data_samples, **kwargs)
-        predictions = self.add_pred_to_datasample(
-            batch_data_samples, results_list)
-        return predictions
+                batch_data_samples: SampleList, **kwargs) -> SampleList:
+        data_dict = self._to_opencood_data_dict(batch_inputs_dict)
+        output_dict = self.opencood(data_dict)
+        psm, rm = self._extract_psm_rm(output_dict)  # (B,A,H,W), (B,7A,H,W)
 
-    def _forward(self, batch_inputs_dict: dict,
-                 data_samples: OptSampleList = None,
-                 **kwargs) -> Tuple[List[Tensor]]:
-        x = self.extract_feat(batch_inputs_dict)
-        if isinstance(x, Tensor):
-            x = [x]
-        results = self.bbox_head.forward(x)
-        return results
+        results_list = self.bbox_head.predict_from_logits(
+            psm, rm, batch_data_samples)
+        return self.add_pred_to_datasample(batch_data_samples, results_list)
+
+    def _build_target_dict(self, batch_data_samples: SampleList,
+                           device: torch.device) -> dict:
+        """Build {targets, pos_equal_one} the way OpenCOOD's PointPillarLoss
+        expects, using OpenCOOD's own `VoxelPostprocessor.generate_label`.
+
+        Per-sample GT (from mmdet3d's LiDARInstance3DBoxes, format
+        [x, y, z_bottom, l, w, h, yaw]) is converted to OpenCOOD's hwl center
+        convention [x, y, z_center, h, w, l, yaw] and padded to `max_num`.
+        """
+        import numpy as np
+        max_num = int(self._post_params.get('max_num', 100))
+
+        pos_list, tgt_list = [], []
+        for ds in batch_data_samples:
+            if hasattr(ds, 'gt_instances_3d') and \
+                    ds.gt_instances_3d is not None and \
+                    len(ds.gt_instances_3d.bboxes_3d) > 0:
+                gt = ds.gt_instances_3d.bboxes_3d.tensor.detach().cpu().numpy()
+            else:
+                gt = np.zeros((0, 7), dtype=np.float32)
+
+            gt_hwl = gt.copy().astype(np.float64)
+            if gt_hwl.shape[0] > 0:
+                gt_hwl[:, 2] = gt[:, 2] + gt[:, 5] / 2.0   # z_bottom -> z_center
+                gt_hwl[:, 3] = gt[:, 5]                    # h
+                gt_hwl[:, 5] = gt[:, 3]                    # l
+
+            padded = np.zeros((max_num, 7), dtype=np.float64)
+            mask = np.zeros(max_num, dtype=np.int32)
+            n = min(gt_hwl.shape[0], max_num)
+            padded[:n] = gt_hwl[:n]
+            mask[:n] = 1
+
+            label_dict = self._post_processor.generate_label(
+                gt_box_center=padded,
+                anchors=self._anchor_box_np,
+                mask=mask)
+            pos_list.append(label_dict['pos_equal_one'])
+            tgt_list.append(label_dict['targets'])
+
+        targets = torch.from_numpy(
+            np.stack(tgt_list, axis=0)).float().to(device)
+        pos_equal_one = torch.from_numpy(
+            np.stack(pos_list, axis=0)).float().to(device)
+        return {'targets': targets, 'pos_equal_one': pos_equal_one}
+
+    def loss(self, batch_inputs_dict: dict,
+             batch_data_samples: SampleList, **kwargs) -> dict:
+        if self._criterion is None or self._post_processor is None:
+            raise RuntimeError(
+                'To train CooperativeDetector, pass `anchor_args`, '
+                '`postprocess_args` and `loss_args` in the config.')
+
+        data_dict = self._to_opencood_data_dict(batch_inputs_dict)
+        output_dict = self.opencood(data_dict)  # {'psm','rm'} or {'cls_preds','reg_preds'}
+
+        # alias cls_preds/reg_preds -> psm/rm so PointPillarLoss works (CoSDH).
+        psm, rm = self._extract_psm_rm(output_dict)
+        output_dict = {**output_dict, 'psm': psm, 'rm': rm}
+
+        device = output_dict['psm'].device
+        target_dict = self._build_target_dict(batch_data_samples, device)
+
+        total_loss = self._criterion(output_dict, target_dict)
+        ld = self._criterion.loss_dict
+        return {
+            'loss': total_loss,
+            'conf_loss': ld['conf_loss'].detach(),
+            'reg_loss': ld['reg_loss'].detach(),
+        }
+
+    def _forward(self, batch_inputs_dict: dict, **kwargs):
+        data_dict = self._to_opencood_data_dict(batch_inputs_dict)
+        return self.opencood(data_dict)
+
+    def extract_feat(self, batch_inputs_dict: dict, **kwargs):
+        raise NotImplementedError(
+            'extract_feat not implemented for OpenCOOD wrapper.')
