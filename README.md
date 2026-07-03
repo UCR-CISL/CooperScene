@@ -1,6 +1,6 @@
 # CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
 
-[**arXiv**](TBD) &nbsp;|&nbsp; [**Project Website**](https://cisl.ucr.edu/CooperScene) &nbsp;|&nbsp; [**Hugging Face**](https://huggingface.co/cisl-hf/CooperScene)
+[**arXiv**](https://arxiv.org/abs/2606.31219) &nbsp;|&nbsp; [**Project Website**](https://cisl.ucr.edu/CooperScene) &nbsp;|&nbsp; [**Hugging Face**](https://huggingface.co/cisl-hf/CooperScene)
 
 ![Demo](assets/take_10.gif)
 
@@ -111,7 +111,7 @@ docker build -t cooperscene -f docker/Dockerfile .
 cd CooperScene/
 pip install -U huggingface_hub
 hf download cisl-hf/CooperScene --local-dir assets
-# -> assets/configs/<model>/{<model>.py, <model>.pth}  (config + checkpoint together)
+# -> assets/<model>/{<model>.py, <model>.pth}  (config + checkpoint together)
 ```
 
 #### 3. Enter the container (bind code + dataset)
@@ -130,7 +130,7 @@ docker run --gpus all -it --rm \
 #### 4. Train (inside the container)
 `tools/train.py` trains models on **train** split, and validates on **validate** split
 ```bash
-python tools/train.py assets/configs/ermvp/ermvp.py
+python tools/train.py assets/ermvp/ermvp.py
 ```
 
 Available configs (swap the path above for any of these):
@@ -149,11 +149,11 @@ matching checkpoint in the same folder (`<model>.pth`):
 
 ```bash
 # ERMVP
-python tools/test.py assets/configs/ermvp/ermvp.py assets/configs/ermvp/ermvp.pth
+python tools/test.py assets/ermvp/ermvp.py assets/ermvp/ermvp.pth
 
 # BEVFusion (cooperative lidar)
-python tools/test.py assets/configs/bevfusion/bevfusion_coop_lidar.py \
-                     assets/configs/bevfusion/bevfusion_coop_lidar.pth
+python tools/test.py assets/bevfusion/bevfusion_coop_lidar.py \
+                     assets/bevfusion/bevfusion_coop_lidar.pth
 ```
 
 #### Table 2: agent settings x network
@@ -169,7 +169,7 @@ The cooperative `CoopDataset` accepts two eval-time knobs (override with
 Single setting example (V+V over C-V2X for v2vnet):
 
 ```bash
-python tools/test.py assets/configs/v2vnet/v2vnet.py assets/configs/v2vnet/v2vnet.pth \
+python tools/test.py assets/v2vnet/v2vnet.py assets/v2vnet/v2vnet.pth \
     --cfg-options \
         test_dataloader.dataset.agent_setting=V+V \
         test_dataloader.dataset.network=cv2x \
@@ -217,7 +217,7 @@ Common parameters you'll override most often:
 Override any of these from the CLI with `--cfg-options`. Example (ermvp):
 
 ```bash
-python tools/train.py assets/configs/ermvp/ermvp.py \
+python tools/train.py assets/ermvp/ermvp.py \
     --cfg-options \
         train_dataloader.batch_size=2 \
         train_dataloader.num_workers=8 \
@@ -231,13 +231,86 @@ python tools/train.py assets/configs/ermvp/ermvp.py \
 
 ## Benchmark Result
 
-*TBD* 
+Full details in the [paper](https://arxiv.org/abs/2606.31219) and on the
+[project website](https://cisl.ucr.edu/CooperScene#benchmark).
+
+### Cooperative 3D Object Detection
+
+Benchmark of cooperative perception under C-V2X and unlimited (infeasible)
+network, with increasing number of agents, in terms of accuracy (mAP), total
+data sharing size per frame, and the latency if all data were to be transmitted
+over C-V2X. **Bold** marks the best result per column within each method.
+
+| Model | Agents | C-V2X @0.3 | C-V2X @0.5 | C-V2X @0.7 | Unlim. @0.3 | Unlim. @0.5 | Unlim. @0.7 | Sharing Size (MB) | Latency (ms) |
+|---|---|---|---|---|---|---|---|---|---|
+| V2VNet | V+I | **0.43** | **0.33** | **0.20** | 0.55 | 0.42 | 0.23 | 10.0 | 64,349 |
+| V2VNet | V+V | 0.35 | 0.25 | 0.15 | 0.66 | 0.55 | 0.34 | 10.0 | 64,038 |
+| V2VNet | V+V+I | 0.36 | 0.27 | 0.15 | 0.70 | 0.60 | 0.37 | 20.0 | 76,879 |
+| V2VNet | V+2V | 0.32 | 0.23 | 0.13 | 0.79 | 0.74 | 0.47 | 20.0 | 72,773 |
+| V2VNet | V+2V+I | 0.32 | 0.23 | 0.13 | **0.81** | **0.75** | **0.50** | 30.0 | 107,432 |
+| V2X-ViT | V+I | 0.50 | 0.38 | 0.20 | 0.54 | 0.41 | 0.21 | 0.338 | 2,211 |
+| V2X-ViT | V+V | 0.53 | 0.43 | 0.26 | 0.65 | 0.55 | 0.35 | 0.338 | 1,305 |
+| V2X-ViT | V+V+I | 0.56 | 0.45 | 0.26 | 0.70 | 0.59 | 0.36 | 0.667 | 9,215 |
+| V2X-ViT | V+2V | **0.60** | **0.53** | **0.33** | 0.79 | 0.73 | 0.49 | 0.667 | 7,022 |
+| V2X-ViT | V+2V+I | **0.60** | 0.52 | **0.33** | **0.80** | **0.74** | **0.50** | 1.014 | 9,976 |
+| V2VAM | V+I | 0.53 | 0.40 | 0.22 | 0.57 | 0.44 | 0.24 | 0.423 | 2,264 |
+| V2VAM | V+V | 0.53 | 0.43 | 0.26 | 0.68 | 0.56 | 0.37 | 0.423 | 2,253 |
+| V2VAM | V+V+I | 0.58 | 0.47 | 0.27 | 0.74 | 0.63 | 0.39 | 0.846 | 10,301 |
+| V2VAM | V+2V | 0.61 | **0.54** | **0.34** | 0.82 | 0.76 | **0.53** | 0.846 | 8,117 |
+| V2VAM | V+2V+I | **0.62** | **0.54** | **0.34** | **0.84** | **0.78** | **0.53** | 1.269 | 11,302 |
+| CoBEVT | V+I | 0.48 | 0.39 | 0.20 | 0.52 | 0.43 | 0.21 | 0.500 | 2,707 |
+| CoBEVT | V+V | 0.50 | 0.41 | 0.26 | 0.64 | 0.55 | 0.37 | 0.500 | 2,393 |
+| CoBEVT | V+V+I | 0.54 | 0.44 | 0.25 | 0.70 | 0.60 | 0.37 | 1.000 | 11,059 |
+| CoBEVT | V+2V | 0.57 | 0.49 | **0.33** | 0.80 | 0.73 | **0.54** | 1.000 | 8,987 |
+| CoBEVT | V+2V+I | **0.59** | **0.50** | 0.32 | **0.82** | **0.75** | **0.54** | 1.500 | 12,381 |
+| ERMVP | V+I | 0.61 | 0.46 | 0.24 | 0.65 | 0.51 | 0.26 | 0.346 | 1,730 |
+| ERMVP | V+V | 0.61 | 0.49 | 0.30 | 0.76 | 0.63 | 0.42 | 0.346 | 1,730 |
+| ERMVP | V+V+I | 0.63 | 0.51 | 0.31 | 0.79 | 0.67 | 0.43 | 0.692 | 3,460 |
+| ERMVP | V+2V | **0.66** | **0.57** | **0.37** | **0.87** | 0.80 | **0.57** | 0.692 | 3,460 |
+| ERMVP | V+2V+I | 0.64 | 0.56 | 0.36 | **0.87** | **0.81** | **0.57** | 1.038 | 5,190 |
+| CoSDH | V+I | 0.57 | 0.43 | 0.23 | 0.58 | 0.44 | 0.24 | 0.0595 | 298 |
+| CoSDH | V+V | 0.63 | 0.47 | 0.29 | 0.67 | 0.54 | 0.35 | 0.0595 | 298 |
+| CoSDH | V+V+I | 0.68 | 0.53 | 0.32 | 0.72 | 0.62 | 0.39 | 0.1190 | 595 |
+| CoSDH | V+2V | 0.74 | **0.61** | 0.40 | 0.79 | 0.72 | 0.51 | 0.1190 | 595 |
+| CoSDH | V+2V+I | **0.75** | **0.61** | **0.41** | **0.81** | **0.73** | **0.52** | 0.1785 | 893 |
+
+### Multi-Modal Cooperative Perception (BEVFusion)
+
+| Agent | Modality | BEV @0.3 | BEV @0.5 | BEV @0.7 | 3D @0.3 | 3D @0.5 | 3D @0.7 |
+|---|---|---|---|---|---|---|---|
+| V | LiDAR | 0.78 | 0.56 | 0.31 | 0.70 | 0.38 | 0.21 |
+| V | LiDAR+Cam | 0.80 | 0.57 | 0.33 | 0.72 | 0.42 | 0.23 |
+| V+V | LiDAR | 0.81 | 0.65 | 0.39 | 0.75 | 0.54 | 0.22 |
+| V+V | LiDAR+Cam | 0.80 | 0.65 | 0.41 | 0.74 | 0.54 | 0.25 |
+| V+2V | LiDAR | 0.90 | 0.84 | 0.56 | 0.87 | 0.73 | 0.30 |
+| V+2V | LiDAR+Cam | 0.90 | 0.83 | 0.61 | 0.87 | 0.74 | 0.35 |
+
+### Cooperative Motion Prediction
+
+| Model | Agent | minADE@1s | minADE@3s | minADE@5s | minFDE@1s | minFDE@3s | minFDE@5s |
+|---|---|---|---|---|---|---|---|
+| V2VNet | V | 0.4895 | 2.1648 | 4.4538 | 0.9307 | 5.7344 | 10.6390 |
+| V2VNet | V+V | 0.5424 | 1.5611 | 3.5591 | 0.7528 | 4.4820 | 9.1667 |
+| V2VNet | V+2V | 0.7610 | 1.3796 | 2.9096 | 1.0079 | 3.4762 | 7.3660 |
+| CMP | V | 0.3851 | 0.8421 | 1.4022 | 0.5786 | 1.6125 | 3.0712 |
+| CMP | V+V | 0.4076 | 0.9330 | 1.6416 | 0.6143 | 1.8492 | 3.7389 |
+| CMP | V+2V | **0.3214** | **0.7252** | **1.2893** | **0.4723** | **1.4551** | **2.9716** |
 
 ---
 
 ## Citation
 
-TBD
+```bibtex
+@misc{wu2026cooperscenemultimodalcooperativeautonomy,
+      title={CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization},
+      author={Bo Wu and Ruoshen Mo and Justin Yue and Yanyu Zhang and Janice Nguyen and Guoyuan Wu and Amit Roy-Chowdhury and Matthew J. Barth and Hang Qiu},
+      year={2026},
+      eprint={2606.31219},
+      archivePrefix={arXiv},
+      primaryClass={cs.CV},
+      url={https://arxiv.org/abs/2606.31219},
+}
+```
 
 ## License
 
