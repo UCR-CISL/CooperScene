@@ -78,14 +78,32 @@
         <div class="publication-venue mb-2">ECCV 2026</div>
 
         <div class="hero-buttons">
-          <a class="button is-rounded is-dark" href="#" target="_blank">
-            <span class="icon"><i class="fas fa-file"></i></span>
+          <a class="button is-rounded is-dark"
+              href="https://arxiv.org/abs/2606.31219" target="_blank">
+            <span class="icon">
+              <!-- arXiv logomark (official brand SVG, dark-mode colors) -->
+              <svg viewBox="84 0 85 113" xmlns="http://www.w3.org/2000/svg" style="height: 1.1em;" aria-hidden="true">
+                <path d="M127.98,55.61l-32.74,38.85c-1.29,1.37-2.08,3.78-1.36,5.5.75,1.8,2.46,2.91,4.4,2.91,1.09,0,1.99-.38,3.16-1.56l40.19-42.71c1.6-1.69,1.62-4.33.04-6.04l-13.68,3.05Z" fill="#aa142d"/>
+                <path d="M127.98,55.61l31.19-38.27c1.49-1.99,2.2-3.03,1.49-4.72-.74-1.77-2.59-3.16-4.48-3.16h0c-1.06,0-1.72.09-3.01,1.11l-38.63,41.76c-1.72,1.84-1.71,4.7.02,6.53l47.79,51.07c1.02,1.05,2.05,1.19,3.14,1.19,1.93,0,3.19-1.14,4.03-2.82.72-1.73-.08-3.44-1.4-5.23l-40.12-47.46" fill="#ffffff"/>
+                <path d="M141.67,52.56L95,2.13S93.29.04,91.48,0s-3.6,1.02-4.34,2.79c-.7,1.69-.2,2.88,1.35,5.1l40.09,48.42" fill="#aa142d"/>
+              </svg>
+            </span>
             <span>Paper</span>
           </a>
           <a class="button is-rounded is-dark"
              href="https://github.com/UCR-CISL/CooperScene/tree/main" target="_blank">
             <span class="icon"><i class="fab fa-github"></i></span>
             <span>Code</span>
+          </a>
+          <a class="button is-rounded is-dark"
+             href="https://huggingface.co/cisl-hf/CooperScene" target="_blank">
+            <span class="icon">&#129303;</span>
+            <span>Hugging Face</span>
+          </a>
+          <a class="button is-rounded is-dark"
+             href="https://data.ucr.edu/datasets/cooperscene/" target="_blank">
+            <span class="icon"><i class="fas fa-database"></i></span>
+            <span>Dataset</span>
           </a>
         </div>
       </div>
@@ -389,56 +407,56 @@
                 <tr>
                   <td class="method-name" rowspan="5">V2VNet</td>
                   <td class="agent-config">V+I</td>
-                  <td class="best">0.36</td>
-                  <td class="best">0.22</td>
-                  <td class="best">0.10</td>
-                  <td class="col-unlimited">0.45</td>
-                  <td class="col-unlimited">0.30</td>
-                  <td class="col-unlimited">0.14</td>
+                  <td class="best">0.43</td>
+                  <td class="best">0.33</td>
+                  <td class="best">0.20</td>
+                  <td class="col-unlimited">0.55</td>
+                  <td class="col-unlimited">0.42</td>
+                  <td class="col-unlimited">0.23</td>
                   <td>10.0</td>
                   <td>64,349</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.27</td>
-                  <td>0.16</td>
-                  <td>0.06</td>
-                  <td class="col-unlimited">0.38</td>
-                  <td class="col-unlimited">0.28</td>
-                  <td class="col-unlimited">0.13</td>
+                  <td>0.35</td>
+                  <td>0.25</td>
+                  <td>0.15</td>
+                  <td class="col-unlimited">0.66</td>
+                  <td class="col-unlimited">0.55</td>
+                  <td class="col-unlimited">0.34</td>
                   <td>10.0</td>
                   <td>64,038</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.33</td>
-                  <td>0.20</td>
-                  <td class="best">0.10</td>
-                  <td class="col-unlimited">0.48</td>
-                  <td class="col-unlimited">0.39</td>
-                  <td class="col-unlimited">0.19</td>
+                  <td>0.36</td>
+                  <td>0.27</td>
+                  <td>0.15</td>
+                  <td class="col-unlimited">0.70</td>
+                  <td class="col-unlimited">0.60</td>
+                  <td class="col-unlimited">0.37</td>
                   <td>20.0</td>
                   <td>76,879</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td>0.27</td>
-                  <td>0.16</td>
-                  <td>0.06</td>
-                  <td class="col-unlimited">0.50</td>
-                  <td class="col-unlimited">0.50</td>
-                  <td class="col-unlimited">0.26</td>
+                  <td>0.32</td>
+                  <td>0.23</td>
+                  <td>0.13</td>
+                  <td class="col-unlimited">0.79</td>
+                  <td class="col-unlimited">0.74</td>
+                  <td class="col-unlimited">0.47</td>
                   <td>20.0</td>
                   <td>72,773</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td>0.33</td>
-                  <td>0.19</td>
-                  <td class="best">0.10</td>
-                  <td class="col-unlimited best-unlimited">0.63</td>
-                  <td class="col-unlimited best-unlimited">0.56</td>
-                  <td class="col-unlimited best-unlimited">0.29</td>
+                  <td>0.32</td>
+                  <td>0.23</td>
+                  <td>0.13</td>
+                  <td class="col-unlimited best-unlimited">0.81</td>
+                  <td class="col-unlimited best-unlimited">0.75</td>
+                  <td class="col-unlimited best-unlimited">0.50</td>
                   <td>30.0</td>
                   <td>107,432</td>
                 </tr>
@@ -446,113 +464,113 @@
                 <tr>
                   <td class="method-name" rowspan="5">V2X-ViT</td>
                   <td class="agent-config">V+I</td>
-                  <td>0.36</td>
-                  <td>0.24</td>
-                  <td>0.11</td>
-                  <td class="col-unlimited">0.38</td>
-                  <td class="col-unlimited">0.24</td>
-                  <td class="col-unlimited">0.11</td>
+                  <td>0.50</td>
+                  <td>0.38</td>
+                  <td>0.20</td>
+                  <td class="col-unlimited">0.54</td>
+                  <td class="col-unlimited">0.41</td>
+                  <td class="col-unlimited">0.21</td>
                   <td>0.338</td>
                   <td>2,211</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.28</td>
-                  <td>0.23</td>
-                  <td>0.10</td>
-                  <td class="col-unlimited">0.34</td>
-                  <td class="col-unlimited">0.28</td>
-                  <td class="col-unlimited">0.12</td>
+                  <td>0.53</td>
+                  <td>0.43</td>
+                  <td>0.26</td>
+                  <td class="col-unlimited">0.65</td>
+                  <td class="col-unlimited">0.55</td>
+                  <td class="col-unlimited">0.35</td>
                   <td>0.338</td>
                   <td>1,305</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.33</td>
-                  <td>0.28</td>
-                  <td>0.11</td>
-                  <td class="col-unlimited">0.40</td>
-                  <td class="col-unlimited">0.33</td>
-                  <td class="col-unlimited">0.14</td>
+                  <td>0.56</td>
+                  <td>0.45</td>
+                  <td>0.26</td>
+                  <td class="col-unlimited">0.70</td>
+                  <td class="col-unlimited">0.59</td>
+                  <td class="col-unlimited">0.36</td>
                   <td>0.667</td>
                   <td>9,215</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td class="best">0.39</td>
-                  <td class="best">0.31</td>
-                  <td class="best">0.13</td>
-                  <td class="col-unlimited">0.52</td>
-                  <td class="col-unlimited">0.41</td>
-                  <td class="col-unlimited best-unlimited">0.17</td>
+                  <td class="best">0.60</td>
+                  <td class="best">0.53</td>
+                  <td class="best">0.33</td>
+                  <td class="col-unlimited">0.79</td>
+                  <td class="col-unlimited">0.73</td>
+                  <td class="col-unlimited">0.49</td>
                   <td>0.667</td>
                   <td>7,022</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td>0.37</td>
-                  <td>0.30</td>
-                  <td>0.12</td>
-                  <td class="col-unlimited best-unlimited">0.53</td>
-                  <td class="col-unlimited best-unlimited">0.42</td>
-                  <td class="col-unlimited">0.16</td>
+                  <td class="best">0.60</td>
+                  <td>0.52</td>
+                  <td class="best">0.33</td>
+                  <td class="col-unlimited best-unlimited">0.80</td>
+                  <td class="col-unlimited best-unlimited">0.74</td>
+                  <td class="col-unlimited best-unlimited">0.50</td>
                   <td>1.014</td>
-                  <td>5,976</td>
+                  <td>9,976</td>
                 </tr>
                 <!-- V2VAM -->
                 <tr>
                   <td class="method-name" rowspan="5">V2VAM</td>
                   <td class="agent-config">V+I</td>
-                  <td>0.37</td>
-                  <td>0.24</td>
-                  <td>0.13</td>
-                  <td class="col-unlimited">0.40</td>
-                  <td class="col-unlimited">0.27</td>
-                  <td class="col-unlimited">0.14</td>
+                  <td>0.53</td>
+                  <td>0.40</td>
+                  <td>0.22</td>
+                  <td class="col-unlimited">0.57</td>
+                  <td class="col-unlimited">0.44</td>
+                  <td class="col-unlimited">0.24</td>
                   <td>0.423</td>
                   <td>2,264</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.36</td>
-                  <td>0.28</td>
-                  <td>0.13</td>
-                  <td class="col-unlimited">0.44</td>
+                  <td>0.53</td>
+                  <td>0.43</td>
+                  <td>0.26</td>
+                  <td class="col-unlimited">0.68</td>
+                  <td class="col-unlimited">0.56</td>
                   <td class="col-unlimited">0.37</td>
-                  <td class="col-unlimited">0.18</td>
                   <td>0.423</td>
                   <td>2,253</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.36</td>
-                  <td>0.28</td>
-                  <td>0.13</td>
-                  <td class="col-unlimited">0.46</td>
-                  <td class="col-unlimited">0.38</td>
-                  <td class="col-unlimited">0.19</td>
+                  <td>0.58</td>
+                  <td>0.47</td>
+                  <td>0.27</td>
+                  <td class="col-unlimited">0.74</td>
+                  <td class="col-unlimited">0.63</td>
+                  <td class="col-unlimited">0.39</td>
                   <td>0.846</td>
                   <td>10,301</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td class="best">0.43</td>
-                  <td class="best">0.35</td>
-                  <td class="best">0.18</td>
-                  <td class="col-unlimited best-unlimited">0.63</td>
-                  <td class="col-unlimited best-unlimited">0.57</td>
-                  <td class="col-unlimited">0.33</td>
+                  <td>0.61</td>
+                  <td class="best">0.54</td>
+                  <td class="best">0.34</td>
+                  <td class="col-unlimited">0.82</td>
+                  <td class="col-unlimited">0.76</td>
+                  <td class="col-unlimited best-unlimited">0.53</td>
                   <td>0.846</td>
                   <td>8,117</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td>0.42</td>
-                  <td>0.32</td>
-                  <td>0.17</td>
-                  <td class="col-unlimited best-unlimited">0.63</td>
-                  <td class="col-unlimited">0.56</td>
-                  <td class="col-unlimited best-unlimited">0.34</td>
+                  <td class="best">0.62</td>
+                  <td class="best">0.54</td>
+                  <td class="best">0.34</td>
+                  <td class="col-unlimited best-unlimited">0.84</td>
+                  <td class="col-unlimited best-unlimited">0.78</td>
+                  <td class="col-unlimited best-unlimited">0.53</td>
                   <td>1.269</td>
                   <td>11,302</td>
                 </tr>
@@ -560,58 +578,172 @@
                 <tr>
                   <td class="method-name" rowspan="5">CoBEVT</td>
                   <td class="agent-config">V+I</td>
-                  <td>0.33</td>
-                  <td>0.23</td>
-                  <td>0.12</td>
-                  <td class="col-unlimited">0.37</td>
-                  <td class="col-unlimited">0.26</td>
-                  <td class="col-unlimited">0.14</td>
+                  <td>0.48</td>
+                  <td>0.39</td>
+                  <td>0.20</td>
+                  <td class="col-unlimited">0.52</td>
+                  <td class="col-unlimited">0.43</td>
+                  <td class="col-unlimited">0.21</td>
                   <td>0.500</td>
                   <td>2,707</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V</td>
-                  <td>0.32</td>
-                  <td>0.24</td>
-                  <td>0.13</td>
-                  <td class="col-unlimited">0.40</td>
-                  <td class="col-unlimited">0.33</td>
-                  <td class="col-unlimited">0.18</td>
+                  <td>0.50</td>
+                  <td>0.41</td>
+                  <td>0.26</td>
+                  <td class="col-unlimited">0.64</td>
+                  <td class="col-unlimited">0.55</td>
+                  <td class="col-unlimited">0.37</td>
                   <td>0.500</td>
                   <td>2,393</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+V+I</td>
-                  <td>0.34</td>
-                  <td>0.27</td>
-                  <td>0.14</td>
-                  <td class="col-unlimited">0.44</td>
-                  <td class="col-unlimited">0.38</td>
-                  <td class="col-unlimited">0.21</td>
+                  <td>0.54</td>
+                  <td>0.44</td>
+                  <td>0.25</td>
+                  <td class="col-unlimited">0.70</td>
+                  <td class="col-unlimited">0.60</td>
+                  <td class="col-unlimited">0.37</td>
                   <td>1.000</td>
                   <td>11,059</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V</td>
-                  <td class="best">0.37</td>
-                  <td class="best">0.31</td>
-                  <td class="best">0.17</td>
-                  <td class="col-unlimited">0.56</td>
-                  <td class="col-unlimited">0.51</td>
-                  <td class="col-unlimited">0.32</td>
+                  <td>0.57</td>
+                  <td>0.49</td>
+                  <td class="best">0.33</td>
+                  <td class="col-unlimited">0.80</td>
+                  <td class="col-unlimited">0.73</td>
+                  <td class="col-unlimited best-unlimited">0.54</td>
                   <td>1.000</td>
                   <td>8,987</td>
                 </tr>
                 <tr>
                   <td class="agent-config">V+2V+I</td>
-                  <td>0.36</td>
-                  <td>0.30</td>
-                  <td class="best">0.17</td>
-                  <td class="col-unlimited best-unlimited">0.57</td>
-                  <td class="col-unlimited best-unlimited">0.53</td>
-                  <td class="col-unlimited best-unlimited">0.33</td>
+                  <td class="best">0.59</td>
+                  <td class="best">0.50</td>
+                  <td>0.32</td>
+                  <td class="col-unlimited best-unlimited">0.82</td>
+                  <td class="col-unlimited best-unlimited">0.75</td>
+                  <td class="col-unlimited best-unlimited">0.54</td>
                   <td>1.500</td>
                   <td>12,381</td>
+                </tr>
+                <!-- ERMVP -->
+                <tr>
+                  <td class="method-name" rowspan="5">ERMVP</td>
+                  <td class="agent-config">V+I</td>
+                  <td>0.61</td>
+                  <td>0.46</td>
+                  <td>0.24</td>
+                  <td class="col-unlimited">0.65</td>
+                  <td class="col-unlimited">0.51</td>
+                  <td class="col-unlimited">0.26</td>
+                  <td>0.346</td>
+                  <td>1,730</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.61</td>
+                  <td>0.49</td>
+                  <td>0.30</td>
+                  <td class="col-unlimited">0.76</td>
+                  <td class="col-unlimited">0.63</td>
+                  <td class="col-unlimited">0.42</td>
+                  <td>0.346</td>
+                  <td>1,730</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V+I</td>
+                  <td>0.63</td>
+                  <td>0.51</td>
+                  <td>0.31</td>
+                  <td class="col-unlimited">0.79</td>
+                  <td class="col-unlimited">0.67</td>
+                  <td class="col-unlimited">0.43</td>
+                  <td>0.692</td>
+                  <td>3,460</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td class="best">0.66</td>
+                  <td class="best">0.57</td>
+                  <td class="best">0.37</td>
+                  <td class="col-unlimited best-unlimited">0.87</td>
+                  <td class="col-unlimited">0.80</td>
+                  <td class="col-unlimited best-unlimited">0.57</td>
+                  <td>0.692</td>
+                  <td>3,460</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V+I</td>
+                  <td>0.64</td>
+                  <td>0.56</td>
+                  <td>0.36</td>
+                  <td class="col-unlimited best-unlimited">0.87</td>
+                  <td class="col-unlimited best-unlimited">0.81</td>
+                  <td class="col-unlimited best-unlimited">0.57</td>
+                  <td>1.038</td>
+                  <td>5,190</td>
+                </tr>
+                <!-- CoSDH -->
+                <tr>
+                  <td class="method-name" rowspan="5">CoSDH</td>
+                  <td class="agent-config">V+I</td>
+                  <td>0.57</td>
+                  <td>0.43</td>
+                  <td>0.23</td>
+                  <td class="col-unlimited">0.58</td>
+                  <td class="col-unlimited">0.44</td>
+                  <td class="col-unlimited">0.24</td>
+                  <td>0.0595</td>
+                  <td>298</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V</td>
+                  <td>0.63</td>
+                  <td>0.47</td>
+                  <td>0.29</td>
+                  <td class="col-unlimited">0.67</td>
+                  <td class="col-unlimited">0.54</td>
+                  <td class="col-unlimited">0.35</td>
+                  <td>0.0595</td>
+                  <td>298</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+V+I</td>
+                  <td>0.68</td>
+                  <td>0.53</td>
+                  <td>0.32</td>
+                  <td class="col-unlimited">0.72</td>
+                  <td class="col-unlimited">0.62</td>
+                  <td class="col-unlimited">0.39</td>
+                  <td>0.1190</td>
+                  <td>595</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V</td>
+                  <td>0.74</td>
+                  <td class="best">0.61</td>
+                  <td>0.40</td>
+                  <td class="col-unlimited">0.79</td>
+                  <td class="col-unlimited">0.72</td>
+                  <td class="col-unlimited">0.51</td>
+                  <td>0.1190</td>
+                  <td>595</td>
+                </tr>
+                <tr>
+                  <td class="agent-config">V+2V+I</td>
+                  <td class="best">0.75</td>
+                  <td class="best">0.61</td>
+                  <td class="best">0.41</td>
+                  <td class="col-unlimited best-unlimited">0.81</td>
+                  <td class="col-unlimited best-unlimited">0.73</td>
+                  <td class="col-unlimited best-unlimited">0.52</td>
+                  <td>0.1785</td>
+                  <td>893</td>
                 </tr>
               </tbody>
             </table>
@@ -645,59 +777,59 @@
                 <tr>
                   <td class="agent-config" rowspan="2">V</td>
                   <td>LiDAR</td>
-                  <td>0.63</td>
-                  <td>0.46</td>
-                  <td>0.29</td>
-                  <td>0.58</td>
-                  <td>0.36</td>
-                  <td>0.17</td>
+                  <td>0.78</td>
+                  <td>0.56</td>
+                  <td>0.31</td>
+                  <td>0.70</td>
+                  <td>0.38</td>
+                  <td>0.21</td>
                 </tr>
                 <tr>
                   <td>LiDAR+Camera</td>
-                  <td class="best">0.64</td>
-                  <td>0.46</td>
-                  <td class="best">0.30</td>
-                  <td>0.58</td>
-                  <td>0.36</td>
-                  <td class="best">0.18</td>
+                  <td class="best">0.80</td>
+                  <td class="best">0.57</td>
+                  <td class="best">0.33</td>
+                  <td class="best">0.72</td>
+                  <td class="best">0.42</td>
+                  <td class="best">0.23</td>
                 </tr>
                 <tr>
                   <td class="agent-config" rowspan="2">V+V</td>
                   <td>LiDAR</td>
-                  <td>0.68</td>
-                  <td>0.57</td>
-                  <td>0.41</td>
-                  <td>0.62</td>
-                  <td>0.50</td>
-                  <td>0.19</td>
+                  <td class="best">0.81</td>
+                  <td class="best">0.65</td>
+                  <td>0.39</td>
+                  <td class="best">0.75</td>
+                  <td class="best">0.54</td>
+                  <td>0.22</td>
                 </tr>
                 <tr>
                   <td>LiDAR+Camera</td>
-                  <td class="best">0.72</td>
-                  <td class="best">0.58</td>
-                  <td class="best">0.43</td>
-                  <td class="best">0.64</td>
-                  <td class="best">0.53</td>
-                  <td class="best">0.22</td>
+                  <td>0.80</td>
+                  <td class="best">0.65</td>
+                  <td class="best">0.41</td>
+                  <td>0.74</td>
+                  <td class="best">0.54</td>
+                  <td class="best">0.25</td>
                 </tr>
                 <tr>
                   <td class="agent-config" rowspan="2">V+2V</td>
                   <td>LiDAR</td>
-                  <td>0.78</td>
-                  <td>0.69</td>
-                  <td>0.51</td>
-                  <td>0.75</td>
-                  <td>0.61</td>
-                  <td>0.20</td>
+                  <td class="best">0.90</td>
+                  <td class="best">0.84</td>
+                  <td>0.56</td>
+                  <td class="best">0.87</td>
+                  <td>0.73</td>
+                  <td>0.30</td>
                 </tr>
                 <tr>
                   <td>LiDAR+Camera</td>
-                  <td class="best">0.79</td>
-                  <td class="best">0.70</td>
-                  <td class="best">0.54</td>
-                  <td class="best">0.77</td>
-                  <td class="best">0.64</td>
-                  <td class="best">0.32</td>
+                  <td class="best">0.90</td>
+                  <td>0.83</td>
+                  <td class="best">0.61</td>
+                  <td class="best">0.87</td>
+                  <td class="best">0.74</td>
+                  <td class="best">0.35</td>
                 </tr>
               </tbody>
             </table>
@@ -735,7 +867,7 @@
                   <td>0.4895</td>
                   <td>2.1648</td>
                   <td>4.4538</td>
-                  <td class="best">0.9307</td>
+                  <td>0.9307</td>
                   <td>5.7344</td>
                   <td>10.6390</td>
                 </tr>
@@ -782,7 +914,7 @@
                   <td class="best">0.3214</td>
                   <td class="best">0.7252</td>
                   <td class="best">1.2893</td>
-                  <td>0.4723</td>
+                  <td class="best">0.4723</td>
                   <td class="best">1.4551</td>
                   <td class="best">2.9716</td>
                 </tr>
