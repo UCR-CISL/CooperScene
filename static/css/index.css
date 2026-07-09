@@ -480,6 +480,27 @@ body {
   margin-bottom: 1.2rem;
 }
 
+.download-card .download-count {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.3rem 1rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.download-card .download-count:empty {
+  display: none;
+}
+
+.download-card .download-count .icon {
+  font-size: 0.8rem;
+  margin-right: 0.35rem;
+}
+
 /* ===== Visualizer ===== */
 
 .visualizer-placeholder {

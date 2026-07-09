@@ -68,6 +68,40 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
+  // --- Download click counter (Abacus, free key-value counter API) ---
+  var COUNTER_API = 'https://abacus.jasoncameron.dev';
+  var COUNTER_NAMESPACE = 'ucr-cisl-cooperscene';
+
+  function renderDownloadCount(key, value) {
+    var el = document.querySelector('[data-download-count="' + key + '"]');
+    if (el && typeof value === 'number') {
+      el.innerHTML = '<span class="icon"><i class="fas fa-mouse-pointer"></i></span>' +
+        value.toLocaleString() + (value === 1 ? ' click' : ' clicks');
+    }
+  }
+
+  // Show current counts under each download button
+  document.querySelectorAll('[data-download-count]').forEach(function (el) {
+    var key = el.getAttribute('data-download-count');
+    fetch(COUNTER_API + '/get/' + COUNTER_NAMESPACE + '/download-' + key)
+      .then(function (res) { return res.json(); })
+      .then(function (data) { renderDownloadCount(key, data.value); })
+      .catch(function () { /* counting is best-effort; leave the label empty */ });
+  });
+
+  // Increment on click and refresh the displayed count
+  document.querySelectorAll('[data-download-counter]').forEach(function (link) {
+    link.addEventListener('click', function () {
+      var key = link.getAttribute('data-download-counter');
+      fetch(COUNTER_API + '/hit/' + COUNTER_NAMESPACE + '/download-' + key, {
+        keepalive: true
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) { renderDownloadCount(key, data.value); })
+        .catch(function () { /* counting is best-effort; never block the download */ });
+    });
+  });
+
   // --- Copy BibTeX ---
   var copyBtns = document.querySelectorAll('.copy-btn');
   copyBtns.forEach(function (btn) {
