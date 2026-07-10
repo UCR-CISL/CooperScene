@@ -363,14 +363,22 @@
         </div>
       </div>
 
-      <!-- Benchmark Tabs -->
+      <!-- Benchmark Tasks -->
       <div class="tabs-wrapper mt-5">
-        <div class="tabs is-centered is-boxed">
-          <ul>
-            <li class="is-active"><a data-tab="tab-detection">3D Object Detection</a></li>
-            <li><a data-tab="tab-multimodal">Multi-Modal Evaluation</a></li>
-            <li><a data-tab="tab-motion">Motion Prediction</a></li>
-          </ul>
+        <h3 class="title is-5 mb-3">Tasks</h3>
+        <div class="task-tabs">
+          <button type="button" class="task-tab is-active" data-tab="tab-detection">
+            <span class="task-tab-title">3D Object Detection</span>
+            <span class="task-tab-sub">mAP under C-V2X channel</span>
+          </button>
+          <button type="button" class="task-tab" data-tab="tab-multimodal">
+            <span class="task-tab-title">Multi-Modal Evaluation</span>
+            <span class="task-tab-sub">LiDAR vs LiDAR+Camera</span>
+          </button>
+          <button type="button" class="task-tab" data-tab="tab-motion">
+            <span class="task-tab-title">Motion Prediction</span>
+            <span class="task-tab-sub">minADE / minFDE at 1&ndash;5s horizons</span>
+          </button>
         </div>
 
         <!-- Detection Benchmark -->
@@ -390,16 +398,16 @@
                   <th rowspan="2">Agents</th>
                   <th colspan="3">mAP (C-V2X)</th>
                   <th colspan="3" class="col-unlimited">mAP (Unlimited)</th>
-                  <th rowspan="2">Sharing<br>Size (MB)</th>
-                  <th rowspan="2">Latency (ms)<br>under C-V2X</th>
+                  <th rowspan="2" data-sort="asc" data-col="9">Sharing<br>Size (MB)</th>
+                  <th rowspan="2" data-sort="asc" data-col="10">Latency (ms)<br>under C-V2X</th>
                 </tr>
                 <tr>
-                  <th>@0.3</th>
-                  <th>@0.5</th>
-                  <th>@0.7</th>
-                  <th class="col-unlimited">@0.3</th>
-                  <th class="col-unlimited">@0.5</th>
-                  <th class="col-unlimited">@0.7</th>
+                  <th data-sort="desc" data-col="3">@0.3</th>
+                  <th data-sort="desc" data-col="4">@0.5</th>
+                  <th data-sort="desc" data-col="5">@0.7</th>
+                  <th class="col-unlimited" data-sort="desc" data-col="6">@0.3</th>
+                  <th class="col-unlimited" data-sort="desc" data-col="7">@0.5</th>
+                  <th class="col-unlimited" data-sort="desc" data-col="8">@0.7</th>
                 </tr>
               </thead>
               <tbody>
@@ -765,12 +773,12 @@
                   <th colspan="3">mAP (3D)</th>
                 </tr>
                 <tr>
-                  <th>@0.3</th>
-                  <th>@0.5</th>
-                  <th>@0.7</th>
-                  <th>@0.3</th>
-                  <th>@0.5</th>
-                  <th>@0.7</th>
+                  <th data-sort="desc" data-col="3">@0.3</th>
+                  <th data-sort="desc" data-col="4">@0.5</th>
+                  <th data-sort="desc" data-col="5">@0.7</th>
+                  <th data-sort="desc" data-col="6">@0.3</th>
+                  <th data-sort="desc" data-col="7">@0.5</th>
+                  <th data-sort="desc" data-col="8">@0.7</th>
                 </tr>
               </thead>
               <tbody>
@@ -851,12 +859,12 @@
                 <tr>
                   <th>Model</th>
                   <th>Agent</th>
-                  <th>minADE@1s &darr;</th>
-                  <th>minADE@3s &darr;</th>
-                  <th>minADE@5s &darr;</th>
-                  <th>minFDE@1s &darr;</th>
-                  <th>minFDE@3s &darr;</th>
-                  <th>minFDE@5s &darr;</th>
+                  <th data-sort="asc" data-col="3">minADE@1s &darr;</th>
+                  <th data-sort="asc" data-col="4">minADE@3s &darr;</th>
+                  <th data-sort="asc" data-col="5">minADE@5s &darr;</th>
+                  <th data-sort="asc" data-col="6">minFDE@1s &darr;</th>
+                  <th data-sort="asc" data-col="7">minFDE@3s &darr;</th>
+                  <th data-sort="asc" data-col="8">minFDE@5s &darr;</th>
                 </tr>
               </thead>
               <tbody>

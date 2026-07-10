@@ -390,26 +390,182 @@ body {
   font-size: 0.82rem;
 }
 
-/* ===== Tabs ===== */
+/* ===== Benchmark task tabs ===== */
 
-.tabs-wrapper .tabs {
-  margin-bottom: 0;
+.task-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin: 1.5rem 0 0.5rem;
 }
 
-.tabs-wrapper .tabs ul {
-  border-bottom-color: var(--border-color);
+.task-tab {
+  display: block;
+  padding: 1.1rem 1.3rem;
+  background: #ffffff;
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+  font-family: inherit;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s, background 0.15s;
 }
 
-.tabs-wrapper .tabs a {
-  font-family: 'Noto Sans', 'Google Sans', sans-serif;
-  font-weight: 500;
-  font-size: 0.95rem;
+.task-tab:hover {
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(52, 152, 219, 0.18);
+}
+
+.task-tab .task-tab-title {
+  display: block;
+  font-weight: 700;
+  font-size: 1rem;
   color: var(--primary-color);
 }
 
-.tabs-wrapper .tabs li.is-active a {
+.task-tab .task-tab-sub {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.task-tab.is-active {
+  background: var(--accent-color);
+  border-color: var(--accent-dark);
+  box-shadow: 0 4px 14px rgba(52, 152, 219, 0.35);
+}
+
+.task-tab.is-active .task-tab-title {
+  color: #ffffff;
+}
+
+.task-tab.is-active .task-tab-sub {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+@media screen and (max-width: 768px) {
+  .task-tabs {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== Table controls: agent filter chips + sort reset ===== */
+
+.table-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+
+.table-controls-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-right: 0.2rem;
+}
+
+.filter-chip {
+  border: 1px solid var(--border-color);
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: inherit;
+  color: var(--primary-color);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.filter-chip:hover {
+  border-color: var(--accent-color);
   color: var(--accent-color);
-  border-bottom-color: var(--accent-color);
+}
+
+.filter-chip.is-active {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
+}
+
+.sort-reset {
+  margin-left: auto;
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: 0.85rem;
+  color: var(--accent-color);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* ===== Sortable headers & rank column ===== */
+
+.benchmark-table th[data-sort] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.benchmark-table th[data-sort]::after {
+  content: ' \2195';
+  opacity: 0.45;
+  font-size: 0.8em;
+}
+
+.benchmark-table th[data-sort]:hover {
+  background: var(--accent-dark);
+}
+
+.benchmark-table th.sorted-asc::after {
+  content: ' \25B2';
+  opacity: 1;
+}
+
+.benchmark-table th.sorted-desc::after {
+  content: ' \25BC';
+  opacity: 1;
+}
+
+.benchmark-table .rank-cell {
+  display: none;
+}
+
+.benchmark-table.is-ranked .rank-cell {
+  display: table-cell;
+  font-weight: 600;
+  min-width: 2.4rem;
+}
+
+.benchmark-table.is-ranked td.rank-cell.rank-1 {
+  color: #c9a227;
+  font-weight: 700;
+}
+
+.benchmark-table.is-ranked td.rank-cell.rank-2 {
+  color: #8c9bab;
+  font-weight: 700;
+}
+
+.benchmark-table.is-ranked td.rank-cell.rank-3 {
+  color: #b08d57;
+  font-weight: 700;
+}
+
+/* JS-managed zebra striping (row order changes with sort/filter) */
+.benchmark-table.js-enhanced tbody tr:nth-child(even) {
+  background-color: transparent;
+}
+
+.benchmark-table.js-enhanced tbody tr.is-even {
+  background-color: #f8f9fa;
+}
+
+.benchmark-table.js-enhanced tbody tr:hover {
+  background-color: #e8f4fd;
 }
 
 .tab-content {
