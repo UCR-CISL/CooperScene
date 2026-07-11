@@ -60,8 +60,8 @@
         </h2>
 
         <div class="is-size-6 mb-2" style="color: rgba(255,255,255,0.9);">
-          <span class="author-block"><a href="#">Bo Wu</a>,</span>
-          <span class="author-block"><a href="#">Ruoshen Mo</a>,</span>
+          <span class="author-block"><a href="#">Bo Wu</a><sup>*</sup>,</span>
+          <span class="author-block"><a href="#">Ruoshen Mo</a><sup>*</sup>,</span>
           <span class="author-block"><a href="#">Justin Yue</a>,</span>
           <span class="author-block"><a href="#">Yanyu Zhang</a>,</span>
           <span class="author-block"><a href="#">Janice Nguyen</a>,</span>
@@ -69,6 +69,10 @@
           <span class="author-block"><a href="#">Amit Roy-Chowdhury</a>,</span>
           <span class="author-block"><a href="#">Matthew J. Barth</a>,</span>
           <span class="author-block"><a href="#">Hang Qiu</a></span>
+        </div>
+
+        <div class="is-size-7 mb-2" style="color: rgba(255,255,255,0.75);">
+          <sup>*</sup> Equal contribution
         </div>
 
         <div class="affiliation-block mb-3">
@@ -102,6 +106,10 @@
           </a>
           <a class="button is-rounded is-dark"
              href="https://data.ucr.edu/datasets/cooperscene/" target="_blank">
+            <span class="icon"><i class="fas fa-cube"></i></span>
+            <span>Visualizer</span>
+          </a>
+          <a class="button is-rounded is-dark" href="#download">
             <span class="icon"><i class="fas fa-database"></i></span>
             <span>Dataset</span>
           </a>
@@ -110,13 +118,12 @@
     </div>
   </section>
 
-  <!-- ===== Visualizer (mp4 by default, swaps to Foxglove on demand) ===== -->
+  <!-- ===== Dataset Preview (interactive visualizer lives on data.ucr.edu) ===== -->
   <section class="viz-section" id="visualizer">
     <div class="container" style="max-width: 1200px;">
       <h2 id="viz-title" class="title is-3 has-text-centered">Dataset Preview</h2>
       <div class="section-divider"></div>
 
-      <!-- Default state: mp4 preview + Visualize More button -->
       <div id="viz-video-state">
         <video id="viz-video" controls autoplay muted loop playsinline
                style="width: 100vw; margin-left: calc(50% - 50vw); height: 88vh;
@@ -125,93 +132,15 @@
           Your browser does not support the video tag.
         </video>
         <div style="text-align: center; margin-top: 1rem;">
-          <button id="viz-more-btn" class="button is-rounded is-dark">
-            <span class="icon"><i class="fas fa-eye"></i></span>
-            <span>Visualize More</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- On-demand state: Foxglove viewer -->
-      <div id="viz-foxglove-state" style="display: none;">
-        <!-- Inner column: full-bleed so the viewer spans the whole viewport width. -->
-        <div style="width: 100vw; margin-left: calc(50% - 50vw);">
-          <label style="font-weight: 450; text-align: center; display: block;">(Sign in with a .edu account)</label>
-
-          <div style="margin-bottom: 1rem; padding: 0 1.5rem; display: flex; align-items: center; gap: 1rem;">
-            <label style="font-weight: 600;">Choose Scene:</label>
-            <div class="select">
-              <select id="scene-select">
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/1.mcap">1.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/2.mcap">2.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/3.mcap">3.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/4.mcap">4.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/5.mcap">5.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/6.mcap">6.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/7.mcap">7.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/8.mcap">8.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/9.mcap">9.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/10.mcap">10.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/11.mcap">11.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/12.mcap">12.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/13.mcap">13.mcap</option>
-                <option value="https://data.ucr.edu/datasets/cooperscene/mcap/14.mcap">14.mcap</option>
-              </select>
-            </div>
-          </div>
-
-          <style>
-            /* Full-bleed children use 100vw; stop that from creating a horizontal scrollbar. */
-            html, body { overflow-x: hidden; }
-          </style>
-          <div id="foxglove-viewer"
-               style="width: 100%; height: 88vh; overflow: hidden; position: relative;">
-          </div>
+          <a class="button is-rounded is-dark"
+             href="https://data.ucr.edu/datasets/cooperscene/" target="_blank">
+            <span class="icon"><i class="fas fa-cube"></i></span>
+            <span>Open Interactive Visualizer</span>
+          </a>
         </div>
       </div>
     </div>
   </section>
-
-  <script type="module">
-    // Lazy-load Foxglove only when the user actually wants the interactive viewer.
-    const moreBtn = document.getElementById('viz-more-btn');
-    moreBtn.addEventListener('click', async () => {
-      const videoState = document.getElementById('viz-video-state');
-      const foxState = document.getElementById('viz-foxglove-state');
-      const video = document.getElementById('viz-video');
-
-      videoState.style.display = 'none';
-      foxState.style.display = 'block';
-      if (video) video.pause();
-
-      const title = document.getElementById('viz-title');
-      if (title) title.textContent = 'Visualizer';
-
-      const { FoxgloveViewer } = await import('https://cdn.jsdelivr.net/npm/@foxglove/embed/+esm');
-
-      let LAYOUT;
-      try {
-        const response = await fetch('./CooperScene.json');
-        if (response.ok) LAYOUT = await response.json();
-      } catch (err) {}
-
-      const viewer = new FoxgloveViewer({
-        parent: document.getElementById('foxglove-viewer'),
-        orgSlug: undefined,
-        colorScheme: 'dark',
-      });
-
-      if (LAYOUT) {
-        try { viewer.setLayoutData(LAYOUT); } catch (err) {}
-      }
-
-      const select = document.getElementById('scene-select');
-      viewer.setDataSource({ type: 'remote-file', urls: [select.value] });
-      select.addEventListener('change', function () {
-        if (this.value) viewer.setDataSource({ type: 'remote-file', urls: [this.value] });
-      });
-    }, { once: true });
-  </script>
 
   <!-- ===== Overview ===== -->
   <section class="section" id="overview">

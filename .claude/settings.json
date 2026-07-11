@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs -P 4 -I{} sh -c '/home/bowu/.venvs/rrdconv/bin/python tools/mcap_to_rrd.py /home/bowu/cluster/Cooperscene/release/250928_release/mcap/{}.mcap rrd_out/scene_{}_preview.rrd > logs/scene_{}.log 2>&1 && echo \"scene {} OK\" || echo \"scene {} FAILED\"')",
+      "Bash(/home/bowu/.venvs/rrdconv/bin/rerun rrd *)",
+      "Bash(/home/bowu/.venvs/rrdconv/bin/python -c ' *)",
+      "Bash(timeout 280 google-chrome --headless=new --disable-gpu --no-sandbox --enable-unsafe-swiftshader --virtual-time-budget=90000 --hide-scrollbars --window-size=1500,1100 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/scene4-v3.png http://localhost:8934/datasets/cooperscene/viewer.html?scene=scene-4)",
+      "Bash(timeout 280 google-chrome --headless=new --disable-gpu --no-sandbox --enable-unsafe-swiftshader --virtual-time-budget=90000 --hide-scrollbars --window-size=1500,1100 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/scene9-final.png http://localhost:8934/datasets/cooperscene/viewer.html?scene=scene-9)",
+      "Bash(timeout 280 google-chrome --headless=new --disable-gpu --no-sandbox --enable-unsafe-swiftshader --virtual-time-budget=150000 --hide-scrollbars --window-size=1500,1100 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/scene9-final2.png http://localhost:8934/datasets/cooperscene/viewer.html?scene=scene-9)",
+      "Bash(cp /tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/scene9-routed.rrd /home/bowu/cluster_code/cooperscene-viewer/rrd_out/scene_9_preview.rrd)",
+      "Bash(timeout 280 google-chrome --headless=new --disable-gpu --no-sandbox --enable-unsafe-swiftshader --virtual-time-budget=120000 --hide-scrollbars --window-size=1500,1100 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/scene9-routed.png http://localhost:8934/datasets/cooperscene/viewer.html?scene=scene-9)",
+      "Bash(xargs -P 4 -I{} sh -c '/home/bowu/.venvs/rrdconv/bin/rerun rrd route --recording-id scene_{} scene_{}_preview.rrd -o scene_{}_r.rrd 2>/dev/null && /home/bowu/.venvs/rrdconv/bin/rerun rrd merge scene_{}_r.rrd layout_v3.rbl -o scene_{}_f.rrd 2>/dev/null && mv scene_{}_f.rrd scene_{}_preview.rrd && rm -f scene_{}_r.rrd && echo \"scene {} fixed\"')",
+      "Bash(chmod +x /home/bowu/cluster_code/cooperscene-viewer/tools/update_layout.sh)",
+      "Bash(/home/bowu/.venvs/rrdconv/bin/python -)",
+      "Bash(grep -n -iE \"frame_id|FrameTransform|PointCloud|base_link|transform|pose\" /home/bowu/Project/SensorPlatform/viz/mcap_writer.py | head -30; wc -l /home/bowu/Project/SensorPlatform/viz/mcap_writer.py)",
+      "Read(//home/bowu/Project/SensorPlatform/viz/**)",
+      "Bash(pkill -f \"rerun rrd\")",
+      "Bash(timeout 240 google-chrome --headless=new --disable-gpu --no-sandbox --virtual-time-budget=15000 --hide-scrollbars --window-size=1400,2600 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/landing-downloads.png http://localhost:8934/datasets/cooperscene/)",
+      "Bash(timeout 240 google-chrome --headless=new --disable-gpu --no-sandbox --virtual-time-budget=15000 --hide-scrollbars --window-size=1400,3600 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/landing-full.png http://localhost:8934/datasets/cooperscene/)",
+      "Bash(timeout 280 google-chrome --headless=new --disable-gpu --no-sandbox --enable-unsafe-swiftshader --virtual-time-budget=150000 --hide-scrollbars --window-size=1500,1100 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/scene11-final.png http://localhost:8934/datasets/cooperscene/viewer.html?scene=scene-11)",
+      "Bash(timeout 280 google-chrome --headless=new --disable-gpu --no-sandbox --enable-unsafe-swiftshader --virtual-time-budget=120000 --hide-scrollbars --window-size=1500,1100 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/badmime-test.png http://localhost:8935/datasets/cooperscene/viewer.html?scene=scene-4)",
+      "Bash(npm view *)",
+      "Bash(node -e ' *)",
+      "Bash(/home/bowu/.venvs/rrdlatest/bin/python -c ' *)",
+      "Bash(timeout 280 google-chrome --headless=new --disable-gpu --no-sandbox --enable-unsafe-swiftshader --virtual-time-budget=120000 --hide-scrollbars --window-size=1500,1100 --screenshot=/tmp/claude-1005/-home-bowu-Project-CooperScene/127cdeb1-c79d-407a-ae39-01206f1e11ed/scratchpad/scene9-chase.png http://localhost:8934/datasets/cooperscene/viewer.html?scene=scene-9)",
+      "Bash(pkill -f \"http.server 8936\")"
+    ],
+    "additionalDirectories": [
+      "/home/bowu/cluster_code/cooperscene-viewer/tools",
+      "/home/bowu/cluster_code/cooperscene-viewer",
+      "/home/bowu/cluster_code/cooperscene-viewer/src"
+    ]
+  }
+}
