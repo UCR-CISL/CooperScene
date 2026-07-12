@@ -690,8 +690,9 @@ body {
 }
 
 .bibtex-block pre {
-  background: #1e1e1e;
-  color: #d4d4d4;
+  background: var(--section-light);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
   padding: 1.5rem;
   border-radius: 8px;
   font-size: 0.82rem;
@@ -703,18 +704,19 @@ body {
   position: absolute;
   top: 0.75rem;
   right: 0.75rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #d4d4d4;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
   padding: 4px 10px;
   border-radius: 4px;
   font-size: 0.75rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .bibtex-block .copy-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
 }
 
 /* ===== Metric Cards ===== */
