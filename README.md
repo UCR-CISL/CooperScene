@@ -301,14 +301,11 @@ over C-V2X. **Bold** marks the best result per column within each method.
 ## Citation
 
 ```bibtex
-@misc{wu2026cooperscenemultimodalcooperativeautonomy,
-      title={CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization},
-      author={Bo Wu and Ruoshen Mo and Justin Yue and Yanyu Zhang and Janice Nguyen and Guoyuan Wu and Amit Roy-Chowdhury and Matthew J. Barth and Hang Qiu},
-      year={2026},
-      eprint={2606.31219},
-      archivePrefix={arXiv},
-      primaryClass={cs.CV},
-      url={https://arxiv.org/abs/2606.31219},
+@inproceedings{CooperScene,
+    title={CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization},
+    author={Bo Wu* and Ruoshen Mo* and Justin Yue and Yanyu Zhang and Janice Nguyen and Guoyuan Wu and Amit Roy-Chowdhury and Matthew J. Barth and Hang Qiu},
+    booktitle={European Conference on Computer Vision},
+    year = {2026},
 }
 ```
 
