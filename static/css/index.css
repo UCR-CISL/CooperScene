@@ -424,8 +424,13 @@ body {
   color: #cccccc;
 }
 
+/* Lighter tint of --accent-color (#3498db mixed ~50% toward white) - marks
+   the best value within the infeasible "unlimited" columns without
+   competing visually with .best's full accent-color for the real,
+   feasible-under-C-V2X result. */
 .benchmark-table .best-unlimited {
   font-weight: 700;
+  color: #8fc4ea;
 }
 
 .unlimited-tag {

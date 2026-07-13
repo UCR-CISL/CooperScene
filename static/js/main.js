@@ -105,6 +105,46 @@ document.addEventListener('DOMContentLoaded', function () {
       return cell ? cell.textContent.trim() : '';
     }
 
+    // Every sortable column gets "best value" highlighting - which class
+    // marks it and which direction wins is read straight off the static
+    // markup (data-col/data-sort on the header, whether the column is
+    // under the muted "col-unlimited" group) instead of hardcoding
+    // per-table column numbers.
+    var bestColumns = [];
+    table.querySelectorAll('th[data-col]').forEach(function (th) {
+      var col = parseInt(th.getAttribute('data-col'), 10);
+      var sampleCell = null;
+      for (var i = 0; i < allRows.length; i++) {
+        if (allRows[i].cells[col]) { sampleCell = allRows[i].cells[col]; break; }
+      }
+      if (!sampleCell) return;
+      var className = sampleCell.classList.contains('col-unlimited') ? 'best-unlimited' : 'best';
+      bestColumns.push({ index: col, className: className, dir: th.getAttribute('data-sort') || 'desc' });
+    });
+
+    // "Best" always means the single best value per column among whatever
+    // rows are currently visible - across the whole table when unfiltered,
+    // or just among the filtered subset once an agent config is picked.
+    function updateBestMarks(visibleRows) {
+      bestColumns.forEach(function (col) {
+        allRows.forEach(function (row) {
+          var cell = row.cells[col.index];
+          if (cell) cell.classList.remove(col.className);
+        });
+
+        if (visibleRows.length < 2) return;
+        var values = visibleRows.map(function (row) {
+          var cell = row.cells[col.index];
+          return cell ? parseFloat(cell.textContent.replace(/,/g, '')) : NaN;
+        });
+        var best = col.dir === 'asc' ? Math.min.apply(null, values) : Math.max.apply(null, values);
+        if (!isFinite(best)) return;
+        visibleRows.forEach(function (row, i) {
+          if (values[i] === best) row.cells[col.index].classList.add(col.className);
+        });
+      });
+    }
+
     function refresh() {
       var ordered;
       if (sortState) {
@@ -120,17 +160,20 @@ document.addEventListener('DOMContentLoaded', function () {
 
       table.classList.toggle('is-ranked', !!sortState);
       var visible = 0;
+      var visibleRows = [];
       ordered.forEach(function (row) {
         var show = !activeFilter || agentOf(row) === activeFilter;
         row.style.display = show ? '' : 'none';
         if (show) {
           visible++;
+          visibleRows.push(row);
           row.classList.toggle('is-even', visible % 2 === 0);
           var rankCell = row.cells[0];
           rankCell.textContent = sortState ? visible : '';
           rankCell.className = 'rank-cell' + (sortState && visible <= 3 ? ' rank-' + visible : '');
         }
       });
+      updateBestMarks(visibleRows);
     }
 
     // Sortable column headers
