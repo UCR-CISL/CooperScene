@@ -1,1 +1,3 @@
-# CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X
+# CooperScene Project Website
+
+The visualizer is maintained at: https://github.com/ucrlibrary/cooperscene-viewer

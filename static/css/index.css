@@ -1167,6 +1167,19 @@ body {
   z-index: 1;
 }
 
+/* Below ~500px tall (e.g. phones/small windows in landscape), the pinned
+   title's content (title + authors + buttons) is taller than the
+   viewport - centering it in a hard height: 100vh box with .hero-section's
+   overflow: hidden clipped the hero-buttons row off invisibly. Let the box
+   grow to fit its content instead; it's still position: sticky, so the
+   extra height scrolls into view normally rather than being clipped. */
+@media (max-height: 500px) {
+  .title-layer {
+    height: auto;
+    min-height: 100vh;
+  }
+}
+
 /* Bulma stretches .hero-body (flex-grow: 1), which pins the content to the
    top of the 100vh layer; disable that so justify-content centers it. */
 .title-layer .hero-body {
