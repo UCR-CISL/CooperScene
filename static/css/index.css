@@ -930,3 +930,134 @@ body {
   color: var(--text-muted);
   line-height: 1.6;
 }
+
+/* ===== Opening: video slides over the pinned title layer ===== */
+
+/* Wrapper height = one viewport (pinned title) + the video's travel
+   distance (its own height, ~44.9vw for the 2.23:1 video). */
+.opening {
+  position: relative;
+  height: calc(100vh + 48vw);
+  background: var(--hero-gradient-end);
+}
+
+.title-layer {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 1;
+}
+
+/* Bulma stretches .hero-body (flex-grow: 1), which pins the content to the
+   top of the 100vh layer; disable that so justify-content centers it. */
+.title-layer .hero-body {
+  flex-grow: 0;
+}
+
+.video-layer {
+  position: absolute;
+  top: 52px; /* below the fixed navbar */
+  left: 0;
+  right: 0;
+  z-index: 2;
+}
+
+.video-frame {
+  position: relative;
+  line-height: 0;
+  background: #000;
+}
+
+.hero-bg-video {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Title overlaid on the video, bottom-left (CARNATIONS style). */
+.video-title {
+  position: absolute;
+  left: 3.5%;
+  bottom: 7%;
+  line-height: 1.2;
+  color: #ffffff;
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
+}
+
+.video-title h1 {
+  font-family: 'Google Sans', 'Noto Sans', sans-serif;
+  font-size: clamp(2rem, 6vw, 6rem);
+  font-weight: 700;
+  line-height: 1.05;
+  margin-bottom: 0.5vw;
+}
+
+.video-title p {
+  font-size: clamp(0.8rem, 1.5vw, 1.4rem);
+  color: rgba(255, 255, 255, 0.92);
+  line-height: 1.45;
+}
+
+.video-title .video-authors {
+  margin-top: 0.6vw;
+  font-size: clamp(0.7rem, 1.05vw, 1.05rem);
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 60vw;
+}
+
+/* Larger type for the revealed (pinned) title layer. */
+.title-layer .title.is-2 {
+  font-size: 4rem;
+}
+
+.title-layer .subtitle.is-5 {
+  font-size: 1.6rem;
+}
+
+.title-layer .is-size-6 {
+  font-size: 1.25rem !important;
+}
+
+.title-layer .is-size-7 {
+  font-size: 0.95rem !important;
+}
+
+.title-layer .affiliation-block {
+  font-size: 1.1rem;
+}
+
+.title-layer .publication-venue {
+  font-size: 1.1rem;
+}
+
+.title-layer .hero-buttons .button {
+  font-size: 1.05rem;
+}
+
+.scroll-cue {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.85);
+  text-align: center;
+  font-size: 0.85rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.scroll-cue i {
+  display: block;
+  margin-top: 0.3rem;
+  animation: cue-bounce 1.6s infinite;
+}
+
+@keyframes cue-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(6px); }
+}
+}

@@ -253,3 +253,17 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 });
+
+// --- Opening video: fade out as the user scrolls past it ---
+(function () {
+  var layer = document.querySelector('.video-layer');
+  if (!layer) return;
+
+  function onScroll() {
+    var range = layer.offsetHeight * 0.8;
+    var progress = range > 0 ? Math.min(Math.max(window.scrollY / range, 0), 1) : 1;
+    layer.style.opacity = String(1 - progress);
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();

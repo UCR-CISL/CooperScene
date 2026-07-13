@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="static/css/index.css">
+  <link rel="stylesheet" href="static/css/index.css?v=8">
 </head>
 
 <body>
@@ -49,8 +49,13 @@
     </div>
   </nav>
 
-  <!-- ===== Hero Section ===== -->
-  <section class="hero hero-section">
+  <!-- ===== Opening: video slides up and fades, revealing the pinned
+       title/authors layer beneath; the title unpins once the video has
+       fully passed ===== -->
+  <div class="opening" id="data-preview">
+
+    <!-- ===== Title / authors: pinned while the video passes ===== -->
+    <section class="hero hero-section title-layer">
     <div class="hero-body" style="padding-top: 1.5rem; padding-bottom: 1rem;">
       <div class="container has-text-centered">
         <h1 class="title is-2 publication-title mb-2">
@@ -119,21 +124,24 @@
     </div>
   </section>
 
-  <!-- ===== Dataset Preview: full-bleed video right under the hero ===== -->
-  <section class="viz-section" id="data-preview">
-    <video id="viz-video" controls autoplay muted loop playsinline
-           style="width: 100%; height: auto; display: block;">
-      <source src="static/take_6.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-    <div style="text-align: center; padding: 0.9rem 0;">
-      <a class="button is-rounded is-dark"
-         href="https://data.ucr.edu/datasets/cooperscene/" target="_blank">
-        <span class="icon"><i class="fas fa-cube"></i></span>
-        <span>Open Interactive Visualizer</span>
-      </a>
+    <!-- ===== Video layer: scrolls over the pinned title ===== -->
+    <div class="video-layer">
+      <div class="video-frame">
+        <video class="hero-bg-video" autoplay muted loop playsinline>
+          <source src="static/take_6.mp4" type="video/mp4">
+        </video>
+        <div class="video-title">
+          <h1>CooperScene</h1>
+          <p>Multi-Modal Cooperative Autonomy Benchmark<br>with C-V2X Communication Characterization</p>
+        </div>
+        <div class="scroll-cue">
+          <span>Scroll</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+      </div>
     </div>
-  </section>
+
+  </div>
 
   <!-- ===== Overview ===== -->
   <section class="section" id="overview">
@@ -964,7 +972,7 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="static/js/main.js"></script>
+  <script src="static/js/main.js?v=8"></script>
 
 </body>
 
