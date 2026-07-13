@@ -254,6 +254,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
 });
 
+// --- Opening video: load the right variant for the screen width ---
+// Desktop plays the full montage; narrow screens play the left/right
+// halves stacked vertically. Sources live in data-src so only the
+// variant in use is downloaded.
+(function () {
+  var mq = window.matchMedia('(max-width: 900px)');
+
+  function activate(narrow) {
+    var sel = narrow ? '.video-mobile video' : '.hero-bg-video';
+    document.querySelectorAll(sel).forEach(function (v) {
+      if (v.dataset.src && !v.getAttribute('src')) {
+        v.src = v.dataset.src;
+      }
+      if (v.play) v.play().catch(function () {});
+    });
+  }
+
+  activate(mq.matches);
+  var onChange = function (e) { activate(e.matches); };
+  if (mq.addEventListener) mq.addEventListener('change', onChange);
+  else mq.addListener(onChange);
+})();
+
 // --- Opening video: fade out as the user scrolls past it ---
 (function () {
   var layer = document.querySelector('.video-layer');

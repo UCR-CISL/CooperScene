@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="static/css/index.css?v=11">
+  <link rel="stylesheet" href="static/css/index.css?v=15">
 </head>
 
 <body>
@@ -127,9 +127,12 @@
     <!-- ===== Video layer: scrolls over the pinned title ===== -->
     <div class="video-layer">
       <div class="video-frame">
-        <video class="hero-bg-video" autoplay muted loop playsinline>
-          <source src="static/take_6.mp4" type="video/mp4">
-        </video>
+        <video class="hero-bg-video" autoplay muted loop playsinline
+               data-src="static/take_6.mp4"></video>
+        <div class="video-mobile">
+          <video autoplay muted loop playsinline data-src="static/take_6_left.mp4"></video>
+          <video autoplay muted loop playsinline data-src="static/take_6_right.mp4"></video>
+        </div>
         <div class="video-title">
           <h1>CooperScene</h1>
           <p>Multi-Modal Cooperative Autonomy Benchmark<br>with C-V2X Communication Characterization</p>
@@ -972,7 +975,7 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="static/js/main.js?v=11"></script>
+  <script src="static/js/main.js?v=15"></script>
 
 </body>
 
