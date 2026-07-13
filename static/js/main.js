@@ -205,27 +205,33 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // --- Download click counter (Abacus, free key-value counter API) ---
+  // One remark shows the sum across all download buttons rather than a
+  // separate count per card.
   var COUNTER_API = 'https://abacus.jasoncameron.dev';
   var COUNTER_NAMESPACE = 'ucr-cisl-cooperscene';
+  var downloadCounts = {};
 
-  function renderDownloadCount(key, value) {
-    var el = document.querySelector('[data-download-count="' + key + '"]');
-    if (el && typeof value === 'number') {
-      el.innerHTML = '<span class="icon"><i class="fas fa-mouse-pointer"></i></span>' +
-        value.toLocaleString() + (value === 1 ? ' click' : ' clicks');
-    }
+  function renderDownloadTotal() {
+    var el = document.querySelector('[data-download-total]');
+    var keys = Object.keys(downloadCounts);
+    if (!el || keys.length === 0) return;
+    var total = keys.reduce(function (sum, key) { return sum + downloadCounts[key]; }, 0);
+    el.textContent = total.toLocaleString() + (total === 1 ? ' download' : ' downloads');
   }
 
-  // Show current counts under each download button
-  document.querySelectorAll('[data-download-count]').forEach(function (el) {
-    var key = el.getAttribute('data-download-count');
+  // Fetch each button's current count on load and render their sum
+  document.querySelectorAll('[data-download-counter]').forEach(function (link) {
+    var key = link.getAttribute('data-download-counter');
     fetch(COUNTER_API + '/get/' + COUNTER_NAMESPACE + '/download-' + key)
       .then(function (res) { return res.json(); })
-      .then(function (data) { renderDownloadCount(key, data.value); })
-      .catch(function () { /* counting is best-effort; leave the label empty */ });
+      .then(function (data) {
+        downloadCounts[key] = typeof data.value === 'number' ? data.value : 0;
+        renderDownloadTotal();
+      })
+      .catch(function () { /* counting is best-effort; leave the total as-is */ });
   });
 
-  // Increment on click and refresh the displayed count
+  // Increment on click and refresh the displayed total
   document.querySelectorAll('[data-download-counter]').forEach(function (link) {
     link.addEventListener('click', function () {
       var key = link.getAttribute('data-download-counter');
@@ -233,7 +239,10 @@ document.addEventListener('DOMContentLoaded', function () {
         keepalive: true
       })
         .then(function (res) { return res.json(); })
-        .then(function (data) { renderDownloadCount(key, data.value); })
+        .then(function (data) {
+          downloadCounts[key] = typeof data.value === 'number' ? data.value : (downloadCounts[key] || 0) + 1;
+          renderDownloadTotal();
+        })
         .catch(function () { /* counting is best-effort; never block the download */ });
     });
   });

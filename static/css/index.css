@@ -164,15 +164,55 @@ body {
   font-size: 0.9rem;
 }
 
+/* Bulma ships its own .hero-buttons component (display: flex, no
+   flex-wrap, plus a `:not(:last-child) { margin-right: 1.5rem }` rule)
+   that collides with this custom class name. Its :not(:last-child)
+   selector out-specifies our plain `.hero-buttons .button` margin
+   below, so without this the 1.5rem leaks through on every button
+   except the last (BibTeX) - fix by matching its specificity. flex-wrap
+   is added so a row that no longer fits wraps instead of overflowing. */
+.hero-buttons {
+  flex-wrap: wrap;
+}
+
 .hero-buttons .button {
   margin: 4px;
   font-weight: 500;
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
+.hero-buttons .button:not(:last-child) {
+  margin-right: 4px;
+}
+
 .hero-buttons .button:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Narrow screens: lay the buttons out as an even two-column grid instead
+   of letting them free-wrap at their natural (uneven) content widths.
+   A real grid (rather than flex-wrap) guarantees exactly two equal
+   columns always - flex-wrap let long labels (e.g. "Visualizer") keep
+   their natural min-content width and break the 2-per-row pairing.
+   Uses the same breakpoint as the hero video's single/split-video switch
+   (see .video-mobile below) so all narrow-screen layout changes agree. */
+@media (max-width: 900px) {
+  .hero-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .hero-buttons .button {
+    margin: 0;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .hero-buttons .button:not(:last-child) {
+    margin-right: 0;
+  }
 }
 
 /* ===== Section Styles ===== */
@@ -205,7 +245,7 @@ body {
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1.2rem;
   margin: 2rem 0;
 }
@@ -218,6 +258,11 @@ body {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--border-color);
   transition: transform 0.2s, box-shadow 0.2s;
+  /* Grid items default to min-width: auto, which stops them shrinking
+     past their content's intrinsic width (e.g. "344K" unbreaking) - that
+     forced the 4-column row to overflow before it could fully compress
+     on narrow screens. */
+  min-width: 0;
 }
 
 .stat-card:hover {
@@ -238,6 +283,10 @@ body {
   color: var(--text-muted);
   margin-top: 0.3rem;
   display: block;
+  /* Long single words (e.g. "Synchronized") don't have a space to wrap
+     at, so on narrow screens (4 fixed columns, see .stats-grid) they'd
+     otherwise overflow past the card edge instead of breaking. */
+  overflow-wrap: break-word;
 }
 
 /* ===== Feature Cards (Overview) ===== */
@@ -257,14 +306,21 @@ body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
+.feature-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  margin-bottom: 0.8rem;
+}
+
 .feature-card .icon-wrapper {
   width: 50px;
   height: 50px;
+  min-width: 50px;
   border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 1rem;
   font-size: 1.3rem;
 }
 
@@ -301,7 +357,6 @@ body {
 .feature-card h4 {
   font-size: 1.05rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
   color: var(--primary-color);
 }
 
@@ -394,13 +449,14 @@ body {
 
 .task-tabs {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 1rem;
   margin: 1.5rem 0 0.5rem;
 }
 
 .task-tab {
   display: block;
+  min-width: 0;
   padding: 1.1rem 1.3rem;
   background: #ffffff;
   border: 2px solid var(--border-color);
@@ -443,12 +499,6 @@ body {
 
 .task-tab.is-active .task-tab-sub {
   color: rgba(255, 255, 255, 0.85);
-}
-
-@media screen and (max-width: 768px) {
-  .task-tabs {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ===== Table controls: agent filter chips + sort reset ===== */
@@ -604,6 +654,35 @@ body {
 
 /* ===== Download Section ===== */
 
+.download-total {
+  text-align: right;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
+  margin: 1.5rem 0 0;
+}
+
+.download-total:empty {
+  display: none;
+}
+
+/* Always 3 equal columns regardless of viewport width - bypasses
+   Bulma's .columns/.column.is-4 (flex + negative-margin gutters,
+   which only apply from its 769px tablet breakpoint) the same way
+   .stats-grid bypasses Bulma's auto-fit stacking. */
+#download .columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem;
+  margin: 0;
+}
+
+#download .column {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+}
+
 .download-card {
   background: #ffffff;
   border-radius: 10px;
@@ -628,6 +707,7 @@ body {
   font-weight: 600;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
+  overflow-wrap: break-word;
 }
 
 .download-card p {
@@ -821,11 +901,14 @@ body {
 
 /* ===== Responsive ===== */
 
-@media screen and (max-width: 768px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
+/* Bulma's navbar and .column grid switch layout at its own default
+   breakpoints (1024px for the burger menu, 769px for .column.is-4)
+   rather than the 900px used everywhere else on this page (hero
+   buttons, video, task tabs). The two blocks below replicate Bulma's
+   own mobile/desktop navbar rules verbatim, just at 900/901px, and
+   force the Overview/Download .column grids to stack below 900px so
+   every layout change lines up at the same width. */
+@media screen and (max-width: 900px) {
   .hero-section {
     padding-top: 70px;
   }
@@ -837,11 +920,137 @@ body {
   .benchmark-table {
     font-size: 0.78rem;
   }
+
+  .navbar > .container {
+    display: block;
+  }
+
+  .navbar-menu {
+    background-color: #fff;
+    box-shadow: 0 8px 16px rgba(10, 10, 10, 0.1);
+    padding: 0.5rem 0;
+  }
+
+  .navbar-menu.is-active {
+    display: block;
+  }
+
+  .navbar.is-fixed-top .navbar-menu {
+    -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 3.25rem);
+    overflow: auto;
+  }
+
+  #overview .columns {
+    display: block;
+  }
+
+  #overview .column {
+    width: 100%;
+  }
 }
 
-@media screen and (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
+@media screen and (min-width: 901px) {
+  .navbar,
+  .navbar-end,
+  .navbar-menu,
+  .navbar-start {
+    align-items: stretch;
+    display: flex;
+  }
+
+  .navbar {
+    min-height: 3.25rem;
+  }
+
+  /* Bulma's own @media(max-width:1023px){.navbar>.container{display:block}}
+     rule is still active between 901-1023px and stacks the brand and menu
+     into two rows - restore the flex row here to match its 1024px+ base
+     rule at our 901px breakpoint instead. */
+  .navbar > .container {
+    display: flex;
+  }
+
+  .navbar-burger {
+    display: none;
+  }
+
+  .navbar-item,
+  .navbar-link {
+    align-items: center;
+    display: flex;
+  }
+
+  .navbar-menu {
+    flex-grow: 1;
+    flex-shrink: 0;
+  }
+
+  .navbar-start {
+    justify-content: flex-start;
+    margin-right: auto;
+  }
+
+  .navbar-end {
+    justify-content: flex-end;
+    margin-left: auto;
+  }
+}
+
+/* Below ~600px, four fixed-size stat cards per row leave too little
+   width for values like "344K" at their full size - shrink padding and
+   let the number scale down with the viewport instead of overflowing
+   its card (stats-grid always stays 4 columns, see .stats-grid above). */
+@media screen and (max-width: 600px) {
+  .stat-card {
+    padding: 1rem 0.4rem;
+  }
+
+  .stat-card .stat-number {
+    font-size: clamp(0.75rem, 4.2vw, 1.8rem);
+  }
+
+  .stat-card .stat-label {
+    font-size: 0.65rem;
+  }
+}
+
+/* Task tabs and download cards also always stay in one row (3 columns -
+   see .task-tabs and #download .columns above); below ~700px their
+   fixed padding/icon/button sizing leaves too little room for the
+   content, so scale it down the same way the stat cards do. */
+@media screen and (max-width: 700px) {
+  .task-tab {
+    padding: 0.6rem 0.4rem;
+  }
+
+  .task-tab .task-tab-title {
+    font-size: clamp(0.6rem, 2.6vw, 1rem);
+  }
+
+  .download-card {
+    padding: 1rem 0.5rem;
+  }
+
+  .download-card .download-icon {
+    font-size: clamp(1rem, 5vw, 2.5rem);
+    margin-bottom: 0.5rem;
+  }
+
+  .download-card h4 {
+    font-size: clamp(0.7rem, 3vw, 1rem);
+  }
+
+  .download-card p {
+    font-size: clamp(0.65rem, 2.6vw, 0.9rem);
+    margin-bottom: 0.6rem;
+  }
+
+  .download-card .button {
+    font-size: clamp(0.65rem, 2.6vw, 1rem);
+    padding: 0.5em 0.6em;
+    white-space: normal;
+    height: auto;
   }
 }
 
@@ -933,11 +1142,13 @@ body {
 
 /* ===== Opening: video slides over the pinned title layer ===== */
 
-/* Wrapper height = one viewport (pinned title) + the video's travel
-   distance (its own height, ~44.9vw for the 2.23:1 video). */
+/* Wrapper height = one viewport (pinned title) + the video layer's
+   travel distance (calc(100vh - 52px), same as its pinned height), so
+   the video always fully covers the screen before the reveal,
+   regardless of window aspect ratio. */
 .opening {
   position: relative;
-  height: calc(100vh + 48vw);
+  height: calc(200vh - 52px);
   background: var(--hero-gradient-end);
 }
 
@@ -957,11 +1168,22 @@ body {
   flex-grow: 0;
 }
 
+/* Centers .video-frame (shrink-wrapped to the video's actual rendered
+   size) within the full-viewport black box, so any letterboxing shows
+   as surrounding space rather than being baked into the video element -
+   this keeps .video-frame's box aligned with the real video edges, so
+   .video-title (positioned relative to it) sticks to the video's own
+   corner instead of the browser window's. */
 .video-layer {
   position: absolute;
   top: 52px; /* below the fixed navbar */
   left: 0;
   right: 0;
+  height: calc(100vh - 52px);
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   z-index: 2;
 }
 
@@ -971,13 +1193,21 @@ body {
   background: #000;
 }
 
+/* Sized by its own rendered dimensions (no object-fit stretch), so the
+   frame wrapping it shrink-wraps to the real, uncropped video bounds. */
 .hero-bg-video {
-  width: 100%;
-  height: auto;
   display: block;
+  width: auto;
+  height: auto;
+  max-width: 100vw;
+  max-height: calc(100vh - 52px);
 }
 
-/* Narrow screens use the split-in-two vertical stack instead. */
+/* Narrow screens use the split-in-two vertical stack instead. The two
+   halves have slightly different native aspect ratios (same height,
+   different width), so each is sized by width alone (height: auto) to
+   keep both the same width with zero cropping; their stacked heights
+   naturally differ slightly rather than being forced into equal boxes. */
 .video-mobile {
   display: none;
 }
@@ -988,11 +1218,11 @@ body {
   display: block;
 }
 
-/* Title overlaid on the video, bottom-left (CARNATIONS style). */
+/* Title overlaid on the video, top-left (CARNATIONS style). */
 .video-title {
   position: absolute;
   left: 3.5%;
-  bottom: 7%;
+  top: 7%;
   line-height: 1.2;
   color: #ffffff;
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.85);
@@ -1048,43 +1278,24 @@ body {
   font-size: 1.05rem;
 }
 
-.scroll-cue {
-  position: absolute;
-  bottom: 4%;
-  left: 50%;
-  transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.85);
-  text-align: center;
-  font-size: 0.85rem;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  line-height: 1.3;
-}
-
-.scroll-cue i {
-  display: block;
-  margin-top: 0.3rem;
-  animation: cue-bounce 1.6s infinite;
-}
-
-@keyframes cue-bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(6px); }
-}
-
-/* On narrow screens the video is too short to cover the pinned layer, so
-   the reveal effect cannot work; fall back to a simple stacked layout:
-   video first, then the title section, everything scrolling normally. */
 @media (max-width: 900px) {
   /* Same pinned-reveal mechanics as desktop, but the video is split into
-     two vertically stacked halves (~180vw tall in total). */
+     two vertically stacked halves (~180vw tall in total) instead of
+     being pinned to a fixed viewport height. */
   .opening {
     height: calc(100vh + 190vw);
   }
 
   .video-layer {
+    height: auto;
     min-height: calc(100vh - 52px);
-    background: #000;
+    flex-direction: column;
+    /* Desktop centers .video-frame at its shrink-wrapped size (align-items:
+       center from the base rule), but the mobile stacked halves size
+       themselves via width: 100% on .video-mobile video - that percentage
+       needs .video-frame stretched to the full viewport width to resolve
+       against, or it falls back to the video's native resolution instead. */
+    align-items: stretch;
   }
 
   .hero-bg-video {
@@ -1100,9 +1311,4 @@ body {
     top: 2.5%;
     bottom: auto;
   }
-
-  .scroll-cue {
-    display: none;
-  }
-}
 }

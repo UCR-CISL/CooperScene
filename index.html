@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <!-- Custom CSS -->
-  <link rel="stylesheet" href="static/css/index.css?v=15">
+  <link rel="stylesheet" href="static/css/index.css?v=26">
 </head>
 
 <body>
@@ -108,7 +108,7 @@
           <a class="button is-rounded is-dark"
              href="https://huggingface.co/cisl-hf/CooperScene" target="_blank">
             <span class="icon">&#129303;</span>
-            <span>Hugging Face</span>
+            <span>Model</span>
           </a>
           <a class="button is-rounded is-dark"
              href="https://data.ucr.edu/datasets/cooperscene/" target="_blank">
@@ -118,6 +118,10 @@
           <a class="button is-rounded is-dark" href="#download">
             <span class="icon"><i class="fas fa-database"></i></span>
             <span>Dataset</span>
+          </a>
+          <a class="button is-rounded is-dark" href="#citation">
+            <span class="icon"><i class="fas fa-quote-right"></i></span>
+            <span>BibTeX</span>
           </a>
         </div>
       </div>
@@ -136,10 +140,6 @@
         <div class="video-title">
           <h1>CooperScene</h1>
           <p>Multi-Modal Cooperative Autonomy Benchmark<br>with C-V2X Communication Characterization</p>
-        </div>
-        <div class="scroll-cue">
-          <span>Scroll</span>
-          <i class="fas fa-chevron-down"></i>
         </div>
       </div>
     </div>
@@ -194,60 +194,72 @@
       <div class="columns is-multiline">
         <div class="column is-4">
           <div class="feature-card">
-            <div class="icon-wrapper bg-blue">
-              <i class="fas fa-car-side"></i>
+            <div class="feature-card-header">
+              <div class="icon-wrapper bg-blue">
+                <i class="fas fa-car-side"></i>
+              </div>
+              <h4>Multi-Agent Cooperative Scenes</h4>
             </div>
-            <h4>Multi-Agent Cooperative Scenes</h4>
             <p>High-quality interactive scenes from three vehicles and one infrastructure agent across diverse real-world
               urban intersection scenarios.</p>
           </div>
         </div>
         <div class="column is-4">
           <div class="feature-card">
-            <div class="icon-wrapper bg-green">
-              <i class="fas fa-broadcast-tower"></i>
+            <div class="feature-card-header">
+              <div class="icon-wrapper bg-green">
+                <i class="fas fa-broadcast-tower"></i>
+              </div>
+              <h4>C-V2X Communication</h4>
             </div>
-            <h4>C-V2X Communication Traces</h4>
             <p>Real-world C-V2X network traces including latency, throughput, packet loss rate and jitter &mdash;
               bridging wireless networking and autonomous driving research.</p>
           </div>
         </div>
         <div class="column is-4">
           <div class="feature-card">
-            <div class="icon-wrapper bg-purple">
-              <i class="fas fa-layer-group"></i>
+            <div class="feature-card-header">
+              <div class="icon-wrapper bg-purple">
+                <i class="fas fa-layer-group"></i>
+              </div>
+              <h4>Multi-Modal Sensing</h4>
             </div>
-            <h4>Multi-Modal Sensing</h4>
             <p>LiDAR, camera, GNSS/IMU data streams per agent, well-calibrated and temporally synchronized with
               sub-millisecond accuracy.</p>
           </div>
         </div>
         <div class="column is-4">
           <div class="feature-card">
-            <div class="icon-wrapper bg-orange">
-              <i class="fas fa-crosshairs"></i>
+            <div class="feature-card-header">
+              <div class="icon-wrapper bg-orange">
+                <i class="fas fa-crosshairs"></i>
+              </div>
+              <h4>Centimeter-Level Localization</h4>
             </div>
-            <h4>Centimeter-Level Localization</h4>
             <p>GNSS-RTK positioning with spatial-temporal ICP alignment achieving an average RMSE of 0.2m across all
               agents.</p>
           </div>
         </div>
         <div class="column is-4">
           <div class="feature-card">
-            <div class="icon-wrapper bg-red">
-              <i class="fas fa-clock"></i>
+            <div class="feature-card-header">
+              <div class="icon-wrapper bg-red">
+                <i class="fas fa-clock"></i>
+              </div>
+              <h4>Precise Synchronization</h4>
             </div>
-            <h4>Precise Synchronization</h4>
             <p>PTP-based time synchronization and hardware triggering ensure globally consistent timestamps across all
               platforms and sensors.</p>
           </div>
         </div>
         <div class="column is-4">
           <div class="feature-card">
-            <div class="icon-wrapper bg-teal">
-              <i class="fas fa-chart-bar"></i>
+            <div class="feature-card-header">
+              <div class="icon-wrapper bg-teal">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              <h4>Unified Benchmark</h4>
             </div>
-            <h4>Unified Benchmark</h4>
             <p>Comprehensive benchmarks for detection and motion prediction evaluating both perception
               accuracy and communication efficiency.</p>
           </div>
@@ -264,14 +276,14 @@
       <h2 class="title is-3 has-text-centered">Benchmark</h2>
       <div class="section-divider"></div>
 
-      <div class="content has-text-justified mb-5">
+      <!-- <div class="content has-text-justified mb-5">
         <p>
           We benchmark state-of-the-art cooperative perception methods under five cooperative settings with varying
           numbers of agents. All models are retrained on CooperScene.
         </p>
-      </div>
+      </div> -->
 
-      <!-- Agent Configurations -->
+      <!-- Agent Configurations
       <h3 class="title is-5 mb-3">Agent Configurations</h3>
       <div class="agent-configs">
         <div class="agent-config-card">
@@ -294,23 +306,23 @@
           <div class="config-label">V+2V+I</div>
           <div class="config-desc">All 3 vehicles + infra</div>
         </div>
-      </div>
+      </div> -->
 
       <!-- Benchmark Tasks -->
       <div class="tabs-wrapper mt-5">
-        <h3 class="title is-5 mb-3">Tasks</h3>
+        <!-- <h3 class="title is-5 mb-3">Tasks</h3> -->
         <div class="task-tabs">
           <button type="button" class="task-tab is-active" data-tab="tab-detection">
             <span class="task-tab-title">3D Object Detection</span>
-            <span class="task-tab-sub">mAP under C-V2X channel</span>
+            <!-- <span class="task-tab-sub">mAP under C-V2X channel</span> -->
           </button>
           <button type="button" class="task-tab" data-tab="tab-multimodal">
             <span class="task-tab-title">Multi-Modal Evaluation</span>
-            <span class="task-tab-sub">LiDAR vs LiDAR+Camera</span>
+            <!-- <span class="task-tab-sub">LiDAR vs LiDAR+Camera</span> -->
           </button>
           <button type="button" class="task-tab" data-tab="tab-motion">
             <span class="task-tab-title">Motion Prediction</span>
-            <span class="task-tab-sub">minADE / minFDE at 1&ndash;5s horizons</span>
+            <!-- <span class="task-tab-sub">minADE / minFDE at 1&ndash;5s horizons</span> -->
           </button>
         </div>
 
@@ -877,12 +889,12 @@
       <h2 class="title is-3 has-text-centered">Download</h2>
       <div class="section-divider"></div>
 
-      <div class="content has-text-centered mb-5">
+      <!-- <div class="content has-text-centered mb-5">
         <p>
           CooperScene is hosted on <strong>data.ucr.edu</strong>. We provide a mini set for quick exploration and
           the full dataset in manageable chunks.
         </p>
-      </div>
+      </div> -->
 
       <div class="columns is-centered">
         <!-- Samples -->
@@ -892,14 +904,13 @@
               <i class="fas fa-flask"></i>
             </div>
             <h4>Mini Set</h4>
-            <p>A curated mini set of scenes for quick exploration, with multi-agent LiDAR, camera, and 3D annotations.</p>
+            <!-- <p>A curated mini set of scenes for quick exploration, with multi-agent LiDAR, camera, and 3D annotations.</p> -->
             <a class="button is-success is-rounded" href="https://data.ucr.edu/datasets/cooperscene/mini.zip" target="_blank"
               data-download-counter="mini-set">
               <span class="icon"><i class="fas fa-download"></i></span>
-              <span>Download Mini Set</span>
+              <span>Download</span>
             </a>
             <p class="is-size-7 has-text-grey mt-2">~2.9 GB</p>
-            <div class="download-count" data-download-count="mini-set"></div>
           </div>
         </div>
         <!-- Full Dataset -->
@@ -909,15 +920,14 @@
               <i class="fas fa-database"></i>
             </div>
             <h4>Full Dataset</h4>
-            <p>Complete CooperScene dataset split into downloadable chunks. Includes train/val/test splits with all
-              modalities.</p>
+            <!-- <p>Complete CooperScene dataset split into downloadable chunks. Includes train/val/test splits with all
+              modalities.</p> -->
             <a class="button is-link is-rounded" href="https://data.ucr.edu/datasets/cooperscene/" target="_blank"
               data-download-counter="full-dataset">
               <span class="icon"><i class="fas fa-download"></i></span>
-              <span>Download Full Dataset</span>
+              <span>Download</span>
             </a>
             <p class="is-size-7 has-text-grey mt-2">~94.3 GB (in chunks)</p>
-            <div class="download-count" data-download-count="full-dataset"></div>
           </div>
         </div>
         <!-- MCAP Files -->
@@ -926,18 +936,19 @@
             <div class="download-icon" style="color: #9b59b6;">
               <i class="fas fa-play-circle"></i>
             </div>
-            <h4>MCAP Visualizations</h4>
-            <p>Pre-packaged MCAP files for Foxglove Studio. Browse data interactively without processing raw files.</p>
+            <h4>Visualization</h4>
+            <!-- <p>Pre-packaged MCAP files for Foxglove Studio. Browse data interactively without processing raw files.</p> -->
             <a class="button is-rounded" style="background-color: #9b59b6; color: #fff;" href="https://data.ucr.edu/datasets/cooperscene/mcap/"
               target="_blank" data-download-counter="mcap">
               <span class="icon"><i class="fas fa-download"></i></span>
-              <span>Download MCAP Files</span>
+              <span>Download</span>
             </a>
             <p class="is-size-7 has-text-grey mt-2">~90.9 GB</p>
-            <div class="download-count" data-download-count="mcap"></div>
           </div>
         </div>
       </div>
+
+      <p class="download-total" data-download-total></p>
 
     </div>
   </section>
