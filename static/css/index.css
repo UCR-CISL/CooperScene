@@ -1010,19 +1010,19 @@ body {
 
 /* Larger type for the revealed (pinned) title layer. */
 .title-layer .title.is-2 {
-  font-size: 4rem;
+  font-size: clamp(2.2rem, 4.2vw, 4rem);
 }
 
 .title-layer .subtitle.is-5 {
-  font-size: 1.6rem;
+  font-size: clamp(1.15rem, 1.7vw, 1.6rem);
 }
 
 .title-layer .is-size-6 {
-  font-size: 1.25rem !important;
+  font-size: clamp(1rem, 1.3vw, 1.25rem) !important;
 }
 
 .title-layer .is-size-7 {
-  font-size: 0.95rem !important;
+  font-size: clamp(0.85rem, 1vw, 0.95rem) !important;
 }
 
 .title-layer .affiliation-block {
@@ -1059,5 +1059,38 @@ body {
 @keyframes cue-bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(6px); }
+}
+
+/* On narrow screens the video is too short to cover the pinned layer, so
+   the reveal effect cannot work; fall back to a simple stacked layout:
+   video first, then the title section, everything scrolling normally. */
+@media (max-width: 900px) {
+  .opening {
+    height: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    background: #000;
+  }
+
+  /* Keep the video's huge intrinsic width from inflating the flex items
+     (and with them the whole page) beyond the viewport. */
+  .opening > * {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .title-layer {
+    position: static;
+    height: auto;
+  }
+
+  .video-layer {
+    position: static;
+    opacity: 1 !important;
+  }
+
+  .scroll-cue {
+    display: none;
+  }
 }
 }
