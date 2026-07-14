@@ -4,7 +4,7 @@
 # anyone who lands on Hugging Face first is pointed straight back to the code
 # repository and the official data release.
 pretty_name: CooperScene
-license: cc-by-nc-sa-4.0          # TODO: confirm the actual release license
+license: cc-by-nc-sa-4.0
 language:
   - en
 task_categories:
@@ -80,16 +80,21 @@ cd CooperScene
 
 ## License
 
-TODO: confirm and state the official license for the dataset before publishing.
+The CooperScene **dataset** — all sensor data, annotations, calibration files,
+and metadata, in any packaging (including `mini.zip` and the full dataset
+archives) — is licensed under
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+(see [DATA_LICENSE](https://github.com/UCR-CISL/CooperScene/blob/main/DATA_LICENSE)).
+The **code** in the GitHub repository is separately licensed under the
+[MIT License](https://github.com/UCR-CISL/CooperScene/blob/main/LICENSE).
 
 ## Citation
 
 ```bibtex
-@misc{cooperscene,
-  title  = {CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization},
-  author = {UCR-CISL},
-  year   = {2025},
-  note   = {https://github.com/UCR-CISL/CooperScene}
+@inproceedings{CooperScene,
+  title={CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization},
+  author={Bo Wu* and Ruoshen Mo* and Justin Yue and Yanyu Zhang and Janice Nguyen and Guoyuan Wu and Amit Roy-Chowdhury and Matthew J. Barth and Hang Qiu},
+  booktitle={European Conference on Computer Vision},
+  year={2026},
 }
 ```
-<!-- TODO: replace with the final BibTeX entry once the paper is public. -->

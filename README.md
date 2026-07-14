@@ -311,7 +311,13 @@ over C-V2X. **Bold** marks the best result per column within each method.
 
 ## License
 
-This project is released under the [MIT License](LICENSE).
+This project uses a dual-license model:
+
+- **Code** — everything in this repository is released under the [MIT License](LICENSE).
+- **Dataset** — all CooperScene dataset files distributed via the
+  [data portal](https://data.ucr.edu/datasets/cooperscene/) (including `mini.zip`
+  and the full dataset archives) are released under the
+  [CC BY-NC-SA 4.0 License](DATA_LICENSE).
 
 ## Acknowledgements
 

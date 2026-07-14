@@ -67,6 +67,16 @@ python tools/train.py assets/configs/ermvp/ermvp.py
 See the [GitHub README](https://github.com/UCR-CISL/CooperScene) for data
 preparation and the Docker workflow.
 
+## License
+
+The code and the pre-trained checkpoints in this repository are released under
+the [MIT License](https://github.com/UCR-CISL/CooperScene/blob/main/LICENSE).
+Note that all checkpoints were trained on the CooperScene dataset, which is
+licensed under
+[CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
+(see [DATA_LICENSE](https://github.com/UCR-CISL/CooperScene/blob/main/DATA_LICENSE));
+the dataset's non-commercial terms apply to any use of the dataset itself.
+
 ## Related links
 
 🌐 Website: [https://cisl.ucr.edu/CooperScene](https://cisl.ucr.edu/CooperScene)

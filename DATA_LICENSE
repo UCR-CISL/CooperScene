@@ -1,0 +1,30 @@
+CooperScene Dataset License
+===========================
+
+The CooperScene dataset — including all sensor data (LiDAR point clouds,
+camera images), annotations, calibration files, C-V2X communication traces,
+and metadata distributed via the CooperScene data portal
+(https://data.ucr.edu/datasets/cooperscene/), in any packaging — including
+mini.zip, the per-split archives (train.zip, validate.zip, test.zip), the
+per-scene chunks, and the MCAP recordings — is licensed under the Creative
+Commons Attribution-NonCommercial-ShareAlike 4.0 International License
+(CC BY-NC-SA 4.0).
+
+Full license text: https://creativecommons.org/licenses/by-nc-sa/4.0/
+
+Under this license you are free to share and adapt the dataset for
+non-commercial purposes, provided that you give appropriate credit (see the
+citation below) and distribute any derivatives under the same license.
+
+The source code in this repository is separately licensed under the MIT
+License (see LICENSE).
+
+Citation
+--------
+
+@inproceedings{CooperScene,
+  title={CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization},
+  author={Bo Wu* and Ruoshen Mo* and Justin Yue and Yanyu Zhang and Janice Nguyen and Guoyuan Wu and Amit Roy-Chowdhury and Matthew J. Barth and Hang Qiu},
+  booktitle={European Conference on Computer Vision},
+  year={2026},
+}
