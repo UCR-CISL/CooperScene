@@ -1,8 +1,16 @@
 # CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
 
-[**arXiv**](https://arxiv.org/abs/2606.31219) &nbsp;|&nbsp; [**Project Website**](https://cisl.ucr.edu/CooperScene) &nbsp;|&nbsp; [**Hugging Face**](https://huggingface.co/cisl-hf/CooperScene)
+**🏆 ECCV 2026 (Oral)** &nbsp;|&nbsp; [**arXiv**](https://arxiv.org/abs/2606.31219) &nbsp;|&nbsp; [**Project Website**](https://cisl.ucr.edu/CooperScene) &nbsp;|&nbsp; [**Model Zoo 🤗**](https://huggingface.co/cisl-hf/CooperScene)
 
 ![Demo](assets/take_10.gif)
+
+## News
+
+
+- **2026-07** 🎉 Paper accepted at **ECCV 2026** — selected for **Oral** presentation!
+- **2026-07** Dataset publicly released on the [Data Portal](https://data.ucr.edu/datasets/cooperscene/)
+
+## Overview
 
 CooperScene is the first real-world, multi-agent, multi-modal cooperative autonomy
 dataset with C-V2X communication characterization. It features three connected
@@ -11,7 +19,7 @@ all equipped with multi-modal sensors and commercial off-the-shelf C-V2X
 communication radios, interacting across diverse real-world traffic scenarios
 including intersections, highway ramps, and parking areas.
 
-**Key highlights**
+### Key highlights
 
 - **59K** synchronized LiDAR frames across 4 cooperative agents
 - **53K** camera image frames
@@ -19,6 +27,63 @@ including intersections, highway ramps, and parking areas.
 - Real-world C-V2X communication traces (latency, throughput, packet loss, jitter)
 - Centimeter-level localization via GNSS-RTK + spatial-temporal ICP alignment
 - Sub-millisecond sensor synchronization via PTP and hardware triggering
+
+### What this repo provides
+
+Everything needed to reproduce **every detection baseline in the paper** — and to
+benchmark your own method against them — on real-world cooperative driving data:
+
+- **10 reproduced detection baselines** — 6 cooperative detectors + 4 BEVFusion
+  variants, each shipped as a config + pretrained checkpoint pair in the
+  [Hugging Face model zoo](https://huggingface.co/cisl-hf/CooperScene). One `tools/test.py` command
+  reproduces any number below.
+- **One unified mmengine pipeline** — every model shares the same dataset
+  loader, coordinate conventions, and BEV/3D polygon-IoU AP metric. No
+  per-model forks, no result drift between codebases.
+- **C-V2X network-aware evaluation** — the only benchmark where any model can be
+  evaluated under *measured* C-V2X transmission constraints (async feature
+  delay derived from real throughput traces), alongside the idealized
+  unlimited-bandwidth setting.
+- **Dataset converters + Docker image** — from the raw release to a training-ready
+  setup in two commands.
+
+---
+
+## Model Zoo — Cooperative 3D Detection
+
+All models are trained on the CooperScene **train** split and evaluated on the
+**test** split in the all-agent setting (ego + 2 CAVs + RSU, `V+2V+I`), reported
+as mAP at IoU 0.3 / 0.5 / 0.7 under both the real **C-V2X** network and the
+idealized **Unlimited** network. The full sweep over agent settings is in
+[Benchmark Result](#benchmark-result).
+
+| Model | Venue | mAP (C-V2X) @0.3/0.5/0.7 | mAP (Unlimited) @0.3/0.5/0.7 | Config | Checkpoint |
+|---|---|---|---|---|---|
+| [V2VNet](https://arxiv.org/abs/2008.07519) | ECCV 2020 | 0.32 / 0.23 / 0.13 | 0.81 / 0.75 / 0.50 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2vnet/v2vnet.py) | [ckpt (177 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/v2vnet/v2vnet.pth) |
+| [V2X-ViT](https://arxiv.org/abs/2203.10638) | ECCV 2022 | 0.60 / 0.52 / 0.33 | 0.80 / 0.74 / 0.50 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2xvit/v2xvit.py) | [ckpt (167 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/v2xvit/v2xvit.pth) |
+| [CoBEVT](https://arxiv.org/abs/2207.02202) | CoRL 2022 | 0.59 / 0.50 / 0.32 | 0.82 / 0.75 / 0.54 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/cobevt/cobevt.py) | [ckpt (138 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/cobevt/cobevt.pth) |
+| [V2VAM](https://arxiv.org/abs/2212.08273) | T-IV 2023 | 0.62 / 0.54 / 0.34 | 0.84 / 0.78 / 0.53 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2vam/v2vam.py) | [ckpt (116 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/v2vam/v2vam.pth) |
+| [ERMVP](https://openaccess.thecvf.com/content/CVPR2024/html/Zhang_ERMVP_Communication-Efficient_and_Collaboration-Robust_Multi-Vehicle_Perception_in_Challenging_Environments_CVPR_2024_paper.html) | CVPR 2024 | 0.64 / 0.56 / 0.36 | 0.87 / 0.81 / 0.57 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/ermvp/ermvp.py) | [ckpt (138 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/ermvp/ermvp.pth) |
+| [CoSDH](https://arxiv.org/abs/2503.03430) | CVPR 2025 | 0.75 / 0.61 / 0.41 | 0.81 / 0.73 / 0.52 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/cosdh/cosdh.py) | [ckpt (111 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/cosdh/cosdh.pth) |
+
+**BEVFusion** ([ICRA 2023](https://arxiv.org/abs/2205.13542)), single-agent and
+cooperative, LiDAR-only and LiDAR+camera (BEV / 3D mAP @0.3/0.5/0.7;
+cooperative rows use the `V+2V` setting):
+
+| Agents | Modality | BEV mAP @0.3/0.5/0.7 | 3D mAP @0.3/0.5/0.7 | Config | Checkpoint |
+|---|---|---|---|---|---|
+| Single | LiDAR | 0.78 / 0.56 / 0.31 | 0.70 / 0.38 / 0.21 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_single_lidar.py) | [ckpt (115 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_single_lidar.pth) |
+| Single | LiDAR+Cam | 0.80 / 0.57 / 0.33 | 0.72 / 0.42 / 0.23 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_single_lidarcam.py) | [ckpt (483 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_single_lidarcam.pth) |
+| Coop | LiDAR | 0.90 / 0.84 / 0.56 | 0.87 / 0.73 / 0.30 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_coop_lidar.py) | [ckpt (139 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_coop_lidar.pth) |
+| Coop | LiDAR+Cam | 0.90 / 0.83 / 0.61 | 0.87 / 0.74 / 0.35 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_coop_lidarcam.py) | [ckpt (519 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_coop_lidarcam.pth) |
+
+Reproduce any row in two commands (see [Quick Start](#quick-start) for the
+Docker image and data preparation):
+
+```bash
+hf download cisl-hf/CooperScene --local-dir assets
+python tools/test.py assets/ermvp/ermvp.py assets/ermvp/ermvp.pth
+```
 
 ---
 
@@ -136,11 +201,11 @@ python tools/train.py assets/ermvp/ermvp.py
 Available configs (swap the path above for any of these):
 
 - **BEVFusion** (single / cooperative × lidar / lidar-cam):
-  `bevfusion/bevfusion_single_lidar.py`, `bevfusion/bevfusion_single_lidarcam.py`,
-  `bevfusion/bevfusion_coop_lidar.py`, `bevfusion/bevfusion_coop_lidarcam.py`
+  `assets/bevfusion/bevfusion_single_lidar.py`, `assets/bevfusion/bevfusion_single_lidarcam.py`,
+  `assets/bevfusion/bevfusion_coop_lidar.py`, `assets/bevfusion/bevfusion_coop_lidarcam.py`
 - **CoBEVT / CoSDH / ERMVP / V2VAM / V2VNet / V2X-ViT**:
-  `cobevt/cobevt.py`, `cosdh/cosdh.py`, `ermvp/ermvp.py`,
-  `v2vam/v2vam.py`, `v2vnet/v2vnet.py`, `v2xvit/v2xvit.py`
+  `assets/cobevt/cobevt.py`, `assets/cosdh/cosdh.py`, `assets/ermvp/ermvp.py`,
+  `assets/v2vam/v2vam.py`, `assets/v2vnet/v2vnet.py`, `assets/v2xvit/v2xvit.py`
 
 #### 5. Evaluate
 
