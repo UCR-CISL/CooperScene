@@ -1,6 +1,6 @@
 # CooperScene: Multi-Modal Cooperative Autonomy Benchmark with C-V2X Communication Characterization
 
-**🏆 ECCV 2026 (Oral)** &nbsp;|&nbsp; [**arXiv**](https://arxiv.org/abs/2606.31219) &nbsp;|&nbsp; [**Project Website**](https://cisl.ucr.edu/CooperScene) &nbsp;|&nbsp; [**Model Zoo 🤗**](https://huggingface.co/cisl-hf/CooperScene)
+**🏆 ECCV 2026 (Spotlight)** &nbsp;|&nbsp; [**arXiv**](https://arxiv.org/abs/2606.31219) &nbsp;|&nbsp; [**Project Website**](https://cisl.ucr.edu/CooperScene) &nbsp;|&nbsp; [**Model Zoo 🤗**](https://huggingface.co/cisl-hf/CooperScene)
 
 ![Demo](assets/take_10.gif)
 
