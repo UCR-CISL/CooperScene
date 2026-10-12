@@ -38,6 +38,10 @@ _ARCH_TO_MODULE = {
     'ermvp': ('opencood.models.point_pillar_ermvp', 'PointPillarErmvp'),
     'cosdh': ('opencood.models.point_pillar_comm_multiscale',
               'PointPillarCommMultiscale'),
+    # Single-agent baselines (Table 3): run with agent_setting='V' (0 coop).
+    'point_pillar': ('opencood.models.point_pillar_intermediate',
+                     'PointPillarIntermediate'),
+    'second': ('opencood.models.second_intermediate', 'SecondIntermediate'),
 }
 
 

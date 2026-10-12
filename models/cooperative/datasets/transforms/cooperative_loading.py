@@ -232,7 +232,12 @@ class PackCooperative3DDetInputs(BaseTransform):
                             'pcd_scale_factor', 'pcd_rotation',
                             'pcd_rotation_angle', 'lidar_path',
                             'transformation_3d_flow', 'trans_mat',
-                            'affine_aug'),
+                            'affine_aug',
+                            # cooperative meta, consumed by DumpMetric so the
+                            # outputs can be replayed per ego / cooperator
+                            'scenario', 'timestamp', 'agent_id', 'ego_pose',
+                            'cooperators', 'dropped_cooperators',
+                            'transformation_matrix'),
         coop_keys: tuple = ('record_len', 'pairwise_t_matrix', 'coop_mask',
                             'points_per_cav'),
     ) -> None:

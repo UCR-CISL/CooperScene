@@ -26,3 +26,19 @@ assets/
 .vscode/
 .idea/
 .DS_Store
+
+# coopertrace: never commit data, builds, logs, weights
+__pycache__/
+*.pyc
+*.so
+*.pth
+*.pkl
+*.pickle
+*.npy
+*.log
+*.sif
+nohup.out
+.claude/
+*.bak*
+*.orig*
+*.badguard*

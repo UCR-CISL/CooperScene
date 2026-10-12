@@ -116,7 +116,11 @@ def _list_subdirs(p):
 
 def build_split(data_root: str, split: str, out_path: str,
                 convert_pcd: bool = False,
-                bin_dir: str = None) -> int:
+                bin_dir: str = None,
+                single: bool = False) -> int:
+    # single=True: every agent (incl. infra '0') is an ego with NO cooperators
+    # and single-agent GT, for the non-cooperative Table 3 baselines.
+    ego_ids = ('0', '1', '2', '3') if single else EGO_CANDIDATE_IDS
     split_path = osp.join(data_root, split)
     if not osp.exists(split_path):
         print(f'  SKIP {split}, not found')
@@ -213,13 +217,13 @@ def build_split(data_root: str, split: str, out_path: str,
 
         agent_data.sort(key=lambda x: x['agent_id'])
 
-        # Only rotate vehicles (id in {'1','2','3'}) as ego
+        # ego candidates: vehicles only (coop) or all agents incl. infra (single)
         for ego in agent_data:
-            if ego['agent_id'] not in EGO_CANDIDATE_IDS:
+            if ego['agent_id'] not in ego_ids:
                 continue
 
-            cooperators = [a for a in agent_data
-                           if a['agent_id'] != ego['agent_id']]
+            cooperators = [] if single else [a for a in agent_data
+                                             if a['agent_id'] != ego['agent_id']]
 
             # GT bboxes in ego LiDAR frame (parse_cooperscene_vehicle requires
             # ego_pose as 6-element [x, y, z, roll, yaw, pitch]).
@@ -306,6 +310,10 @@ def parse_args():
                     help='Optional output dir for the converted .bin files'
                          ' (mirrors <split>/<scenario>/<agent>/ tree). When'
                          ' unset, .bin lives next to the .pcd.')
+    ap.add_argument('--single', action='store_true',
+                    help='Build the non-cooperative single-agent pkls (every '
+                         'agent incl. infra as ego, no cooperators, single-agent '
+                         'GT) -> cooperscene_coop_infos_{split}_single.pkl.')
     return ap.parse_args()
 
 
@@ -314,12 +322,10 @@ def main():
     dr = args.data_root
     cp = args.convert_pcd
     bd = args.bin_dir
-    build_split(dr, 'train',
-                osp.join(dr, 'cooperscene_coop_infos_train.pkl'), cp, bd)
-    build_split(dr, 'validate',
-                osp.join(dr, 'cooperscene_coop_infos_val.pkl'), cp, bd)
-    build_split(dr, 'test',
-                osp.join(dr, 'cooperscene_coop_infos_test.pkl'), cp, bd)
+    suffix = '_single' if args.single else ''
+    for split, tag in (('train', 'train'), ('validate', 'val'), ('test', 'test')):
+        out = osp.join(dr, f'cooperscene_coop_infos_{tag}{suffix}.pkl')
+        build_split(dr, split, out, cp, bd, single=args.single)
 
 
 if __name__ == '__main__':

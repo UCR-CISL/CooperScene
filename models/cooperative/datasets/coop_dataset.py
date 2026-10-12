@@ -7,7 +7,9 @@ ego agent data plus cooperating agents' LiDAR data and poses.
 
 import copy
 import itertools
+import json
 import os.path as osp
+from collections import Counter
 from typing import Callable, List, Optional, Union
 
 import numpy as np
@@ -20,8 +22,17 @@ from .cooperscene_dataset import CooperSceneDataset
 IDEAL_THROUGHPUT_MBPS = 27.0   # documents the async-off assumption; not numeric
 CV2X_THROUGHPUT_MBPS = 1.6     # measured C-V2X throughput for the C-V2X column
 
+# Trace-driven network ('trace'): replay the per-frame, pair-wise C-V2X
+# throughput measured during collection. Each agent's metadata.json carries,
+# per 100 ms frame, `Throughput_from_agent_<src>` in bits/s (iperf RX at the
+# receiver), null = no measurement in that frame (treated as 0 bits).
+TRACE_FIELD = 'Throughput_from_agent_{}'
+TRACE_FRAME_S = 0.1            # one frame = one 100 ms trace bin
+NETWORKS = ('unlimited', 'cv2x', 'trace')
+
 # Table 2 agent settings -> (num_peer_vehicles, include_infra). Infra = agent '0'.
 AGENT_SETTINGS = {
+    'V':      (0, False),  # single agent, no cooperators (Table 3 baseline)
     'V+I':    (0, True),   # ego vehicle + infra
     'V+V':    (1, False),  # ego vehicle + 1 peer vehicle
     'V+V+I':  (1, True),   # ego vehicle + 1 peer vehicle + infra
@@ -86,14 +97,24 @@ class CoopDataset(CooperSceneDataset):
                  com_range: float = 70.0,
                  wild_setting: Optional[dict] = None,
                  agent_setting: Optional[str] = None,
+                 ego_agent: Optional[Union[str, int]] = None,
                  network: str = 'unlimited',
                  share_size_mb: float = 0.0,
                  cv2x_throughput: float = CV2X_THROUGHPUT_MBPS,
                  cv2x_async_overhead: float = 0.0,
                  cv2x_backbone_delay: float = 0.0,
+                 trace_max_delay: int = 30,
+                 trace_drop: bool = True,
+                 trace_field: str = TRACE_FIELD,
                  **kwargs) -> None:
         self.max_cav = max_cav
         self.com_range = com_range
+        if network not in NETWORKS:
+            raise ValueError(
+                f'network must be one of {NETWORKS}, got {network!r}')
+        # Keep only samples whose ego is this agent_id (per-agent Table 3 eval);
+        # None = all egos.
+        self.ego_agent = None if ego_agent is None else str(ego_agent)
 
         if agent_setting is not None and agent_setting not in AGENT_SETTINGS:
             raise ValueError(
@@ -115,6 +136,23 @@ class CoopDataset(CooperSceneDataset):
                 'loc_err': False,
             }
         self._init_wild_setting(wild_setting)
+
+        # 'trace' = per-frame pair-wise replay of the measured C-V2X traces.
+        # The feature of `share_size_mb` MB is streamed continuously; the
+        # frame the ego fuses at time T is the newest one whose transmission
+        # finished by T under the receiver's measured per-frame throughput.
+        # Not deliverable within `trace_max_delay` frames -> the cooperator
+        # is dropped for that frame (trace_drop=True) or frozen at the
+        # max-delay frame (trace_drop=False).
+        self.share_bits = float(share_size_mb) * 8e6
+        self.trace_max_delay = int(trace_max_delay)
+        self.trace_drop = bool(trace_drop)
+        self.trace_field = trace_field
+        self._trace_index = {}      # (scenario, rx_agent, tx_agent) -> {ts: bits}
+        self._trace_stats = Counter()
+        self._trace_delays = []
+        if network == 'trace':
+            self._wild_on = True    # need the temporal frame index
         super().__init__(**kwargs)
 
     def _init_wild_setting(self, ws: Optional[dict]) -> None:
@@ -209,17 +247,124 @@ class CoopDataset(CooperSceneDataset):
         target = max(0, pos - int(delay))
         return self._frame_index[key][ts_list[target]]
 
+    # ------------------------------------------------------------------
+    # Trace-driven C-V2X replay
+    # ------------------------------------------------------------------
+    def _build_trace_index(self) -> None:
+        """Load every `<split>/<scenario>/<agent>/metadata.json` under
+        data_root into (scenario, rx_agent, tx_agent) -> {frame: bits/frame}.
+        Only the scenarios present in the annotation file are read."""
+        from mmengine.fileio import load
+        raw = load(self.ann_file)
+        raw_list = raw['data_list'] if isinstance(raw, dict) else raw
+        scenarios = sorted({str(s.get('scenario')) for s in raw_list})
+        agents = ('0', '1', '2', '3')
+        n_files = 0
+        for scen in scenarios:
+            for rx in agents:
+                meta = None
+                for split in ('train', 'validate', 'test'):
+                    cand = osp.join(self.data_root, split, scen, rx,
+                                    'metadata.json')
+                    if osp.exists(cand):
+                        with open(cand) as f:
+                            meta = json.load(f)
+                        break
+                if meta is None:
+                    continue
+                n_files += 1
+                for tx in agents:
+                    if tx == rx:
+                        continue
+                    field = self.trace_field.format(tx)
+                    tr = {}
+                    for ts, row in meta.items():
+                        v = row.get(field)
+                        bits = 0.0 if v is None else float(v) * TRACE_FRAME_S
+                        tr[int(ts)] = max(bits, 0.0)
+                    if tr:
+                        self._trace_index[(scen, rx, tx)] = tr
+        if n_files == 0:
+            raise FileNotFoundError(
+                f'network=trace needs <split>/<scenario>/<agent>/metadata.json '
+                f'under data_root={self.data_root!r}; none found for '
+                f'scenarios {scenarios}')
+
+    def _trace_delay(self, scenario, rx_agent, tx_agent, ts):
+        """Delay (frames) of the newest tx->rx feature deliverable at frame
+        `ts`, walking back through the receiver's measured per-frame bits.
+
+        Returns (delay_frames, status) with status in
+          'ok'      -> delivered within trace_max_delay
+          'clamped' -> trace history exhausted before the budget was met
+                       (start of a take); delay = available history
+          'dropped' -> not deliverable within trace_max_delay
+        The delay is floor(transmission time / 100 ms) (same convention as the
+        'cv2x' fixed-rate mode), so budgets smaller than one frame's bits give
+        delay 0."""
+        tr = self._trace_index.get((str(scenario), str(rx_agent),
+                                    str(tx_agent)))
+        if tr is None:
+            return 0, 'ok'   # no trace for this pair: behave like unlimited
+        need = self.share_bits
+        if need <= 0:
+            return 0, 'ok'
+        t = int(round(float(ts)))
+        acc = 0.0
+        for m in range(1, self.trace_max_delay + 2):
+            f = t - m
+            if f not in tr:
+                # Trace history exhausted (take start).
+                return m - 1, 'clamped'
+            b = tr[f]
+            if acc + b >= need:
+                frac = (need - acc) / b if b > 0 else 1.0
+                tau = (m - 1) + frac          # transmission time in frames
+                k = int(tau)
+                if k > self.trace_max_delay:
+                    return self.trace_max_delay, 'dropped'
+                return k, 'ok'
+            acc += b
+        return self.trace_max_delay, 'dropped'
+
     def load_data_list(self):
         # Build the temporal index BEFORE per-sample parsing so parse_data_info
         # can resolve delayed cooperator frames.
         if self._wild_on:
             self._build_frame_index()
-        return super().load_data_list()
+        if self.network == 'trace':
+            self._build_trace_index()
+        data_list = super().load_data_list()
+        if self.network == 'trace' and self._trace_stats['n'] > 0:
+            from mmengine.logging import print_log
+            st = self._trace_stats
+            n = st['n']
+            d = np.asarray(self._trace_delays, dtype=np.float64)
+            if d.size:
+                dstr = (f"mean {d.mean():.2f} median {np.median(d):.0f} "
+                        f"p90 {np.percentile(d, 90):.0f} max {d.max():.0f}")
+            else:
+                dstr = 'n/a (every link dropped)'
+            print_log(
+                f"[CoopDataset trace] cooperator links {n}: "
+                f"delivered {st['ok']} ({100*st['ok']/n:.1f}%), "
+                f"clamped {st['clamped']} ({100*st['clamped']/n:.1f}%), "
+                f"dropped {st['dropped']} ({100*st['dropped']/n:.1f}%); "
+                f"fused delay frames {dstr}; "
+                f"share {self.share_bits/8e6:.3f} MB/cooperator, "
+                f"max_delay {self.trace_max_delay} frames, "
+                f"on timeout: {'drop' if self.trace_drop else 'freeze'}",
+                logger='current')
+        return data_list
 
     def parse_data_info(self, info: dict):
         """Parse one ego sample. With ``agent_setting`` None, uses all in-range
         cooperators (V+2V+I). Otherwise expands into one sample per cooperator
         combination of that setting (list return; mmengine flattens it)."""
+        # Per-agent eval: drop samples whose ego is not the requested agent.
+        if self.ego_agent is not None and \
+                str(info.get('agent_id')) != self.ego_agent:
+            return []
         base = super().parse_data_info(info)
         valid_coops = self._build_valid_coops(info)
 
@@ -284,8 +429,21 @@ class CoopDataset(CooperSceneDataset):
                 src_lidar_rel = coop['lidar_points']['lidar_path']
                 src_num_feats = coop['lidar_points'].get('num_pts_feats', 4)
                 src_images = coop.get('images')
+                delay = 0
+                dropped = False
                 if self.async_flag:
                     delay = self._time_delay(is_ego=False)
+                elif self.network == 'trace':
+                    delay, status = self._trace_delay(
+                        scenario, info.get('agent_id'), coop.get('agent_id'),
+                        cur_ts)
+                    self._trace_stats['n'] += 1
+                    self._trace_stats[status] += 1
+                    if status == 'dropped' and self.trace_drop:
+                        dropped = True
+                    else:
+                        self._trace_delays.append(delay)
+                if delay > 0 and not dropped:
                     entry = self._lookup_delayed(
                         scenario, coop.get('agent_id'), cur_ts, delay)
                     if entry is not None:
@@ -310,6 +468,11 @@ class CoopDataset(CooperSceneDataset):
                     'transformation_matrix': T_cav_to_ego.astype(
                         np.float32),
                     'dist': float(dist),
+                    'delay_frames': int(delay),
+                    # trace mode: link not deliverable -> keeps its place in
+                    # the agent-setting combos (same population) but is not
+                    # fused (no slot, mask False).
+                    'dropped': bool(dropped),
                 }
 
                 # Thread cooperator camera images if available
@@ -342,20 +505,29 @@ class CoopDataset(CooperSceneDataset):
         coop_mask[0] = True
 
         coop_infos = []
-        for i, coop in enumerate(valid_coops[:self.max_cav - 1]):
-            idx = i + 1
+        idx = 0
+        for coop in valid_coops[:self.max_cav - 1]:
+            if coop.get('dropped', False):
+                continue
+            idx += 1
             t_matrix[idx] = coop['transformation_matrix']
             coop_mask[idx] = True
             coop_entry = {
                 'agent_id': coop.get('agent_id', ''),
                 'lidar_path': coop['lidar_path'],
                 'num_pts_feats': coop['num_pts_feats'],
+                'delay_frames': int(coop.get('delay_frames', 0)),
             }
             if 'images' in coop and coop['images']:
                 coop_entry['images'] = coop['images']
             coop_infos.append(coop_entry)
 
         data_info['cooperators'] = coop_infos
+        # In-range cooperators whose link was not deliverable (trace mode);
+        # kept as meta so dumps / the demo can label them "dropped".
+        data_info['dropped_cooperators'] = [
+            str(c.get('agent_id', '')) for c in valid_coops[:self.max_cav - 1]
+            if c.get('dropped', False)]
         data_info['transformation_matrix'] = t_matrix
         data_info['coop_mask'] = coop_mask
         return data_info

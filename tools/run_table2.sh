@@ -6,7 +6,11 @@
 # Agent settings (paper Table 2):
 #   V+I  V+V  V+V+I  V+2V  V+2V+I   (each averaged over all valid combos)
 # Networks:
-#   unlimited -> mAP (Unlimited)    cv2x -> mAP (C-V2X)
+#   unlimited -> mAP (Unlimited)    cv2x -> mAP (C-V2X, fixed measured rate)
+#   trace     -> mAP (C-V2X trace replay): per-frame pair-wise throughput from
+#                each agent's metadata.json; a cooperator whose feature is not
+#                deliverable within TRACE_MAX_DELAY frames is dropped (or frozen
+#                at that age with TRACE_DROP=False)
 #
 # C-V2X throughput differs PER agent setting (more agents -> more channel
 # contention -> lower throughput). Defaults below; override per setting via env
@@ -14,6 +18,7 @@
 #
 # Override via env, e.g.:
 #   MODELS="v2vnet cobevt" SETTINGS="V+I V+2V+I" NETWORKS=cv2x bash tools/run_table2.sh
+#   NETWORKS=trace TRACE_MAX_DELAY=30 bash tools/run_table2.sh
 set -euo pipefail
 
 ASSETS=${ASSETS:-assets/configs}          # <ASSETS>/<model>/<model>.{py,pth}
@@ -22,6 +27,8 @@ MODELS=${MODELS:-"v2vnet v2xvit v2vam cobevt cosdh ermvp"}
 SETTINGS=${SETTINGS:-"V+I V+V V+V+I V+2V V+2V+I"}
 NETWORKS=${NETWORKS:-"unlimited cv2x"}
 BS=${BS:-4}                                # test_dataloader batch size
+TRACE_MAX_DELAY=${TRACE_MAX_DELAY:-30}     # frames (100 ms each) for network=trace
+TRACE_DROP=${TRACE_DROP:-True}             # True = drop undeliverable link, False = freeze
 # Dataset root holding cooperscene_coop_infos_test.pkl (+ the split dirs).
 # Default = config's data/cooperscene; override e.g.
 #   DATA_ROOT=/workspace/data/Cooperscene/release/250928_opv2v
@@ -42,13 +49,20 @@ for m in $MODELS; do
       tpkey="TP_${s//+/_}"                 # V+2V+I -> TP_V_2V_I
       tp=${!tpkey:-${TP[$s]}}
       tag="${m}__${s//+/-}__${net}"
-      echo "=== $tag (share=${share}MB @ ${tp}Mbps) ==="
+      if [ "$net" = "trace" ]; then
+        tag="${tag}${TRACE_MAX_DELAY}"
+        echo "=== $tag (share=${share}MB, trace replay, max_delay=${TRACE_MAX_DELAY} frames, drop=${TRACE_DROP}) ==="
+      else
+        echo "=== $tag (share=${share}MB @ ${tp}Mbps) ==="
+      fi
       opts=(
         test_dataloader.batch_size="$BS"
         test_dataloader.dataset.agent_setting="$s"
         test_dataloader.dataset.network="$net"
         test_dataloader.dataset.share_size_mb="$share"
         test_dataloader.dataset.cv2x_throughput="$tp"
+        test_dataloader.dataset.trace_max_delay="$TRACE_MAX_DELAY"
+        test_dataloader.dataset.trace_drop="$TRACE_DROP"
       )
       [ -n "$DATA_ROOT" ] && opts+=( test_dataloader.dataset.data_root="$DATA_ROOT" )
       python tools/test.py "$cfg" "$ckpt" \
