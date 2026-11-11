@@ -57,31 +57,31 @@ as mAP at IoU 0.3 / 0.5 / 0.7 under both the real **C-V2X** network and the
 idealized **Unlimited** network. The full sweep over agent settings is in
 [Benchmark Result](#benchmark-result).
 
-| Model | Venue | mAP (C-V2X) @0.3/0.5/0.7 | mAP (Unlimited) @0.3/0.5/0.7 | Config | Checkpoint |
+| Model | Venue | mAP (C-V2X) @0.3/0.5/0.7 | mAP (Unlimited) @0.3/0.5/0.7 | Config | Checkpoint (`tools/download.py`) |
 |---|---|---|---|---|---|
-| [V2VNet](https://arxiv.org/abs/2008.07519) | ECCV 2020 | 0.32 / 0.23 / 0.13 | 0.81 / 0.75 / 0.50 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2vnet/v2vnet.py) | [ckpt (177 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/v2vnet/v2vnet.pth) |
-| [V2X-ViT](https://arxiv.org/abs/2203.10638) | ECCV 2022 | 0.60 / 0.52 / 0.33 | 0.80 / 0.74 / 0.50 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2xvit/v2xvit.py) | [ckpt (167 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/v2xvit/v2xvit.pth) |
-| [CoBEVT](https://arxiv.org/abs/2207.02202) | CoRL 2022 | 0.59 / 0.50 / 0.32 | 0.82 / 0.75 / 0.54 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/cobevt/cobevt.py) | [ckpt (138 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/cobevt/cobevt.pth) |
-| [V2VAM](https://arxiv.org/abs/2212.08273) | T-IV 2023 | 0.62 / 0.54 / 0.34 | 0.84 / 0.78 / 0.53 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2vam/v2vam.py) | [ckpt (116 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/v2vam/v2vam.pth) |
-| [ERMVP](https://openaccess.thecvf.com/content/CVPR2024/html/Zhang_ERMVP_Communication-Efficient_and_Collaboration-Robust_Multi-Vehicle_Perception_in_Challenging_Environments_CVPR_2024_paper.html) | CVPR 2024 | 0.64 / 0.56 / 0.36 | 0.87 / 0.81 / 0.57 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/ermvp/ermvp.py) | [ckpt (138 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/ermvp/ermvp.pth) |
-| [CoSDH](https://arxiv.org/abs/2503.03430) | CVPR 2025 | 0.75 / 0.61 / 0.41 | 0.81 / 0.73 / 0.52 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/cosdh/cosdh.py) | [ckpt (111 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/cosdh/cosdh.pth) |
+| [V2VNet](https://arxiv.org/abs/2008.07519) | ECCV 2020 | 0.32 / 0.23 / 0.13 | 0.81 / 0.75 / 0.50 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2vnet/v2vnet.py) | `v2vnet` (177 MB) |
+| [V2X-ViT](https://arxiv.org/abs/2203.10638) | ECCV 2022 | 0.60 / 0.52 / 0.33 | 0.80 / 0.74 / 0.50 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2xvit/v2xvit.py) | `v2xvit` (167 MB) |
+| [CoBEVT](https://arxiv.org/abs/2207.02202) | CoRL 2022 | 0.59 / 0.50 / 0.32 | 0.82 / 0.75 / 0.54 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/cobevt/cobevt.py) | `cobevt` (138 MB) |
+| [V2VAM](https://arxiv.org/abs/2212.08273) | T-IV 2023 | 0.62 / 0.54 / 0.34 | 0.84 / 0.78 / 0.53 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/v2vam/v2vam.py) | `v2vam` (116 MB) |
+| [ERMVP](https://openaccess.thecvf.com/content/CVPR2024/html/Zhang_ERMVP_Communication-Efficient_and_Collaboration-Robust_Multi-Vehicle_Perception_in_Challenging_Environments_CVPR_2024_paper.html) | CVPR 2024 | 0.64 / 0.56 / 0.36 | 0.87 / 0.81 / 0.57 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/ermvp/ermvp.py) | `ermvp` (138 MB) |
+| [CoSDH](https://arxiv.org/abs/2503.03430) | CVPR 2025 | 0.75 / 0.61 / 0.41 | 0.81 / 0.73 / 0.52 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/cosdh/cosdh.py) | `cosdh` (111 MB) |
 
 **BEVFusion** ([ICRA 2023](https://arxiv.org/abs/2205.13542)), single-agent and
 cooperative, LiDAR-only and LiDAR+camera (BEV / 3D mAP @0.3/0.5/0.7;
 cooperative rows use the `V+2V` setting):
 
-| Agents | Modality | BEV mAP @0.3/0.5/0.7 | 3D mAP @0.3/0.5/0.7 | Config | Checkpoint |
+| Agents | Modality | BEV mAP @0.3/0.5/0.7 | 3D mAP @0.3/0.5/0.7 | Config | Checkpoint (`tools/download.py`) |
 |---|---|---|---|---|---|
-| Single | LiDAR | 0.78 / 0.56 / 0.31 | 0.70 / 0.38 / 0.21 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_single_lidar.py) | [ckpt (115 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_single_lidar.pth) |
-| Single | LiDAR+Cam | 0.80 / 0.57 / 0.33 | 0.72 / 0.42 / 0.23 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_single_lidarcam.py) | [ckpt (483 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_single_lidarcam.pth) |
-| Coop | LiDAR | 0.90 / 0.84 / 0.56 | 0.87 / 0.73 / 0.30 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_coop_lidar.py) | [ckpt (139 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_coop_lidar.pth) |
-| Coop | LiDAR+Cam | 0.90 / 0.83 / 0.61 | 0.87 / 0.74 / 0.35 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_coop_lidarcam.py) | [ckpt (519 MB)](https://huggingface.co/cisl-hf/CooperScene/resolve/main/bevfusion/bevfusion_coop_lidarcam.pth) |
+| Single | LiDAR | 0.78 / 0.56 / 0.31 | 0.70 / 0.38 / 0.21 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_single_lidar.py) | `bevfusion_single_lidar` (115 MB) |
+| Single | LiDAR+Cam | 0.80 / 0.57 / 0.33 | 0.72 / 0.42 / 0.23 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_single_lidarcam.py) | `bevfusion_single_lidarcam` (483 MB) |
+| Coop | LiDAR | 0.90 / 0.84 / 0.56 | 0.87 / 0.73 / 0.30 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_coop_lidar.py) | `bevfusion_coop_lidar` (139 MB) |
+| Coop | LiDAR+Cam | 0.90 / 0.83 / 0.61 | 0.87 / 0.74 / 0.35 | [config](https://huggingface.co/cisl-hf/CooperScene/blob/main/bevfusion/bevfusion_coop_lidarcam.py) | `bevfusion_coop_lidarcam` (519 MB) |
 
 Reproduce any row in two commands (see [Quick Start](#quick-start) for the
 Docker image and data preparation):
 
 ```bash
-hf download cisl-hf/CooperScene --local-dir assets
+python tools/download.py ermvp
 python tools/test.py assets/ermvp/ermvp.py assets/ermvp/ermvp.pth
 ```
 
@@ -175,7 +175,8 @@ docker build -t cooperscene -f docker/Dockerfile .
 ```bash
 cd CooperScene/
 pip install -U huggingface_hub
-hf download cisl-hf/CooperScene --local-dir assets
+python tools/download.py ermvp     # one model (any name from the Model Zoo tables)
+python tools/download.py all       # or the whole model zoo
 # -> assets/<model>/{<model>.py, <model>.pth}  (config + checkpoint together)
 ```
 
